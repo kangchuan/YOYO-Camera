@@ -54,6 +54,23 @@ async function verifyJWT(token: string, secret: string): Promise<boolean> {
   }
 }
 
+/**
+ * 从**已验签**的 token 中取出用户 id。
+ *
+ * 返回 `null` 表示「签名对得上，但 payload 里没有可用的 `id`」。这理论上只有持有
+ * `JWT_SECRET` 的人能构造出来，但一旦为 `undefined`，它会被当作绑定参数传给 D1 并抛出
+ * `D1_TYPE_ERROR: Type 'undefined' not supported` —— 最终以 500 返回。
+ * 调用方拿到 `null` 应当按**认证失败**处理（401），不要把服务端内部错误暴露出去。
+ *
+ * 前置条件：调用方必须已经通过 `verifyJWT()`。`jwt.decode` 不做校验，对畸形字符串会直接抛错。
+ */
+function getUserId(token: string): number | null {
+  const { payload } = jwt.decode(token);
+  const id = (payload as { id?: unknown }).id;
+  // users.id 是 INTEGER PRIMARY KEY AUTOINCREMENT，合法值必为正整数
+  return typeof id === "number" && Number.isSafeInteger(id) && id > 0 ? id : null;
+}
+
 export default {
   async fetch(request, env, _ctx): Promise<Response> {
     const { pathname } = new URL(request.url);
@@ -176,8 +193,13 @@ export default {
           return Response.json({ error: "Invalid token" }, { status: 401, headers: corsHeaders });
         }
 
-        const { payload } = jwt.decode(token);
-        const userId = (payload as { id: number }).id;
+        const userId = getUserId(token);
+        if (userId === null) {
+          return Response.json(
+            { error: "Invalid token payload" },
+            { status: 401, headers: corsHeaders }
+          );
+        }
 
         const user = await env.DB.prepare(
           "SELECT id, apple_user_id, email, full_name, credits, subscription_status FROM users WHERE id = ?"
@@ -232,8 +254,13 @@ export default {
           return Response.json({ error: "Invalid token" }, { status: 401, headers: corsHeaders });
         }
 
-        const { payload } = jwt.decode(token);
-        const userId = (payload as { id: number }).id;
+        const userId = getUserId(token);
+        if (userId === null) {
+          return Response.json(
+            { error: "Invalid token payload" },
+            { status: 401, headers: corsHeaders }
+          );
+        }
 
         // Explicitly delete related records to avoid FOREIGN KEY constraint failed error
         // Soft delete the user to prevent credit farming (re-registering for initial credits)
@@ -278,8 +305,13 @@ export default {
           return Response.json({ error: "Invalid token" }, { status: 401, headers: corsHeaders });
         }
 
-        const { payload } = jwt.decode(token);
-        const userId = (payload as { id: number }).id;
+        const userId = getUserId(token);
+        if (userId === null) {
+          return Response.json(
+            { error: "Invalid token payload" },
+            { status: 401, headers: corsHeaders }
+          );
+        }
 
         const body: { fullName?: string } = await request.json();
         const { fullName } = body;
@@ -332,8 +364,13 @@ export default {
           return Response.json({ error: "Invalid token" }, { status: 401, headers: corsHeaders });
         }
 
-        const { payload } = jwt.decode(token);
-        const userId = (payload as { id: number }).id;
+        const userId = getUserId(token);
+        if (userId === null) {
+          return Response.json(
+            { error: "Invalid token payload" },
+            { status: 401, headers: corsHeaders }
+          );
+        }
 
         const body: { originalTransactionId: string } = await request.json();
         const { originalTransactionId } = body;
@@ -551,8 +588,13 @@ export default {
           );
         }
 
-        const { payload } = jwt.decode(token);
-        const userId = (payload as { id: number }).id;
+        const userId = getUserId(token);
+        if (userId === null) {
+          return Response.json(
+            { error: "Invalid token payload" },
+            { status: 401, headers: corsHeaders }
+          );
+        }
 
         const body: ShareRequest = await request.json();
         const { ruleJson } = body;
@@ -673,8 +715,13 @@ export default {
           );
         }
 
-        const { payload } = jwt.decode(token);
-        const userId = (payload as { id: number }).id;
+        const userId = getUserId(token);
+        if (userId === null) {
+          return Response.json(
+            { error: "Invalid token payload" },
+            { status: 401, headers: corsHeaders }
+          );
+        }
 
         // Check subscription status
         const user = await env.DB.prepare(
@@ -791,8 +838,13 @@ export default {
           );
         }
 
-        const { payload } = jwt.decode(token);
-        const userId = (payload as { id: number }).id;
+        const userId = getUserId(token);
+        if (userId === null) {
+          return Response.json(
+            { error: "Invalid token payload" },
+            { status: 401, headers: corsHeaders }
+          );
+        }
 
         // Check subscription status
         const user = await env.DB.prepare(
@@ -899,8 +951,13 @@ export default {
           );
         }
 
-        const { payload } = jwt.decode(token);
-        const userId = (payload as { id: number }).id;
+        const userId = getUserId(token);
+        if (userId === null) {
+          return Response.json(
+            { error: "Invalid token payload" },
+            { status: 401, headers: corsHeaders }
+          );
+        }
 
         // Check subscription status
         const user = await env.DB.prepare(
