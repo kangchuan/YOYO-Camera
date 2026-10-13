@@ -38,6 +38,22 @@ interface InspirationImageRequest {
   imageGenPrompt: string;
 }
 
+/**
+ * 校验 JWT，把「token 格式非法」这类异常统一收敛为 false。
+ *
+ * `jwt.verify` 遇到无法解析的字符串（`"abc"`、空串、非 base64url 内容等）会直接抛
+ * `SyntaxError`，此前会落进各路由外层的 catch 被当成 500 返回 —— 而它本质上是一个
+ * 认证失败，应该是 401。这里把异常挡掉，让调用方沿用既有的 `if (!isValid)` 分支。
+ */
+async function verifyJWT(token: string, secret: string): Promise<boolean> {
+  try {
+    // jwt.verify 成功时返回 payload 对象，这里归一成布尔值
+    return Boolean(await jwt.verify(token, secret));
+  } catch {
+    return false;
+  }
+}
+
 export default {
   async fetch(request, env, _ctx): Promise<Response> {
     const { pathname } = new URL(request.url);
@@ -155,7 +171,7 @@ export default {
         }
 
         const token = authHeader.split(" ")[1];
-        const isValid = await jwt.verify(token, env.JWT_SECRET);
+        const isValid = await verifyJWT(token, env.JWT_SECRET);
         if (!isValid) {
           return Response.json({ error: "Invalid token" }, { status: 401, headers: corsHeaders });
         }
@@ -211,7 +227,7 @@ export default {
         }
 
         const token = authHeader.split(" ")[1];
-        const isValid = await jwt.verify(token, env.JWT_SECRET);
+        const isValid = await verifyJWT(token, env.JWT_SECRET);
         if (!isValid) {
           return Response.json({ error: "Invalid token" }, { status: 401, headers: corsHeaders });
         }
@@ -257,7 +273,7 @@ export default {
         }
 
         const token = authHeader.split(" ")[1];
-        const isValid = await jwt.verify(token, env.JWT_SECRET);
+        const isValid = await verifyJWT(token, env.JWT_SECRET);
         if (!isValid) {
           return Response.json({ error: "Invalid token" }, { status: 401, headers: corsHeaders });
         }
@@ -311,7 +327,7 @@ export default {
         }
 
         const token = authHeader.split(" ")[1];
-        const isValid = await jwt.verify(token, env.JWT_SECRET);
+        const isValid = await verifyJWT(token, env.JWT_SECRET);
         if (!isValid) {
           return Response.json({ error: "Invalid token" }, { status: 401, headers: corsHeaders });
         }
@@ -526,7 +542,7 @@ export default {
         }
 
         const token = authHeader.split(" ")[1];
-        const isValid = await jwt.verify(token, env.JWT_SECRET);
+        const isValid = await verifyJWT(token, env.JWT_SECRET);
 
         if (!isValid) {
           return Response.json(
@@ -648,7 +664,7 @@ export default {
         }
 
         const token = authHeader.split(" ")[1];
-        const isValid = await jwt.verify(token, env.JWT_SECRET);
+        const isValid = await verifyJWT(token, env.JWT_SECRET);
 
         if (!isValid) {
           return Response.json(
@@ -766,7 +782,7 @@ export default {
         }
 
         const token = authHeader.split(" ")[1];
-        const isValid = await jwt.verify(token, env.JWT_SECRET);
+        const isValid = await verifyJWT(token, env.JWT_SECRET);
 
         if (!isValid) {
           return Response.json(
@@ -874,7 +890,7 @@ export default {
         }
 
         const token = authHeader.split(" ")[1];
-        const isValid = await jwt.verify(token, env.JWT_SECRET);
+        const isValid = await verifyJWT(token, env.JWT_SECRET);
 
         if (!isValid) {
           return Response.json(

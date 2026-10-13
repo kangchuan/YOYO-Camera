@@ -9,9 +9,12 @@ import Foundation
 ///   1. Xcode 运行环境变量 `API_BASE_URL` / `STATIC_BASE_URL`（仅从 Xcode 启动时存在，适合临时调试）
 ///   2. 本地自定义覆盖（设置 → 开发者模式 → 服务地址，保存后立即生效，无需重新编译）
 ///   3. Info.plist 构建期配置（`APIBaseURL` / `StaticBaseURL`，适合多环境打包）
-///   4. 内置默认值（上游 Day1Labs 线上地址）
+///   4. 内置默认值（当前指向本地回环，见下方常量）
 ///
 /// 新增网络请求时，请通过 `apiURL(_:)` / `staticURL(_:)` 构造地址，不要再硬编码域名。
+///
+/// ⚠️ 注意：本地自定义覆盖（第 2 层）优先级高于内置默认值。若设备上曾保存过服务地址，
+/// 改这里的常量不会生效，需到「设置 → 开发者模式 → 服务地址」点「恢复默认」。
 final class ServiceEndpoints {
 
     static let shared = ServiceEndpoints()
@@ -19,10 +22,17 @@ final class ServiceEndpoints {
     // MARK: - 内置默认值
 
     /// 业务 API 基地址（登录、AI 修图、灵感、自动化分享）
-    static let defaultAPIBaseURL = "https://yoyo.day1-labs.com"
+    ///
+    /// 暂时指向本地回环地址，脱离上游 Day1Labs 线上服务独立开发。
+    /// 恢复上游：改回 `https://yoyo.day1-labs.com`
+    /// 对应本地服务端：`YOYO-Server`（`npm run dev` / `wrangler dev`，默认端口 8787）
+    static let defaultAPIBaseURL = "http://127.0.0.1:8787"
 
     /// 静态资源基地址（用户协议、隐私政策等法务文档）
-    static let defaultStaticBaseURL = "https://static.day1-labs.com/yoyo"
+    ///
+    /// 同样指向本地。注意本地服务端当前不托管这些法务文档，
+    /// 因此相关页面在本地会打不开——恢复上游：改回 `https://static.day1-labs.com/yoyo`
+    static let defaultStaticBaseURL = "http://127.0.0.1:8787"
 
     // MARK: - 键名
 
