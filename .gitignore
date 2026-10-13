@@ -12,6 +12,10 @@ DerivedData/
 *.xccheckout
 *.moved-aside
 
+# Xcode user data (machine-specific UI state, contains local username)
+xcuserdata/
+*.xcuserdatad/
+
 # IDEs
 .vscode/
 .idea/

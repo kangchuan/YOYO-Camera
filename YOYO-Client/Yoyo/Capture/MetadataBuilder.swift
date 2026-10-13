@@ -156,79 +156,10 @@ final class MetadataBuilder {
         creationDateItem.value = formatter.string(from: Date()) as any NSCopying & NSObjectProtocol
         items.append(creationDateItem)
 
-        // 5. data (iOS 26.0+)
-        if let camera {
-            if #available(iOS 26.0, *) {
-                // ISO Sensitivity
-                let isoItem = AVMutableMetadataItem()
-                isoItem.keySpace = .quickTimeMetadata
-                isoItem.key = AVMetadataKey.quickTimeMetadataKeyCameraISOSensitivity as any NSCopying & NSObjectProtocol
-                isoItem.value = "\(Int(camera.iso))" as any NSCopying & NSObjectProtocol
-                items.append(isoItem)
-
-                // White Balance (Kelvin)
-                let temperature = camera.temperatureAndTintValues(for: camera.deviceWhiteBalanceGains).temperature
-                let wbItem = AVMutableMetadataItem()
-                wbItem.keySpace = .quickTimeMetadata
-                wbItem.key = AVMetadataKey.quickTimeMetadataKeyCameraWhiteBalance as any NSCopying & NSObjectProtocol
-                wbItem.value = "\(Int(temperature))K" as any NSCopying & NSObjectProtocol
-                items.append(wbItem)
-
-                // White Balance Factors & Color Matrices (Placeholder/Best-effort)
-                let factorsItem = AVMutableMetadataItem()
-                factorsItem.keySpace = .quickTimeMetadata
-                factorsItem.key = AVMetadataKey.quickTimeMetadataKeyWhiteBalanceByCCTWhiteBalanceFactors as any NSCopying & NSObjectProtocol
-                let gains = camera.deviceWhiteBalanceGains
-                var gainsArray = [gains.redGain, gains.greenGain, gains.blueGain]
-                factorsItem.value = Data(bytes: &gainsArray, count: MemoryLayout<Float>.size * 3) as any NSCopying & NSObjectProtocol
-                items.append(factorsItem)
-
-                let matrixItem = AVMutableMetadataItem()
-                matrixItem.keySpace = .quickTimeMetadata
-                matrixItem.key = AVMetadataKey.quickTimeMetadataKeyWhiteBalanceByCCTColorMatrices as any NSCopying & NSObjectProtocol
-                matrixItem.value = Data() as any NSCopying & NSObjectProtocol // Placeholder
-                items.append(matrixItem)
-
-                // Shutter Speed Angle
-                let fps = 1.0 / CMTimeGetSeconds(camera.activeVideoMinFrameDuration)
-                let angle = 360.0 * CMTimeGetSeconds(camera.exposureDuration) * fps
-                let angleItem = AVMutableMetadataItem()
-                angleItem.keySpace = .quickTimeMetadata
-                angleItem.key = AVMetadataKey.quickTimeMetadataKeyCameraShutterSpeedAngle as any NSCopying & NSObjectProtocol
-                angleItem.value = String(format: "%.2fdeg", angle) as any NSCopying & NSObjectProtocol
-                items.append(angleItem)
-
-                // Shutter Speed Time
-                let shutterTimeItem = AVMutableMetadataItem()
-                shutterTimeItem.keySpace = .quickTimeMetadata
-                shutterTimeItem.key = AVMetadataKey.quickTimeMetadataKeyCameraShutterSpeedTime as any NSCopying & NSObjectProtocol
-                shutterTimeItem.value = String(format: "%.4f", CMTimeGetSeconds(camera.exposureDuration)) as any NSCopying & NSObjectProtocol
-                items.append(shutterTimeItem)
-
-                // Lens Iris
-                let irisItem = AVMutableMetadataItem()
-                irisItem.keySpace = .quickTimeMetadata
-                irisItem.key = AVMetadataKey.quickTimeMetadataKeyCameraLensIrisFNumber as any NSCopying & NSObjectProtocol
-                irisItem.value = String(format: "F%.1f", camera.lensAperture) as any NSCopying & NSObjectProtocol
-                items.append(irisItem)
-
-                // Lens Model
-                let lensModelItem = AVMutableMetadataItem()
-                lensModelItem.keySpace = .quickTimeMetadata
-                lensModelItem.key = AVMetadataKey.quickTimeMetadataKeyCameraLensModel as any NSCopying & NSObjectProtocol
-                let focalLength = CameraDeviceManager.shared.currentPhysicalFocalLength
-                let formattedLensModel = "\(deviceSpec.deviceName) \(camera.position == .front ? "front" : "back") camera \(String(format: "%.3f", focalLength))mm f/\(String(format: "%.2f", camera.lensAperture))"
-                lensModelItem.value = formattedLensModel as any NSCopying & NSObjectProtocol
-                items.append(lensModelItem)
-
-                // Focal Length 35mm
-                let focal35Item = AVMutableMetadataItem()
-                focal35Item.keySpace = .quickTimeMetadata
-                focal35Item.key = AVMetadataKey.quickTimeMetadataKeyCameraFocalLength35mmEquivalent as any NSCopying & NSObjectProtocol
-                focal35Item.value = String(format: "%.1fmm", CameraDeviceManager.shared.currentFocalLength) as any NSCopying & NSObjectProtocol
-                items.append(focal35Item)
-            }
-        }
+        // 5. iOS 26 QuickTime camera-metrics metadata removed:
+        //    those AVMetadataKey members require the iOS 26 SDK and are
+        //    unavailable when building with Xcode 16 (iOS 18.2 SDK).
+        //    Video EXIF-equivalent info is still covered by buildVideoMetadata().
 
         return items
     }

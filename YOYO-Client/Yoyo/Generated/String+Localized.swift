@@ -4,23 +4,21 @@
 import Foundation
 
 extension String {
-    /// Returns the localized string
+    /// Get the localized string
     var localized: String {
         NSLocalizedString(self, tableName: nil, bundle: LanguageManager.shared.bundle, value: "", comment: "")
     }
 
-    /// Returns the localized string with arguments
+    /// Get the localized string with arguments
     func localized(_ arguments: CVarArg...) -> String {
         String(format: NSLocalizedString(self, tableName: nil, bundle: LanguageManager.shared.bundle, value: "", comment: ""), arguments: arguments)
     }
 
-    /// Returns the localized string with a comment
+    /// Get the localized string with a comment
     func localized(comment: String) -> String {
         NSLocalizedString(self, tableName: nil, bundle: LanguageManager.shared.bundle, value: "", comment: comment)
     }
-
     // MARK: - File Naming Formats
-
     static let cameraSettingsFileNaming = "camera_settings_file_naming"
     static let fileNamingStandard = "file_naming_standard"
     static let fileNamingClassic = "file_naming_classic"
@@ -35,7 +33,6 @@ extension String {
     static let fileNamingFormat = "file_naming_format"
 
     // MARK: - Time of Day
-
     static let timeDawn = "time_dawn"
     static let timeSunrise = "time_sunrise"
     static let timeMorning = "time_morning"
@@ -47,19 +44,17 @@ extension String {
     static let timeBlueHour = "time_blue_hour"
     static let timeNight = "time_night"
 
-    // MARK: - Object Detection
 
+    // MARK: - Object Detection
     static let objectsNone = "objects_none"
     static let objectsCount = "objects_count"
 
     // MARK: - Brightness Analysis
-
     static let exposureModerate = "exposure_moderate"
     static let exposureIncrease = "exposure_increase"
     static let exposureDecrease = "exposure_decrease"
 
     // MARK: - Camera Settings Menu
-
     static let cameraSettingsGrid = "camera_settings_grid"
     static let cameraSettingsGuidelines = "camera_settings_guidelines"
     static let cameraSettingsHistogram = "camera_settings_histogram"
@@ -80,7 +75,6 @@ extension String {
     static let cameraSettingsPreviewLatestPhoto = "camera_settings_preview_latest_photo"
 
     // MARK: - Composition Guide Types
-
     // (Removed as icons are used for preview)
 
     // Photo Detail View
@@ -122,11 +116,10 @@ extension String {
     static let filterImportErrorUnsupportedType = "filter_import_error_unsupported_type"
     static let filterImportErrorFileWriteFailed = "filter_import_error_file_write_failed"
 
-    /// Automation Filter Actions
+    // Automation Filter Actions
     static let automationImportFilter = "automation_import_filter"
 
     // MARK: - AI Inspiration
-
     static let aiInspirationTitle = "ai_inspiration_title"
     static let aiInspirationLoading = "ai_inspiration_loading"
     static let aiInspirationDetail = "ai_inspiration_detail"
@@ -134,6 +127,7 @@ extension String {
     static let aiInspirationGenerateFailed = "ai_inspiration_generate_failed"
     static let aiInspirationPreviewTapToGet = "ai_inspiration_preview_tap_to_get"
     static let aiInspirationPreviewCancelHint = "ai_inspiration_preview_cancel_hint"
+
 
     // AI Inspiration Service Errors
     static let aiInspirationErrorNoImage = "ai_inspiration_error_no_image"
@@ -155,7 +149,6 @@ extension String {
     static let automationFilterAlreadyExists = "automation_filter_already_exists"
 
     // MARK: - Filter Descriptions
-
     static let filterNoneDescription = "filter_none_description"
     static let filterCustomDescription = "filter_custom_description"
     static let filterVividDescription = "filter_vivid_description"
@@ -190,12 +183,10 @@ extension String {
     static let filterDuneDescription = "filter_dune_description"
 
     // MARK: - Permissions
-
     static let cameraPermissionTitle = "camera_permission_title"
     static let cameraPermissionMessage = "camera_permission_message"
 
     // MARK: - Permission Management
-
     static let permissionCameraTitle = "permission_camera_title"
     static let permissionMicrophoneTitle = "permission_microphone_title"
     static let permissionPhotoLibraryTitle = "permission_photo_library_title"
@@ -230,12 +221,11 @@ extension String {
     static let permissionSelectMorePhotos = "permission_select_more_photos"
 
     // MARK: - Permission Onboarding
-
     static let onboardingGetStarted = "onboarding_get_started"
     static let onboardingComplete = "onboarding_complete"
 
-    // MARK: - Photo Info Sheet
 
+    // MARK: - Photo Info Sheet
     static let photoInfoAestheticsScore = "photo_info_aesthetics_score"
     static let photoInfoPhotoInfo = "photo_info_photo_info"
     static let photoInfoCaptureTime = "photo_info_capture_time"
@@ -268,7 +258,6 @@ extension String {
     static let photoInfoTelephotoCamera = "photo_info_telephoto_camera"
 
     // MARK: - Automation
-
     static let automationDefaultRuleTitle = "automation_default_rule_title"
     static let automationTaskMasterTitle = "automation_task_master_title"
     static let automationRuleNamePlaceholder = "automation_rule_name_placeholder"
@@ -320,7 +309,6 @@ extension String {
     static let sceneTechnology = "scene_technology"
 
     // MARK: - Settings
-
     static let settingsTitle = "settings_title"
     static let settingsStorageManagement = "settings_storage_management"
     static let settingsPrivacyPolicy = "settings_privacy_policy"
@@ -347,7 +335,6 @@ extension String {
     static let settingsFollowUs = "settings_follow_us"
 
     // MARK: - Storage Settings
-
     static let settingsStorageDevice = "settings_storage_device"
     static let settingsStorageTotal = "settings_storage_total"
     static let settingsStorageAvailable = "settings_storage_available"
@@ -365,7 +352,6 @@ extension String {
     static let settingsStorageClearConfirm = "settings_storage_clear_confirm"
 
     // MARK: - Automation Action Display
-
     static let actionSetZoom = "action_set_zoom"
     static let actionMultiplyZoom = "action_multiply_zoom"
     static let actionClampZoom = "action_clamp_zoom"
@@ -423,7 +409,6 @@ extension String {
     static let summaryToast = "summary_toast"
 
     // MARK: - Automation Condition Display
-
     static let conditionSceneIs = "condition_scene_is"
     static let conditionSceneIsNot = "condition_scene_is_not"
     static let conditionSceneIn = "condition_scene_in"
@@ -547,7 +532,6 @@ extension String {
     static let summaryAfterCapture = "summary_after_capture"
 
     // MARK: - Recommended Tasks
-
     static let recTaskPortraitTitle = "rec_task_portrait_title"
     static let recTaskPortraitDesc = "rec_task_portrait_desc"
     static let recTaskCityTitle = "rec_task_city_title"
@@ -598,13 +582,11 @@ extension String {
     static let recTaskSelectionTitle = "rec_task_selection_title"
 
     // MARK: - Automation Settings
-
     static let automationRecommendedTab = "automation_recommended_tab"
     static let automationMyTab = "automation_my_tab"
     static let automationNoTasks = "automation_no_tasks"
 
     // MARK: - Automation Location Picker
-
     static let automationSearchLocation = "automation_search_location"
     static let automationUnknownLocation = "automation_unknown_location"
     static let automationSelectedLocation = "automation_selected_location"
@@ -612,14 +594,12 @@ extension String {
     static let automationConfirmSelection = "automation_confirm_selection"
 
     // MARK: - Automation Condition Time
-
     static let automationConditionAfter = "automation_condition_after"
     static let automationConditionBefore = "automation_condition_before"
     static let automationConditionAltitudeAbove = "automation_condition_altitude_above"
     static let automationConditionAltitudeBelow = "automation_condition_altitude_below"
 
     // MARK: - Automation Cards
-
     static let automationExecuteOnce = "automation_execute_once"
     static let automationRequireConfirmation = "automation_require_confirmation"
     static let automationCopyShareCode = "automation_copy_share_code"
@@ -631,7 +611,6 @@ extension String {
     static let automationShareFailed = "automation_share_failed"
 
     // MARK: - Automation Picker
-
     static let automationSelectCategory = "automation_select_category"
     static let automationStartTime = "automation_start_time"
     static let automationEndTime = "automation_end_time"
@@ -658,8 +637,8 @@ extension String {
     static let automationMessageContent = "automation_message_content"
     static let automationDisplayDurationSeconds = "automation_display_duration_seconds"
 
-    // MARK: - Automation Time Options
 
+    // MARK: - Automation Time Options
     static let automationTimeCommonPeriods = "automation_time_common_periods"
     static let automationTimeCommonWeekdays = "automation_time_common_weekdays"
     static let automationTimeCustomRange = "automation_time_custom_range"
@@ -670,26 +649,22 @@ extension String {
     static let automationSelectLocation = "automation_select_location"
 
     // MARK: - Automation Altitude Options
-
     static let automationAltitudeCustom = "automation_altitude_custom"
     static let automationAltitudeMetersUnit = "automation_altitude_meters_unit"
     static let automationAltitudeInputPlaceholder = "automation_altitude_input_placeholder"
     static let automationAltitudeCondition = "automation_altitude_condition"
 
     // MARK: - Automation Time Pickers
-
     static let automationHour = "automation_hour"
     static let automationMinute = "automation_minute"
     static let automationDay = "automation_day"
 
     // MARK: - Automation White Balance Options
-
     static let automationWhiteBalancePresets = "automation_white_balance_presets"
     static let automationWhiteBalanceAdjustments = "automation_white_balance_adjustments"
     static let automationWhiteBalanceTitle = "automation_white_balance_title"
 
     // MARK: - Automation ISO Options
-
     static let automationIsoCommon = "automation_iso_common"
     static let automationIsoAdjustments = "automation_iso_adjustments"
     static let automationIsoModeSet = "automation_iso_mode_set"
@@ -700,14 +675,12 @@ extension String {
     static let automationMode = "automation_mode"
 
     // MARK: - Automation Shutter Options
-
     static let automationShutterCommon = "automation_shutter_common"
     static let automationShutterTitle = "automation_shutter_title"
     static let automationShutterNumerator = "automation_shutter_numerator"
     static let automationShutterDenominator = "automation_shutter_denominator"
 
     // MARK: - Automation Filter Options
-
     static let automationFilterImportFromUrl = "automation_filter_import_from_url"
     static let automationFilterImportUrl = "automation_filter_import_url"
     static let automationFilterBuiltin = "automation_filter_builtin"
@@ -719,7 +692,6 @@ extension String {
     static let automationFilterUrlMessage = "automation_filter_url_message"
 
     // MARK: - Lighting Conditions
-
     static let lightingConditionDark = "lighting_condition_dark"
     static let lightingConditionDim = "lighting_condition_dim"
     static let lightingConditionNormal = "lighting_condition_normal"
@@ -727,13 +699,11 @@ extension String {
     static let lightingConditionGlare = "lighting_condition_glare"
 
     // MARK: - Automation Color Options
-
     static let automationColorTemperature = "automation_color_temperature"
     static let automationColorSaturation = "automation_color_saturation"
     static let automationColorBrightness = "automation_color_brightness"
 
     // MARK: - Automation Toast Options
-
     static let automationToastCommon = "automation_toast_common"
     static let automationToastSuccessCompleteMessage = "automation_toast_success_complete_message"
     static let automationToastWarningLightMessage = "automation_toast_warning_light_message"
@@ -746,7 +716,6 @@ extension String {
     static let automationToastDuration = "automation_toast_duration"
 
     // MARK: - Automation Formatters
-
     static let automationWeekdaySunday = "automation_weekday_sunday"
     static let automationWeekdayMonday = "automation_weekday_monday"
     static let automationWeekdayTuesday = "automation_weekday_tuesday"
@@ -780,14 +749,12 @@ extension String {
     static let automationExecutionDays = "automation_execution_days"
 
     // MARK: - Automation Interval Picker
-
     static let automationIntervalMinLabel = "automation_interval_min_label"
     static let automationIntervalMaxLabel = "automation_interval_max_label"
     static let automationIntervalMinutesSeconds = "automation_interval_minutes_seconds"
     static let automationIntervalHoursMinutes = "automation_interval_hours_minutes"
 
     // MARK: - Automation Editor
-
     static let automationConditionLogicAll = "automation_condition_logic_all"
     static let automationConditionLogicAny = "automation_condition_logic_any"
     static let automationConditionLogicAllDesc = "automation_condition_logic_all_desc"
@@ -841,7 +808,6 @@ extension String {
     static let categoryToast = "category_toast"
 
     // MARK: - AI Darkroom
-
     static let aiDarkroomTitle = "ai_darkroom_title"
     static let aiDarkroomProcessing = "ai_darkroom_processing"
     static let aiDarkroomPortraitEnhance = "ai_darkroom_portrait_enhance"
@@ -854,7 +820,6 @@ extension String {
     static let aiDarkroomFixClosedEyes = "ai_darkroom_fix_closed_eyes"
 
     // MARK: - ISO Presets
-
     static let isoPresetLowNoise = "iso_preset_low_noise"
     static let isoPresetBalanced = "iso_preset_balanced"
     static let isoPresetHigh = "iso_preset_high"
@@ -865,7 +830,6 @@ extension String {
     static let isoPresetExtremeDesc = "iso_preset_extreme_desc"
 
     // MARK: - Shutter Speed Presets
-
     static let shutterPresetHandheld = "shutter_preset_handheld"
     static let shutterPresetStable = "shutter_preset_stable"
     static let shutterPresetTripod = "shutter_preset_tripod"
@@ -876,12 +840,10 @@ extension String {
     static let shutterPresetLongExposureDesc = "shutter_preset_long_exposure_desc"
 
     // MARK: - Language
-
     static let settingsLanguage = "settings_language"
     static let systemDefault = "system_default"
 
     // MARK: - Common
-
     static let commonOn = "common_on"
     static let commonOff = "common_off"
     static let commonPreview = "common_preview"
@@ -896,7 +858,6 @@ extension String {
     static let commonLogin = "common_login"
 
     // MARK: - Frame Settings
-
     static let frameSettingsDeviceModel = "frame_settings_device_model"
     static let frameSettingsExif = "frame_settings_exif"
     static let frameSettingsAppleIcon = "frame_settings_apple_icon"
@@ -906,7 +867,6 @@ extension String {
     static let frameSettingsFestivalWatermark = "frame_settings_festival_watermark"
 
     // MARK: - Audio Settings
-
     static let audioSettingsTitle = "audio_settings_title"
     static let audioSettingsNoiseReduction = "audio_settings_noise_reduction"
     static let audioSettingsNoiseReductionDesc = "audio_settings_noise_reduction_desc"
@@ -920,7 +880,6 @@ extension String {
     static let audioPickupNotSupported = "audio_pickup_not_supported"
 
     // MARK: - Error Descriptions
-
     static let galleryErrorPermissionDenied = "gallery_error_permission_denied"
     static let galleryErrorNetworkUnavailable = "gallery_error_network_unavailable"
     static let galleryErrorAssetNotFound = "gallery_error_asset_not_found"
@@ -936,19 +895,16 @@ extension String {
     static let albumErrorVideoSaveFailed = "album_error_video_save_failed"
 
     // MARK: - Photo Preview
-
     static let photoPreviewLoadFailed = "photo_preview_load_failed"
     static let photoPreviewRetry = "photo_preview_retry"
 
     // MARK: - Camera Preview
-
     static let cameraFocusUnlocked = "camera_focus_unlocked"
     static let cameraFocusLocked = "camera_focus_locked"
     static let cameraFilterIntensityFormat = "camera_filter_intensity_format"
     static let cameraExposureValueFormat = "camera_exposure_value_format"
 
     // MARK: - Capture Errors
-
     static let captureErrorInitFailed = "capture_error_init_failed"
     static let captureErrorInsufficientStorage = "capture_error_insufficient_storage"
     static let captureErrorRecordingFailed = "capture_error_recording_failed"
@@ -958,13 +914,11 @@ extension String {
     static let captureErrorUnknown = "capture_error_unknown"
 
     // MARK: - Privacy & Analytics
-
     static let settingsPrivacyAnalytics = "settings_privacy_analytics"
     static let settingsPrivacyAnalyticsDescription = "settings_privacy_analytics_description"
     static let settingsPrivacyDataCollection = "settings_privacy_data_collection"
 
     // MARK: - Feature Tutorial
-
     static let tutorialFilterFavoriteDesc = "tutorial_filter_favorite_desc"
     static let tutorialSwipeFilterTitle = "tutorial_swipe_filter_title"
     static let tutorialSwipeFilterDesc = "tutorial_swipe_filter_desc"
@@ -983,7 +937,6 @@ extension String {
     static let tutorialAreaRight = "tutorial_area_right"
 
     // MARK: - Camera Control Drawer Tutorial
-
     static let tutorialParameterDrawerTitle = "tutorial_parameter_drawer_title"
     static let tutorialParameterDrawerDesc = "tutorial_parameter_drawer_desc"
     static let tutorialQuickTaskTitle = "tutorial_quick_task_title"
@@ -992,12 +945,10 @@ extension String {
     static let tutorialAreaControlRight = "tutorial_area_control_right"
 
     // MARK: - Camera Drawer Tabs
-
     static let cameraDrawerParameters = "camera_drawer_parameters"
     static let cameraDrawerQuickTasks = "camera_drawer_quick_tasks"
 
     // MARK: - Quick Task Panel
-
     static let quickTaskTitle = "quick_task_title"
     static let quickTaskEmpty = "quick_task_empty"
     static let quickTaskAddFromAutomation = "quick_task_add_from_automation"
@@ -1006,7 +957,6 @@ extension String {
     static let quickTaskAdded = "quick_task_added"
 
     // MARK: - Film Effects
-
     static let filmReset = "film_reset"
     static let filmDefault = "film_default"
     static let filmEffectVignette = "film_effect_vignette"
@@ -1022,7 +972,6 @@ extension String {
     static let frameTitle = "frame_title"
 
     // MARK: - Paywall
-
     static let paywallTitle = "paywall_title"
     static let paywallSubtitle = "paywall_subtitle"
     static let paywallFeatureUnlockAiInspiration = "paywall_feature_unlock_ai_inspiration"
@@ -1044,7 +993,6 @@ extension String {
     static let commonOk = "common_ok"
 
     // MARK: - Boarding
-
     static let onboardingAgreePrefix = "onboarding_agree_prefix"
     static let onboardingAgreeAnd = "onboarding_agree_and"
 
