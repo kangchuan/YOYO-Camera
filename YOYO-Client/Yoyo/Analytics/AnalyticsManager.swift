@@ -118,8 +118,15 @@ final class AnalyticsManager {
     }
 
     private init() {
-        // Initialize Firebase Analytics status
-        Analytics.setAnalyticsCollectionEnabled(isAnalyticsEnabled)
+        // 只有用户显式设置过 analyticsEnabled 时才覆盖 SDK 的默认值。
+        //
+        // 不要无条件调用 —— 那会把 GoogleService-Info.plist 里的 IS_ANALYTICS_ENABLED
+        // 强行改成启用（本项目正是因此「关不掉埋点」）。
+        // 现在该 plist 为 false，所以默认不采集；将来换成自己的 Firebase 项目后，
+        // 新 plist 天然是 true，无需改这里就能自动恢复采集。
+        if UserDefaults.standard.object(forKey: analyticsEnabledKey) != nil {
+            Analytics.setAnalyticsCollectionEnabled(isAnalyticsEnabled)
+        }
     }
 
     /// Log event
