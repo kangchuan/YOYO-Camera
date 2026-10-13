@@ -246,121 +246,7 @@ final class FilterManager: ObservableObject {
     private var baseFilterSnapshot = BaseFilterSnapshot(processingConfig: nil, intensity: 1.0, customLut: nil)
     private var photoEffectsSnapshot = FilterManager.makeInitialPhotoEffectsSnapshot()
 
-    private let ciContext: CIContext
     private let configManager = FilterConfigManager.shared
-
-    // MARK: - FilmSimulation Adaptive (Scene-Aware)
-
-    private struct FilmSimulationSceneStats {
-        let avgLuma: Float // 0..1
-        let avgSaturation: Float // 0..1 (HSV-ish)
-        let minLuma: Float // 0..1
-        let maxLuma: Float // 0..1
-
-        var dynamicRange: Float {
-            max(0, min(1, maxLuma - minLuma))
-        }
-    }
-
-    func clamp(_ value: Float, _ minValue: Float, _ maxValue: Float) -> Float {
-        min(max(value, minValue), maxValue)
-    }
-
-    private func sampleRGBA8(_ image: CIImage) -> (r: Float, g: Float, b: Float, a: Float)? {
-        var pixel: [UInt8] = [0, 0, 0, 0]
-        let colorSpace = CGColorSpace(name: CGColorSpace.sRGB)
-        ciContext.render(
-            image,
-            toBitmap: &pixel,
-            rowBytes: 4,
-            bounds: CGRect(x: 0, y: 0, width: 1, height: 1),
-            format: .RGBA8,
-            colorSpace: colorSpace
-        )
-        return (
-            r: Float(pixel[0]) / 255.0,
-            g: Float(pixel[1]) / 255.0,
-            b: Float(pixel[2]) / 255.0,
-            a: Float(pixel[3]) / 255.0
-        )
-    }
-
-    private func luma709(r: Float, g: Float, b: Float) -> Float {
-        0.2126 * r + 0.7152 * g + 0.0722 * b
-    }
-
-    private func saturationApprox(r: Float, g: Float, b: Float) -> Float {
-        let maxV = max(r, max(g, b))
-        let minV = min(r, min(g, b))
-        if maxV <= 0.0001 { return 0 }
-        return (maxV - minV) / maxV
-    }
-
-    private func filmSimulationSceneStats(for ciImage: CIImage) -> FilmSimulationSceneStats? {
-        let extent = ciImage.extent
-        guard extent.width.isFinite, extent.height.isFinite, extent.width > 1, extent.height > 1 else {
-            return nil
-        }
-
-        // Downscale for analysis to keep this lightweight in live preview.
-        // (Area filters run over the full extent; analyzing a smaller image is much cheaper.)
-        let target: CGFloat = 96
-        let scale = min(target / extent.width, target / extent.height)
-        let analysisImage: CIImage
-        if scale < 1.0 {
-            analysisImage = ciImage.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
-        } else {
-            analysisImage = ciImage
-        }
-        let analysisExtent = analysisImage.extent
-
-        // Average
-        if let avgFilter = CIFilter(name: "CIAreaAverage") {
-            avgFilter.setValue(analysisImage, forKey: kCIInputImageKey)
-            avgFilter.setValue(CIVector(cgRect: analysisExtent), forKey: kCIInputExtentKey)
-            guard let avgOut = avgFilter.outputImage,
-                  let avg = sampleRGBA8(avgOut)
-            else {
-                return nil
-            }
-
-            // Min/Max for a quick dynamic-range proxy
-            var minL: Float = luma709(r: avg.r, g: avg.g, b: avg.b)
-            var maxL: Float = minL
-
-            if let minFilter = CIFilter(name: "CIAreaMinimum") {
-                minFilter.setValue(analysisImage, forKey: kCIInputImageKey)
-                minFilter.setValue(CIVector(cgRect: analysisExtent), forKey: kCIInputExtentKey)
-                if let minOut = minFilter.outputImage,
-                   let mn = sampleRGBA8(minOut)
-                {
-                    minL = luma709(r: mn.r, g: mn.g, b: mn.b)
-                }
-            }
-
-            if let maxFilter = CIFilter(name: "CIAreaMaximum") {
-                maxFilter.setValue(analysisImage, forKey: kCIInputImageKey)
-                maxFilter.setValue(CIVector(cgRect: analysisExtent), forKey: kCIInputExtentKey)
-                if let maxOut = maxFilter.outputImage,
-                   let mx = sampleRGBA8(maxOut)
-                {
-                    maxL = luma709(r: mx.r, g: mx.g, b: mx.b)
-                }
-            }
-
-            let avgL = luma709(r: avg.r, g: avg.g, b: avg.b)
-            let avgSat = saturationApprox(r: avg.r, g: avg.g, b: avg.b)
-
-            return FilmSimulationSceneStats(
-                avgLuma: clamp(avgL, 0, 1),
-                avgSaturation: clamp(avgSat, 0, 1),
-                minLuma: clamp(minL, 0, 1),
-                maxLuma: clamp(maxL, 0, 1)
-            )
-        }
-
-        return nil
-    }
 
     // MARK: - initialization
 
@@ -392,10 +278,6 @@ final class FilterManager: ObservableObject {
     }
 
     private init() {
-        ciContext = CIContext(options: [
-            .cacheIntermediates: true, // Preserve intermediate textures to reduce volatile backing warnings
-            .useSoftwareRenderer: false,
-        ])
         // Initialize selectedFilter
         if let parsed = Self.parseFilterIdentifier(from: selectedFilterRawValue) {
             selectedFilter = parsed
@@ -729,125 +611,18 @@ final class FilterManager: ObservableObject {
 
     // MARK: - LUT Cache
 
-    private let cacheQueue = DispatchQueue(label: "com.day1-labs.yoyo.filter.cache", attributes: .concurrent)
-    private var lutDataCache: [String: Data] = [:]
-    private var lutSizeCache: [String: Int] = [:]
-    private var cubeDataCache: [String: Data] = [:] // Use lutName directly for key
+    /// LUT 资源加载与缓存器。实现见 `Filter/LutLoader.swift`（重构 P3 从本文件剥离）。
+    /// 三级缓存现在挂在 `LutLoader` 实例上，生命周期与本管理器一致。
+    private let lutLoader = LutLoader()
 
     /// Universal method for loading LUT data and dimensions
     func loadLutData(lutName: String) -> (Data?, Int) {
-        // 1. Fast read attempt (read lock)
-        var cachedData: Data?
-        var cachedSize: Int?
-
-        cacheQueue.sync {
-            cachedData = lutDataCache[lutName]
-            cachedSize = lutSizeCache[lutName]
-        }
-
-        if let data = cachedData, let size = cachedSize {
-            return (data, size)
-        }
-
-        // 2. Load data (may be time-consuming, no locking)
-        var loadedData: Data?
-        var loadedSize = 33
-
-        // Try the .cube file in the .dataset directory
-        if let asset = NSDataAsset(name: lutName, bundle: Bundle.main) {
-            loadedData = asset.data
-            if let cubeString = String(data: asset.data, encoding: .utf8) {
-                if let sizeLine = cubeString.components(separatedBy: .newlines).first(where: { $0.contains("LUT_3D_SIZE") }) {
-                    let comps = sizeLine.components(separatedBy: .whitespaces).compactMap { Int($0) }
-                    loadedSize = comps.last ?? 33
-                }
-            }
-        } else if let url = Bundle.main.url(forResource: lutName, withExtension: "cube"),
-                  let data = try? Data(contentsOf: url)
-        {
-            loadedData = data
-            if let cubeString = String(data: data, encoding: .utf8) {
-                if let sizeLine = cubeString.components(separatedBy: .newlines).first(where: { $0.contains("LUT_3D_SIZE") }) {
-                    let comps = sizeLine.components(separatedBy: .whitespaces).compactMap { Int($0) }
-                    loadedSize = comps.last ?? 33
-                }
-            }
-        }
-
-        guard let data = loadedData else {
-            print("LUT asset not found for name: \(lutName)")
-            return (nil, 0)
-        }
-
-        // 3. Write cache (write lock)
-        cacheQueue.async(flags: .barrier) {
-            self.lutDataCache[lutName] = data
-            self.lutSizeCache[lutName] = loadedSize
-        }
-
-        return (data, loadedSize)
+        lutLoader.loadLutData(lutName: lutName)
     }
 
-    /// .cube file Data converted to CIColorCube data
+    /// `.cube` Data 转换为 `CIColorCube` 数据
     private func lutDataForCIColorCube(from cubeData: Data, size: Int, lutName: String? = nil) -> Data? {
-        // Check cache first
-        if let name = lutName {
-            var cached: Data?
-            cacheQueue.sync {
-                cached = cubeDataCache[name]
-            }
-            if let cached {
-                return cached
-            }
-        }
-
-        // Parse .cube file to CIColorCube data (float RGBA)
-        guard let cubeString = String(data: cubeData, encoding: .utf8) else {
-            return nil
-        }
-        let lines = cubeString.components(separatedBy: .newlines)
-        var cubeValues: [Float] = []
-        for line in lines {
-            let trimmed = line.trimmingCharacters(in: .whitespaces)
-            if trimmed.isEmpty || trimmed
-                .hasPrefix("#") || trimmed
-                .hasPrefix("TITLE") || trimmed
-                .hasPrefix("LUT_3D_SIZE") || trimmed
-                .hasPrefix("DOMAIN_MIN") || trimmed
-                .hasPrefix("DOMAIN_MAX")
-            {
-                continue
-            }
-            let parts = trimmed.split(separator: " ").compactMap { Float($0) }
-            if parts.count == 3 {
-                cubeValues.append(contentsOf: parts)
-            }
-        }
-        let expectedCount = size * size * size * 3
-        guard cubeValues.count == expectedCount else {
-            print(
-                "LUT data count mismatch: got \(cubeValues.count), expected \(expectedCount)"
-            )
-            return nil
-        }
-        // CIColorCube expects RGBA, so add alpha=1.0
-        var rgba: [Float] = []
-        for i in stride(from: 0, to: cubeValues.count, by: 3) {
-            rgba.append(cubeValues[i])
-            rgba.append(cubeValues[i + 1])
-            rgba.append(cubeValues[i + 2])
-            rgba.append(1.0)
-        }
-        let result = Data(
-            buffer: UnsafeBufferPointer(start: &rgba, count: rgba.count)
-        )
-        // write cache
-        if let name = lutName {
-            cacheQueue.async(flags: .barrier) {
-                self.cubeDataCache[name] = result
-            }
-        }
-        return result
+        lutLoader.lutDataForCIColorCube(from: cubeData, size: size, lutName: lutName)
     }
 
     func applyLutFilter(to ciImage: CIImage, lutName: String, intensity: Float = 1.0) -> CIImage {
