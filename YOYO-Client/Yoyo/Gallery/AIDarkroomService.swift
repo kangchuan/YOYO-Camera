@@ -23,7 +23,9 @@ struct AIDarkroomResponse: Codable {
 final class AIDarkroomService {
     static let shared = AIDarkroomService()
 
-    private let baseURL = "https://yoyo.day1-labs.com"
+    /// 服务地址统一从 `ServiceEndpoints` 取
+    private var baseURL: String { ServiceEndpoints.shared.apiBaseURL }
+
     private let maxImageDimension: CGFloat = 1024 // Supported by Gemini Flash 2.5
 
     private init() {}
@@ -33,7 +35,7 @@ final class AIDarkroomService {
         operation: AIDarkroomOperation,
         options: [String: Any] = [:]
     ) async throws -> (UIImage, Int) {
-        guard let token = await AuthService.shared.authToken else {
+        guard let token = await AuthService.shared.effectiveAuthToken else {
             throw AIInspirationServiceError.notLoggedIn
         }
 

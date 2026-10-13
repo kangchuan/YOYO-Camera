@@ -160,6 +160,24 @@ struct SettingsView: View {
                                         )
                                     )
                                 }
+
+                                SettingsDivider()
+
+                                SettingsNavigationRow(
+                                    icon: "server.rack",
+                                    iconColor: settingsIconColor,
+                                    title: "服务地址",
+                                    subtitle: ServiceEndpoints.shared.isCustomized ? "已自定义" : nil
+                                ) { ServiceEndpointSettingsView() }
+
+                                SettingsDivider()
+
+                                SettingsNavigationRow(
+                                    icon: "camera.filters",
+                                    iconColor: settingsIconColor,
+                                    title: "滤镜完整性自检",
+                                    subtitle: "内置滤镜资源检查"
+                                ) { FilterDiagnosticsSettingsView() }
                             }
                         }
 

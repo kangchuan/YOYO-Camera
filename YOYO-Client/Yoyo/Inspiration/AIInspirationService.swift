@@ -37,7 +37,8 @@ enum AIInspirationServiceError: Error, LocalizedError {
 final class AIInspirationService {
     static let shared = AIInspirationService()
 
-    private let baseURL = "https://yoyo.day1-labs.com"
+    /// 服务地址统一从 `ServiceEndpoints` 取
+    private var baseURL: String { ServiceEndpoints.shared.apiBaseURL }
 
     private init() {}
 
@@ -45,7 +46,7 @@ final class AIInspirationService {
     private let maxImageDimension: CGFloat = 512
 
     func fetchInspirations(from image: UIImage) async throws -> ([AIInspiration], Int) {
-        guard let token = await AuthService.shared.authToken else {
+        guard let token = await AuthService.shared.effectiveAuthToken else {
             throw AIInspirationServiceError.notLoggedIn
         }
 
@@ -120,7 +121,7 @@ final class AIInspirationService {
     }
 
     func generateImage(for inspiration: AIInspiration, originalImage: UIImage) async throws -> (UIImage, Int) {
-        guard let token = await AuthService.shared.authToken else {
+        guard let token = await AuthService.shared.effectiveAuthToken else {
             throw AIInspirationServiceError.notLoggedIn
         }
 

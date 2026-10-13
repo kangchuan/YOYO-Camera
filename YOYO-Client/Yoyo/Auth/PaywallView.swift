@@ -161,9 +161,9 @@ struct PaywallView: View {
                         restorePurchases()
                     }
 
-                    Link(String.paywallTermsOfUse.localized, destination: URL(string: "https://static.day1-labs.com/yoyo/user-agreement?lang=\(LanguageManager.shared.currentLanguage.webLanguageCode)")!)
+                    Link(String.paywallTermsOfUse.localized, destination: ServiceEndpoints.shared.staticURL("user-agreement", query: ["lang": LanguageManager.shared.currentLanguage.webLanguageCode]))
 
-                    Link(String.paywallPrivacyPolicy.localized, destination: URL(string: "https://static.day1-labs.com/yoyo/privacy-policy?lang=\(LanguageManager.shared.currentLanguage.webLanguageCode)")!)
+                    Link(String.paywallPrivacyPolicy.localized, destination: ServiceEndpoints.shared.staticURL("privacy-policy", query: ["lang": LanguageManager.shared.currentLanguage.webLanguageCode]))
                 }
                 .font(.system(size: 11, weight: .medium))
                 .foregroundStyle(.white.opacity(0.4))

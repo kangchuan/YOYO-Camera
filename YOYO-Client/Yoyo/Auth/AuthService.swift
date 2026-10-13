@@ -33,7 +33,9 @@ final class AuthService: ObservableObject {
     @Published private(set) var authToken: String?
     @Published private(set) var isLoading = false
 
-    private let baseURL = "https://yoyo.day1-labs.com"
+    /// 服务地址统一从 `ServiceEndpoints` 取，可在「设置 → 开发者模式 → 服务地址」中修改
+    private var baseURL: String { ServiceEndpoints.shared.apiBaseURL }
+
     private let userCacheKey = "cachedUser"
     private let tokenCacheKey = "cachedToken"
     private let pendingUserInfoKeyPrefix = "pendingUserInfo_"
@@ -345,6 +347,19 @@ final class AuthService: ObservableObject {
 
     var isLoggedIn: Bool {
         currentUser != nil
+    }
+
+    // MARK: - 二次开发调试
+
+    /// 与 `ServiceEndpointSettingsView` 共用同一个键
+    private static let bypassAuthKey = "debug.bypassAuth"
+
+    /// 服务层统一使用的 Token。
+    /// 正常情况下就是登录态 Token；开启「跳过登录校验」后，未登录时回落到占位值，
+    /// 便于在免费账号（无 Sign in with Apple）环境下联调自建后端。
+    var effectiveAuthToken: String? {
+        if let authToken { return authToken }
+        return UserDefaults.standard.bool(forKey: Self.bypassAuthKey) ? "debug-bypass-token" : nil
     }
 
     // MARK: - Private Methods

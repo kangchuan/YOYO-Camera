@@ -18,6 +18,9 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         // Log the app launch event
         AnalyticsManager.shared.log(.appLaunch(options: launchOptions?.keys.description ?? "none"))
 
+        // DEBUG 构建下打印一次内置滤镜注册完整性自检（Release 下为空实现）
+        FilterRegistryDiagnostics.logOnLaunch()
+
         return true
     }
 

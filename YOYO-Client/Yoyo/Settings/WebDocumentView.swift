@@ -3,13 +3,15 @@ import SwiftUI
 struct WebDocumentView: View {
     let path: String
     let title: String
-    private let baseUrl = "https://static.day1-labs.com/yoyo/"
 
     @ObservedObject private var languageManager = LanguageManager.shared
     @State private var isLoading = true
 
     var body: some View {
-        let urlString = "\(baseUrl)\(path)?lang=\(languageManager.currentLanguage.webLanguageCode)"
+        let urlString = ServiceEndpoints.shared.staticURLString(
+            path,
+            query: ["lang": languageManager.currentLanguage.webLanguageCode]
+        )
 
         ZStack {
             WebView(urlString: urlString, isLoading: $isLoading)

@@ -71,7 +71,8 @@ enum ShareError: Error, LocalizedError {
 final class AutomationShareService {
     static let shared = AutomationShareService()
 
-    private let baseURL = "https://yoyo.day1-labs.com"
+    /// 服务地址统一从 `ServiceEndpoints` 取
+    private var baseURL: String { ServiceEndpoints.shared.apiBaseURL }
 
     private init() {}
 
@@ -79,7 +80,7 @@ final class AutomationShareService {
 
     /// Share an automation rule and return a 6-digit share code
     func shareRule(_ rule: AutomationRule) async throws -> String {
-        guard let token = AuthService.shared.authToken else {
+        guard let token = AuthService.shared.effectiveAuthToken else {
             throw ShareError.notLoggedIn
         }
 
