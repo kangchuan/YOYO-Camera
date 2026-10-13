@@ -1006,7 +1006,7 @@ final class FilterManager: ObservableObject {
             return filter?.outputImage ?? ciImage
 
         default:
-            print("Unknown filter: \(step.filterName)")
+            debugLog("Unknown filter: \(step.filterName)")
             return ciImage
         }
     }
@@ -1226,7 +1226,7 @@ final class FilterManager: ObservableObject {
     func selectCustomFilter(_ customFilter: CustomFilter) {
         selectedCustomFilter = customFilter
         selectedFilter = .custom(customFilter.name)
-        print("已选择自定义滤镜: \(customFilter.name)")
+        debugLog("已选择自定义滤镜: \(customFilter.name)")
     }
 
     // MARK: - Filter switching prompt copy
@@ -1268,7 +1268,7 @@ final class FilterManager: ObservableObject {
 
         // 2. Get the decoded image
         guard let developedImage = rawFilter.outputImage else {
-            print("Error: CIRAWFilter outputImage is nil")
+            debugLog("Error: CIRAWFilter outputImage is nil")
             return nil
         }
 

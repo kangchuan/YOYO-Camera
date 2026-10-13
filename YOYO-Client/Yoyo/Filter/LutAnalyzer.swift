@@ -152,7 +152,7 @@ enum LutAnalyzer {
 
         let expectedCount = size * size * size * 3
         guard cubeValues.count == expectedCount else {
-            print("Analyzer: LUT data count mismatch")
+            debugLog("Analyzer: LUT data count mismatch")
             return nil
         }
 

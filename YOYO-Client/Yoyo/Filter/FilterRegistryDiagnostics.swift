@@ -207,10 +207,10 @@ enum FilterRegistryDiagnostics {
         #if DEBUG
             let report = run()
             if report.isHealthy {
-                print("[FilterDiagnostics] ✅ \(report.filterCount) 个内置滤镜，全部检查通过")
+                debugLog("[FilterDiagnostics] ✅ \(report.filterCount) 个内置滤镜，全部检查通过")
             } else {
-                print("[FilterDiagnostics] ⚠️ \(report.errorCount) 个错误 / \(report.warningCount) 个警告")
-                print(report.plainText)
+                debugLog("[FilterDiagnostics] ⚠️ \(report.errorCount) 个错误 / \(report.warningCount) 个警告")
+                debugLog(report.plainText)
             }
         #endif
     }

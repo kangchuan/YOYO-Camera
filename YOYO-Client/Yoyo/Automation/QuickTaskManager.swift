@@ -53,23 +53,23 @@ final class QuickTaskManager: ObservableObject {
         do {
             let data = try JSONEncoder().encode(quickTaskRuleIds)
             UserDefaults.standard.set(data, forKey: userDefaultsKey)
-            print("✅ 快捷任务已保存: \(quickTaskRuleIds.count) 个")
+            debugLog("✅ 快捷任务已保存: \(quickTaskRuleIds.count) 个")
         } catch {
-            print("❌ 保存快捷任务失败: \(error)")
+            debugLog("❌ 保存快捷任务失败: \(error)")
         }
     }
 
     private func loadQuickTasks() {
         guard let data = UserDefaults.standard.data(forKey: userDefaultsKey) else {
-            print("ℹ️ 未找到已保存的快捷任务")
+            debugLog("ℹ️ 未找到已保存的快捷任务")
             return
         }
 
         do {
             quickTaskRuleIds = try JSONDecoder().decode([String].self, from: data)
-            print("✅ 已加载快捷任务: \(quickTaskRuleIds.count) 个")
+            debugLog("✅ 已加载快捷任务: \(quickTaskRuleIds.count) 个")
         } catch {
-            print("❌ 加载快捷任务失败: \(error)")
+            debugLog("❌ 加载快捷任务失败: \(error)")
             quickTaskRuleIds = []
         }
     }

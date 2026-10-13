@@ -46,19 +46,19 @@ final class CameraControlManager: NSObject, AVCaptureSessionControlsDelegate {
     // MARK: - AVCaptureSessionControlsDelegate
 
     func sessionControlsDidBecomeActive(_: AVCaptureSession) {
-        print("📸 [CameraControlManager] 硬件控制已激活")
+        debugLog("📸 [CameraControlManager] 硬件控制已激活")
     }
 
     func sessionControlsWillEnterFullscreenAppearance(_: AVCaptureSession) {
-        print("📸 [CameraControlManager] 硬件控制将进入全屏模式")
+        debugLog("📸 [CameraControlManager] 硬件控制将进入全屏模式")
     }
 
     func sessionControlsWillExitFullscreenAppearance(_: AVCaptureSession) {
-        print("📸 [CameraControlManager] 硬件控制将退出全屏模式")
+        debugLog("📸 [CameraControlManager] 硬件控制将退出全屏模式")
     }
 
     func sessionControlsDidBecomeInactive(_: AVCaptureSession) {
-        print("📸 [CameraControlManager] 硬件控制已停用")
+        debugLog("📸 [CameraControlManager] 硬件控制已停用")
     }
 
     // MARK: - Public Methods
@@ -71,17 +71,17 @@ final class CameraControlManager: NSObject, AVCaptureSessionControlsDelegate {
     func setupControls(for session: AVCaptureSession, sessionQueue: DispatchQueue, forceUpdate: Bool = false) {
         // ensuresystemsupportfeatures
         guard session.supportsControls else {
-            print("⚠️ [CameraControlManager] 设备不支持 Camera Control")
+            debugLog("⚠️ [CameraControlManager] 设备不支持 Camera Control")
             return
         }
 
         // if session not update, configure
         if !forceUpdate, currentSession === session, !session.controls.isEmpty {
-            print("⏭️ [CameraControlManager] Session 已配置，跳过")
+            debugLog("⏭️ [CameraControlManager] Session 已配置，跳过")
             return
         }
 
-        print("📸 [CameraControlManager] 配置硬件控制按钮 (iPhone 16 Camera Control)")
+        debugLog("📸 [CameraControlManager] 配置硬件控制按钮 (iPhone 16 Camera Control)")
 
         // clean upreference
         cleanupSubscriptions()
@@ -113,7 +113,7 @@ final class CameraControlManager: NSObject, AVCaptureSessionControlsDelegate {
         let interaction = AVCaptureEventInteraction { (event: AVCaptureEvent) in
             // onlybuttontriggercapture
             if event.phase == .began {
-                print("📸 [CameraControlManager] 硬件快门触发")
+                debugLog("📸 [CameraControlManager] 硬件快门触发")
                 Task { @MainActor in
                     CameraCaptureService.shared.triggerShutterAction()
                 }
@@ -166,7 +166,7 @@ final class CameraControlManager: NSObject, AVCaptureSessionControlsDelegate {
 
         // validatezoomrange
         guard zoomRange.min < zoomRange.max else {
-            print("⚠️ [CameraControlManager] 缩放范围无效 (\(zoomRange.min)...\(zoomRange.max))，跳过配置")
+            debugLog("⚠️ [CameraControlManager] 缩放范围无效 (\(zoomRange.min)...\(zoomRange.max))，跳过配置")
             return
         }
 
@@ -193,7 +193,7 @@ final class CameraControlManager: NSObject, AVCaptureSessionControlsDelegate {
 
         // add session
         guard session.canAddControl(slider) else {
-            print("⚠️ [CameraControlManager] 无法添加缩放控制")
+            debugLog("⚠️ [CameraControlManager] 无法添加缩放控制")
             return
         }
 
@@ -222,7 +222,7 @@ final class CameraControlManager: NSObject, AVCaptureSessionControlsDelegate {
 
         // validateexposurerange
         guard range.min < range.max else {
-            print("⚠️ [CameraControlManager] 曝光补偿范围无效 (\(range.min)...\(range.max))，跳过配置")
+            debugLog("⚠️ [CameraControlManager] 曝光补偿范围无效 (\(range.min)...\(range.max))，跳过配置")
             return
         }
 
@@ -242,7 +242,7 @@ final class CameraControlManager: NSObject, AVCaptureSessionControlsDelegate {
 
         // setoperationcallback
         slider.setActionQueue(controlQueue) { value in
-            print("☀️ [CameraControlManager] 硬件曝光调节: \(value)EV")
+            debugLog("☀️ [CameraControlManager] 硬件曝光调节: \(value)EV")
             Task { @MainActor in
                 ExposureManager.shared.adjustExposureCompensation(value)
             }
@@ -250,7 +250,7 @@ final class CameraControlManager: NSObject, AVCaptureSessionControlsDelegate {
 
         // add session
         guard session.canAddControl(slider) else {
-            print("⚠️ [CameraControlManager] 无法添加曝光控制")
+            debugLog("⚠️ [CameraControlManager] 无法添加曝光控制")
             return
         }
 

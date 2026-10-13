@@ -84,7 +84,7 @@ enum SceneClassifier {
 
         let finalConfidence = min(bestScore, 1.0)
 
-        print("🎯 [DEBUG] Scene: \(bestScene.rawValue) (Conf: \(String(format: "%.2f", finalConfidence))) - Top Obj: \(validObjects.first?.label ?? "none")")
+        debugLog("🎯 [DEBUG] Scene: \(bestScene.rawValue) (Conf: \(String(format: "%.2f", finalConfidence))) - Top Obj: \(validObjects.first?.label ?? "none")")
 
         return (bestScene, finalConfidence, "weighted_score")
     }

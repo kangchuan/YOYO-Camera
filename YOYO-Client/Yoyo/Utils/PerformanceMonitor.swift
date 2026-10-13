@@ -14,7 +14,7 @@ final class PerformanceMonitor {
         queue.async(flags: .barrier) {
             self.timers[name] = CFAbsoluteTimeGetCurrent()
         }
-        print("⏱️ [Performance] Started timer: \(name)")
+        debugLog("⏱️ [Performance] Started timer: \(name)")
     }
 
     /// endand
@@ -24,14 +24,14 @@ final class PerformanceMonitor {
 
         return queue.sync {
             guard let startTime = timers[name] else {
-                print("⚠️ [Performance] Timer '\(name)' not found")
+                debugLog("⚠️ [Performance] Timer '\(name)' not found")
                 return 0
             }
 
             let elapsed = endTime - startTime
             timers.removeValue(forKey: name)
 
-            print("⏱️ [Performance] \(name): \(String(format: "%.3f", elapsed))s")
+            debugLog("⏱️ [Performance] \(name): \(String(format: "%.3f", elapsed))s")
             return elapsed
         }
     }

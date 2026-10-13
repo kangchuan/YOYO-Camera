@@ -15,11 +15,11 @@ final class CameraInputConfigurator {
     @discardableResult
     func configureCameraInput(for session: AVCaptureSession, device: AVCaptureDevice?) -> Bool {
         guard let device else {
-            print("❌ [CameraInputConfigurator] 没有可用的相机设备")
+            debugLog("❌ [CameraInputConfigurator] 没有可用的相机设备")
             return false
         }
 
-        print("🎥 [CameraInputConfigurator] 开始配置相机输入: \(device.deviceType.rawValue)")
+        debugLog("🎥 [CameraInputConfigurator] 开始配置相机输入: \(device.deviceType.rawValue)")
 
         do {
             let input = try AVCaptureDeviceInput(device: device)
@@ -29,14 +29,14 @@ final class CameraInputConfigurator {
 
             if session.canAddInput(input) {
                 session.addInput(input)
-                print("✅ [CameraInputConfigurator] 相机输入配置成功")
+                debugLog("✅ [CameraInputConfigurator] 相机输入配置成功")
                 return true
             } else {
-                print("❌ [CameraInputConfigurator] 无法添加相机输入")
+                debugLog("❌ [CameraInputConfigurator] 无法添加相机输入")
                 return false
             }
         } catch {
-            print("❌ [CameraInputConfigurator] 创建相机输入失败: \(error)")
+            debugLog("❌ [CameraInputConfigurator] 创建相机输入失败: \(error)")
             return false
         }
     }
@@ -48,36 +48,36 @@ final class CameraInputConfigurator {
     func configureAudioInput(for session: AVCaptureSession) -> Bool {
         // check
         guard checkAudioPermission() else {
-            print("❌ [CameraInputConfigurator] 没有麦克风权限")
+            debugLog("❌ [CameraInputConfigurator] 没有麦克风权限")
             return false
         }
 
         // checkwhetheraudioinput
         guard !hasAudioInput(in: session) else {
-            print("📋 [CameraInputConfigurator] 音频输入已存在，跳过配置")
+            debugLog("📋 [CameraInputConfigurator] 音频输入已存在，跳过配置")
             return true
         }
 
         guard let audioDevice = AVCaptureDevice.default(for: .audio) else {
-            print("⚠️ [CameraInputConfigurator] 无法获取音频设备")
+            debugLog("⚠️ [CameraInputConfigurator] 无法获取音频设备")
             return false
         }
 
-        print("🎤 [CameraInputConfigurator] 开始配置音频输入")
+        debugLog("🎤 [CameraInputConfigurator] 开始配置音频输入")
 
         do {
             let audioInput = try AVCaptureDeviceInput(device: audioDevice)
 
             if session.canAddInput(audioInput) {
                 session.addInput(audioInput)
-                print("✅ [CameraInputConfigurator] 音频输入配置成功")
+                debugLog("✅ [CameraInputConfigurator] 音频输入配置成功")
                 return true
             } else {
-                print("⚠️ [CameraInputConfigurator] 无法添加音频输入")
+                debugLog("⚠️ [CameraInputConfigurator] 无法添加音频输入")
                 return false
             }
         } catch {
-            print("❌ [CameraInputConfigurator] 创建音频输入失败: \(error.localizedDescription)")
+            debugLog("❌ [CameraInputConfigurator] 创建音频输入失败: \(error.localizedDescription)")
             return false
         }
     }
@@ -110,7 +110,7 @@ final class CameraInputConfigurator {
             guard let deviceInput = input as? AVCaptureDeviceInput,
                   deviceInput.device.hasMediaType(mediaType) else { continue }
 
-            print("🗑️ [CameraInputConfigurator] 移除现有输入: \(mediaType.rawValue)")
+            debugLog("🗑️ [CameraInputConfigurator] 移除现有输入: \(mediaType.rawValue)")
             session.removeInput(input)
         }
     }

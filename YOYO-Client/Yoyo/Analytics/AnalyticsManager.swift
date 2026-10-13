@@ -112,7 +112,7 @@ final class AnalyticsManager {
             UserDefaults.standard.set(newValue, forKey: analyticsEnabledKey)
             Analytics.setAnalyticsCollectionEnabled(newValue)
             #if DEBUG
-                print("[Analytics] Analytics collection \(newValue ? "enabled" : "disabled")")
+                debugLog("[Analytics] Analytics collection \(newValue ? "enabled" : "disabled")")
             #endif
         }
     }
@@ -126,13 +126,13 @@ final class AnalyticsManager {
     func log(_ event: AnalyticsEvent) {
         guard isAnalyticsEnabled else {
             #if DEBUG
-                print("[Analytics] Skipping event (analytics disabled): \(event.name)")
+                debugLog("[Analytics] Skipping event (analytics disabled): \(event.name)")
             #endif
             return
         }
 
         #if DEBUG
-            print("[Analytics] Logging event: \(event.name), parameters: \(event.parameters ?? [:])")
+            debugLog("[Analytics] Logging event: \(event.name), parameters: \(event.parameters ?? [:])")
         #endif
         Analytics.logEvent(event.name, parameters: event.parameters)
     }

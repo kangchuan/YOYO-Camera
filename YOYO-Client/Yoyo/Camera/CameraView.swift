@@ -298,46 +298,46 @@ struct CameraView: View {
     // MARK: - Event Handlers
 
     private func handleViewAppear() {
-        print("📱 [CameraView] handleViewAppear - View appeared")
+        debugLog("📱 [CameraView] handleViewAppear - View appeared")
         guard !isUIPreview else {
-            print("📱 [CameraView] handleViewAppear - isUIPreview=true, skipping")
+            debugLog("📱 [CameraView] handleViewAppear - isUIPreview=true, skipping")
             return
         }
 
         // Apply the initial capture mode
         if let shortcutMode = ShortcutItemHandler.shared.consumeCaptureMode() {
-            print("📱 [CameraView] handleViewAppear - applying shortcutMode: \(shortcutMode.rawValue)")
+            debugLog("📱 [CameraView] handleViewAppear - applying shortcutMode: \(shortcutMode.rawValue)")
             cameraManagers.settingsState.setCaptureMode(shortcutMode)
         } else if let initialMode = initialCaptureMode {
-            print("📱 [CameraView] handleViewAppear - applying initialMode: \(initialMode.rawValue)")
+            debugLog("📱 [CameraView] handleViewAppear - applying initialMode: \(initialMode.rawValue)")
             cameraManagers.settingsState.setCaptureMode(initialMode)
         }
 
         // Initialize services
-        print("📱 [CameraView] handleViewAppear - Setting up CameraSaveService")
+        debugLog("📱 [CameraView] handleViewAppear - Setting up CameraSaveService")
         CameraSaveService.shared.setup(
             modelContext: modelContext
         )
 
         // Core permissions: camera and photo library (required)
-        print("📱 [CameraView] handleViewAppear - Checking permissions")
+        debugLog("📱 [CameraView] handleViewAppear - Checking permissions")
         permissionManager.checkCameraPermission()
         permissionManager.checkPhotoLibraryPermission()
 
         // Only start the camera when permission is granted to avoid crashes when access is denied
         if permissionManager.hasCameraPermission {
-            print("📱 [CameraView] handleViewAppear - Camera permission granted, starting camera")
+            debugLog("📱 [CameraView] handleViewAppear - Camera permission granted, starting camera")
             cameraManagers.startCamera()
 
             // Show the camera gesture tutorial on first launch
             if !tutorialManager.hasShownCameraGestureTutorial {
-                print("📱 [CameraView] handleViewAppear - Scheduling tutorial")
+                debugLog("📱 [CameraView] handleViewAppear - Scheduling tutorial")
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                     showCameraGestureTutorial = true
                 }
             }
         } else {
-            print("📱 [CameraView] handleViewAppear - No camera permission yet")
+            debugLog("📱 [CameraView] handleViewAppear - No camera permission yet")
         }
         setupVolumeButtonCapture()
     }

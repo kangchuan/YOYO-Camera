@@ -314,7 +314,7 @@ private struct ScaleButtonStyle: ButtonStyle {
 
 #Preview {
     OnboardingView {
-        print("Onboarding completed")
+        debugLog("Onboarding completed")
     }
     .environmentObject(PermissionManager.shared)
 }

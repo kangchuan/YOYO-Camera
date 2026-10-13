@@ -38,7 +38,7 @@ final class CameraViewState: ObservableObject {
 
     /// Broadcast an action
     func sendAction(_ action: UserAction) {
-        print("📡 [ViewState] Broadcasting action: \(action)")
+        debugLog("📡 [ViewState] Broadcasting action: \(action)")
         NotificationCenter.default.post(
             name: .cameraUserAction,
             object: nil,

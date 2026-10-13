@@ -47,7 +47,7 @@ final class VideoConnectionManager {
         // configurestabilization(onlyvideomode; usecurrent SDK available mode)
         if let mode = preferredStabilizationMode(for: connection) {
             connection.preferredVideoStabilizationMode = mode
-            print("🟢 [VideoConnectionManager] preferred=\(connection.preferredVideoStabilizationMode.rawValue), active=\(connection.activeVideoStabilizationMode.rawValue)")
+            debugLog("🟢 [VideoConnectionManager] preferred=\(connection.preferredVideoStabilizationMode.rawValue), active=\(connection.activeVideoStabilizationMode.rawValue)")
         }
 
         notifyConfigurationReady()

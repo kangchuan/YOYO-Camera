@@ -30,7 +30,7 @@ final class AppleSignInCoordinator: NSObject, ASAuthorizationControllerDelegate,
     }
 
     func authorizationController(controller _: ASAuthorizationController, didCompleteWithError error: Error) {
-        print("❌ Sign in failed or cancelled: \(error.localizedDescription)")
+        debugLog("❌ Sign in failed or cancelled: \(error.localizedDescription)")
         onCancel?()
     }
 

@@ -245,6 +245,6 @@ struct LocationPickerView: View {
 
 #Preview {
     LocationPickerView { condition in
-        print("Selected condition: \(condition)")
+        debugLog("Selected condition: \(condition)")
     }
 }

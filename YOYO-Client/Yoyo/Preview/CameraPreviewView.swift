@@ -107,7 +107,7 @@ final class CameraPreviewView: UIView, SampleBufferProvider {
     }
 
     deinit {
-        print("🗑️ [CameraPreviewView] deinit called - Cleaning up resources")
+        debugLog("🗑️ [CameraPreviewView] deinit called - Cleaning up resources")
 
         // clean upAIrelated, not viewWillDisappear
         automationManager = nil
@@ -133,7 +133,7 @@ final class CameraPreviewView: UIView, SampleBufferProvider {
         // clean up
         cancellables.removeAll()
 
-        print("✅ [CameraPreviewView] deinit complete")
+        debugLog("✅ [CameraPreviewView] deinit complete")
     }
 
     // MARK: - device orientation observation
@@ -144,21 +144,21 @@ final class CameraPreviewView: UIView, SampleBufferProvider {
 
     /// start the camera session
     func startCameraSession() {
-        print("📷 [CameraPreviewView] startCameraSession 开始启动相机会话")
+        debugLog("📷 [CameraPreviewView] startCameraSession 开始启动相机会话")
         sessionManager?.startSession()
 
         // Ensure metal layer has a valid drawable size right after start
         DispatchQueue.main.async { [weak self] in
             guard let self, let metalLayer = self.filterPreviewLayer else {
-                print("⚠️ [CameraPreviewView] metalLayer 为空，无法设置 drawable size")
+                debugLog("⚠️ [CameraPreviewView] metalLayer 为空，无法设置 drawable size")
                 return
             }
             if metalLayer.drawableSize == .zero {
-                print("📐 [CameraPreviewView] metalLayer drawableSize 为零，重新设置")
+                debugLog("📐 [CameraPreviewView] metalLayer drawableSize 为零，重新设置")
                 self.setNeedsLayout()
                 self.layoutIfNeeded()
             } else {
-                print(
+                debugLog(
                     "✅ [CameraPreviewView] metalLayer drawableSize 正常: \(metalLayer.drawableSize)"
                 )
             }
@@ -197,7 +197,7 @@ final class CameraPreviewView: UIView, SampleBufferProvider {
     }
 
     @objc private func handleWillEnterForeground() {
-        print("📱 [CameraPreviewView] App will enter foreground - forcing layout update")
+        debugLog("📱 [CameraPreviewView] App will enter foreground - forcing layout update")
         DispatchQueue.main.async { [weak self] in
             self?.setNeedsLayout()
             self?.layoutIfNeeded()
@@ -211,20 +211,20 @@ final class CameraPreviewView: UIView, SampleBufferProvider {
     }
 
     private func setupFilterPreviewLayer() {
-        print("🔧 [CameraPreviewView] setupFilterPreviewLayer 开始")
+        debugLog("🔧 [CameraPreviewView] setupFilterPreviewLayer 开始")
         guard filterPreviewLayer == nil else {
-            print("⚠️ [CameraPreviewView] filterPreviewLayer 已存在，跳过创建")
+            debugLog("⚠️ [CameraPreviewView] filterPreviewLayer 已存在，跳过创建")
             return
         }
 
-        print("🎨 [CameraPreviewView] 创建 CAMetalLayer")
+        debugLog("🎨 [CameraPreviewView] 创建 CAMetalLayer")
         let metalLayer = CAMetalLayer()
         guard let device = MTLCreateSystemDefaultDevice() else {
-            print("❌ [CameraPreviewView] 无法创建 Metal 设备")
+            debugLog("❌ [CameraPreviewView] 无法创建 Metal 设备")
             return
         }
         metalLayer.device = device
-        print("✅ [CameraPreviewView] Metal 设备创建成功: \(device.name)")
+        debugLog("✅ [CameraPreviewView] Metal 设备创建成功: \(device.name)")
 
         metalLayer.pixelFormat = .bgra8Unorm
         metalLayer.framebufferOnly = false
@@ -237,11 +237,11 @@ final class CameraPreviewView: UIView, SampleBufferProvider {
         }
         metalLayer.presentsWithTransaction = false // sync
 
-        print("📐 [CameraPreviewView] Metal Layer frame: \(metalLayer.frame)")
+        debugLog("📐 [CameraPreviewView] Metal Layer frame: \(metalLayer.frame)")
         layer.addSublayer(metalLayer)
         filterPreviewLayer = metalLayer
         previewRenderController.attach(to: metalLayer)
-        print("✅ [CameraPreviewView] setupFilterPreviewLayer 完成")
+        debugLog("✅ [CameraPreviewView] setupFilterPreviewLayer 完成")
     }
 
     override func layoutSubviews() {
@@ -348,7 +348,7 @@ final class CameraPreviewView: UIView, SampleBufferProvider {
 
         previewRenderController.onRenderDurationMeasured = { duration in
             if duration > 1.0 / 30.0 {
-                print("⚠️ [PreviewRenderController] 渲染耗时: \(duration * 1000) ms")
+                debugLog("⚠️ [PreviewRenderController] 渲染耗时: \(duration * 1000) ms")
             }
         }
     }

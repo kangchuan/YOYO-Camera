@@ -157,7 +157,7 @@ final class PhotoLoader: ObservableObject {
         imageCache.removeObject(forKey: key as NSString)
         livePhotoCache.removeObject(forKey: key as NSString)
 
-        print("🗑️ PhotoLoader.removeCache: key: \(key)，删除图片缓存: \(hadImage)，删除LivePhoto缓存: \(hadLivePhoto)")
+        debugLog("🗑️ PhotoLoader.removeCache: key: \(key)，删除图片缓存: \(hadImage)，删除LivePhoto缓存: \(hadLivePhoto)")
     }
 
     func assetExists(_ assetIdentifier: String) -> Bool {
@@ -178,20 +178,20 @@ final class PhotoLoader: ObservableObject {
     }
 
     private func loadImageWithCache(assetIdentifier: String, key: String, targetSize: CGSize) async -> UIImage? {
-        print("🔍 PhotoLoader.loadImageWithCache开始: key: \(key)，targetSize: \(targetSize)，assetIdentifier: \(assetIdentifier)")
+        debugLog("🔍 PhotoLoader.loadImageWithCache开始: key: \(key)，targetSize: \(targetSize)，assetIdentifier: \(assetIdentifier)")
 
         if let cached = imageCache.object(forKey: key as NSString) {
-            print("✅ PhotoLoader.loadImageWithCache: 缓存命中，key: \(key)")
+            debugLog("✅ PhotoLoader.loadImageWithCache: 缓存命中，key: \(key)")
             return cached
         }
 
-        print("⚡ PhotoLoader.loadImageWithCache: 缓存未命中，开始加载...")
+        debugLog("⚡ PhotoLoader.loadImageWithCache: 缓存未命中，开始加载...")
         guard let asset = fetchAsset(for: assetIdentifier) else {
-            print("❌ PhotoLoader.loadImageWithCache: 资产不存在，key: \(key)，assetIdentifier: \(assetIdentifier)")
+            debugLog("❌ PhotoLoader.loadImageWithCache: 资产不存在，key: \(key)，assetIdentifier: \(assetIdentifier)")
             return nil
         }
 
-        print("✅ PhotoLoader.loadImageWithCache: 资产存在，开始PHImageManager请求，key: \(key)")
+        debugLog("✅ PhotoLoader.loadImageWithCache: 资产存在，开始PHImageManager请求，key: \(key)")
 
         let options = PHImageRequestOptions()
         options.deliveryMode = .highQualityFormat
@@ -219,9 +219,9 @@ final class PhotoLoader: ObservableObject {
 
         if let image {
             imageCache.setObject(image, forKey: key as NSString)
-            print("✅ PhotoLoader.loadImageWithCache: 图片加载成功并缓存，key: \(key)")
+            debugLog("✅ PhotoLoader.loadImageWithCache: 图片加载成功并缓存，key: \(key)")
         } else {
-            print("❌ PhotoLoader.loadImageWithCache: 图片加载失败，key: \(key)")
+            debugLog("❌ PhotoLoader.loadImageWithCache: 图片加载失败，key: \(key)")
         }
         return image
     }
@@ -234,7 +234,7 @@ final class PhotoLoader: ObservableObject {
         request: @escaping (RequestID, @escaping (T?) -> Void) -> Void
     ) async -> T? {
         let requestID = RequestID()
-        print("⏰ PhotoLoader.performRequest开始: tag: \(tag)，identifier: \(identifier)，timeout: \(timeout)s")
+        debugLog("⏰ PhotoLoader.performRequest开始: tag: \(tag)，identifier: \(identifier)，timeout: \(timeout)s")
 
         return await withTaskCancellationHandler {
             await withCheckedContinuation { continuation in
@@ -245,7 +245,7 @@ final class PhotoLoader: ObservableObject {
                     try? await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
                     if await state.tryResume(with: nil) {
                         requestID.cancel(with: imageManager)
-                        print("⏱️ PhotoLoader.performRequest超时: tag: \(tag)，identifier: \(identifier)，超时时间: \(timeout)s")
+                        debugLog("⏱️ PhotoLoader.performRequest超时: tag: \(tag)，identifier: \(identifier)，超时时间: \(timeout)s")
                     }
                 }
 
@@ -254,9 +254,9 @@ final class PhotoLoader: ObservableObject {
                         if await state.tryResume(with: result) {
                             timeoutTask.cancel()
                             if result != nil {
-                                print("✅ PhotoLoader.performRequest成功: tag: \(tag)，identifier: \(identifier)")
+                                debugLog("✅ PhotoLoader.performRequest成功: tag: \(tag)，identifier: \(identifier)")
                             } else {
-                                print("❌ PhotoLoader.performRequest失败: tag: \(tag)，identifier: \(identifier)")
+                                debugLog("❌ PhotoLoader.performRequest失败: tag: \(tag)，identifier: \(identifier)")
                             }
                         }
                     }
@@ -268,14 +268,14 @@ final class PhotoLoader: ObservableObject {
                         if await state.tryResume(with: nil) {
                             timeoutTask.cancel()
                             requestID.cancel(with: imageManager)
-                            print("❌ PhotoLoader.performRequest请求前取消: tag: \(tag)，identifier: \(identifier)")
+                            debugLog("❌ PhotoLoader.performRequest请求前取消: tag: \(tag)，identifier: \(identifier)")
                         }
                     }
                 }
             }
         } onCancel: {
             requestID.cancel(with: imageManager)
-            print("❌ PhotoLoader.performRequest被取消: tag: \(tag)，identifier: \(identifier)")
+            debugLog("❌ PhotoLoader.performRequest被取消: tag: \(tag)，identifier: \(identifier)")
         }
     }
 }

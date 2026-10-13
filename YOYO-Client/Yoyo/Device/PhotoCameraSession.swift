@@ -13,7 +13,7 @@ final class PhotoCameraSession: BaseCameraSession {
     private weak var videoSampleBufferDelegate: AVCaptureVideoDataOutputSampleBufferDelegate?
 
     override func configureSession() {
-        print("📸 [PhotoCameraSession] 开始配置照片 Session")
+        debugLog("📸 [PhotoCameraSession] 开始配置照片 Session")
 
         session.beginConfiguration()
 
@@ -36,7 +36,7 @@ final class PhotoCameraSession: BaseCameraSession {
         // setoutput delegates
         setupOutputDelegates()
 
-        print("✅ [PhotoCameraSession] 照片 Session 配置完成")
+        debugLog("✅ [PhotoCameraSession] 照片 Session 配置完成")
     }
 
     override func setupOutputDelegates() {
@@ -67,7 +67,7 @@ final class PhotoCameraSession: BaseCameraSession {
             guard let self else { return }
             // onlyconfigurecheck preset, otherwise configureSession
             if self.isConfigured, self.session.sessionPreset != .photo {
-                print("📸 [PhotoCameraSession] 检测到 preset 为 \(self.session.sessionPreset.rawValue)，重置为 .photo")
+                debugLog("📸 [PhotoCameraSession] 检测到 preset 为 \(self.session.sessionPreset.rawValue)，重置为 .photo")
                 self.session.beginConfiguration()
                 self.session.sessionPreset = .photo
                 self.session.commitConfiguration()
@@ -103,7 +103,7 @@ final class PhotoCameraSession: BaseCameraSession {
                 self.isLivePhotoEnabled = enabled
 
                 guard let photoOutput = self.photoOutput else {
-                    print("📸 [PhotoCameraSession] LivePhoto 状态已更新为: \(enabled) (Session 未配置)")
+                    debugLog("📸 [PhotoCameraSession] LivePhoto 状态已更新为: \(enabled) (Session 未配置)")
                     continuation.resume()
                     return
                 }
@@ -112,14 +112,14 @@ final class PhotoCameraSession: BaseCameraSession {
 
                 // ensure preset, otherwise isLive PhotoCaptureSupported can false
                 if self.session.sessionPreset != .photo {
-                    print("📸 [PhotoCameraSession] configureLivePhoto: 重置 preset 为 .photo")
+                    debugLog("📸 [PhotoCameraSession] configureLivePhoto: 重置 preset 为 .photo")
                     self.session.sessionPreset = .photo
                 }
 
                 if photoOutput.isLivePhotoCaptureSupported {
                     let wasEnabled = photoOutput.isLivePhotoCaptureEnabled
                     photoOutput.isLivePhotoCaptureEnabled = enabled
-                    print("📸 [PhotoCameraSession] LivePhoto \(enabled ? "启用" : "禁用")")
+                    debugLog("📸 [PhotoCameraSession] LivePhoto \(enabled ? "启用" : "禁用")")
 
                     if enabled {
                         // Live Photo need to audioinput
@@ -139,7 +139,7 @@ final class PhotoCameraSession: BaseCameraSession {
                         }
                     }
                 } else {
-                    print("⚠️ [PhotoCameraSession] LivePhoto 不支持 (preset: \(self.session.sessionPreset.rawValue))")
+                    debugLog("⚠️ [PhotoCameraSession] LivePhoto 不支持 (preset: \(self.session.sessionPreset.rawValue))")
                 }
 
                 self.session.commitConfiguration()
@@ -162,7 +162,7 @@ final class PhotoCameraSession: BaseCameraSession {
             guard let self else { return }
             // only Live Photo configureaudioinput
             if self.isLivePhotoEnabled {
-                print("🎤 [PhotoCameraSession] Reconfiguring audio input for Live Photo...")
+                debugLog("🎤 [PhotoCameraSession] Reconfiguring audio input for Live Photo...")
                 self.session.beginConfiguration()
                 CameraInputConfigurator.shared.configureAudioInput(for: self.session)
                 self.session.commitConfiguration()

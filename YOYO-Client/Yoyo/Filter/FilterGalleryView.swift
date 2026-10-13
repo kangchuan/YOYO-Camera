@@ -176,7 +176,7 @@ struct FilterGalleryView: View {
                     }
                 }
             case let .failure(error):
-                print("Import failed: \(error.localizedDescription)")
+                debugLog("Import failed: \(error.localizedDescription)")
             }
         }
         .onAppear {

@@ -276,7 +276,7 @@ struct SettingsView: View {
                         do {
                             try await authService.updateName(name)
                         } catch {
-                            print("❌ Update name failed: \(error)")
+                            debugLog("❌ Update name failed: \(error)")
                         }
                     }
                 }
@@ -300,7 +300,7 @@ struct SettingsView: View {
                     Task { await authService.signInWithApple(authorization: authorization) }
                 case let .failure(error):
                     AnalyticsManager.shared.log(.settingsAction(action: "sign_in_failed"))
-                    print("❌ Auth failed: \(error.localizedDescription)")
+                    debugLog("❌ Auth failed: \(error.localizedDescription)")
                 }
             }
         )

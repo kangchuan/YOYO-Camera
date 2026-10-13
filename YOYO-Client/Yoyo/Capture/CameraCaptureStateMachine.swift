@@ -126,19 +126,19 @@ final class CaptureStateMachine: ObservableObject {
         let fromState = currentState
         let toState = getNextState(from: fromState, action: action)
 
-        print("🔄 [StateMachine] Attempting transition: \(fromState.rawValue) -> \(toState.rawValue) via \(action.rawValue)")
+        debugLog("🔄 [StateMachine] Attempting transition: \(fromState.rawValue) -> \(toState.rawValue) via \(action.rawValue)")
 
         // validatestatewhether
         guard isValidTransition(from: fromState, to: toState, action: action) else {
             let errorMessage = "Invalid transition: \(fromState.rawValue) -> \(toState.rawValue) via \(action.rawValue)"
-            print("❌ [StateMachine] \(errorMessage)")
+            debugLog("❌ [StateMachine] \(errorMessage)")
             return StateTransitionResult.failure(from: fromState, action: action, error: errorMessage)
         }
 
         // state
         currentState = toState
         let result = StateTransitionResult.success(from: fromState, to: toState, action: action)
-        print("✅ [StateMachine] Transition successful: \(fromState.rawValue) -> \(toState.rawValue)")
+        debugLog("✅ [StateMachine] Transition successful: \(fromState.rawValue) -> \(toState.rawValue)")
 
         // notify
         notifyStateChange(from: fromState, to: toState)

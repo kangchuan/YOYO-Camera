@@ -134,7 +134,7 @@ final class InspirationManager: ObservableObject {
                 }
             }
         } catch {
-            print("Failed to generate lazy image: \(error)")
+            debugLog("Failed to generate lazy image: \(error)")
             await MainActor.run {
                 self.loadingIndices.remove(index)
             }
@@ -161,7 +161,7 @@ final class InspirationManager: ObservableObject {
         do {
             try FileManager.default.createDirectory(at: imagesDirectory, withIntermediateDirectories: true)
         } catch {
-            print("Failed to create history directories: \(error)")
+            debugLog("Failed to create history directories: \(error)")
         }
     }
 
@@ -212,7 +212,7 @@ final class InspirationManager: ObservableObject {
             }
             ensureDirectoriesExist()
         } catch {
-            print("Failed to clear images directory: \(error)")
+            debugLog("Failed to clear images directory: \(error)")
         }
     }
 
@@ -222,7 +222,7 @@ final class InspirationManager: ObservableObject {
             let data = try JSONEncoder().encode(historyInspirations)
             try data.write(to: historyFile)
         } catch {
-            print("Failed to save history: \(error)")
+            debugLog("Failed to save history: \(error)")
         }
     }
 
@@ -248,7 +248,7 @@ final class InspirationManager: ObservableObject {
                 }
                 return loadedHistory
             } catch {
-                print("Failed to load history: \(error)")
+                debugLog("Failed to load history: \(error)")
                 return nil
             }
         }.value

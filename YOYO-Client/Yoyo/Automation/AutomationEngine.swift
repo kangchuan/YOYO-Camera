@@ -751,7 +751,7 @@ final class AutomationEngine: ObservableObject {
             }
         }
         analysisRequirements = requirements
-        print("📊 [DEBUG] 分析需求已更新: objects=\(requirements.needsObjectDetection), scene=\(requirements.needsSceneClassification), composition=\(requirements.needsComposition), lighting=\(requirements.needsLighting), colors=\(requirements.needsColors)")
+        debugLog("📊 [DEBUG] 分析需求已更新: objects=\(requirements.needsObjectDetection), scene=\(requirements.needsSceneClassification), composition=\(requirements.needsComposition), lighting=\(requirements.needsLighting), colors=\(requirements.needsColors)")
     }
 
     func addRule(_ rule: AutomationRule, after afterRuleId: String? = nil) {
@@ -868,25 +868,25 @@ final class AutomationEngine: ObservableObject {
             let encoder = JSONEncoder()
             let data = try encoder.encode(rules)
             UserDefaults.standard.set(data, forKey: userDefaultsKey)
-            print("✅ 规则已保存: \(rules.count) 条")
+            debugLog("✅ 规则已保存: \(rules.count) 条")
         } catch {
-            print("❌ 保存规则失败: \(error)")
+            debugLog("❌ 保存规则失败: \(error)")
         }
     }
 
     private func loadRules() {
         guard let data = UserDefaults.standard.data(forKey: userDefaultsKey) else {
-            print("ℹ️ 未找到已保存的规则，使用空列表")
+            debugLog("ℹ️ 未找到已保存的规则，使用空列表")
             return
         }
 
         do {
             let decoder = JSONDecoder()
             rules = try decoder.decode([AutomationRule].self, from: data)
-            print("✅ 已加载规则: \(rules.count) 条")
+            debugLog("✅ 已加载规则: \(rules.count) 条")
             updateAnalysisRequirements()
         } catch {
-            print("❌ 加载规则失败: \(error)")
+            debugLog("❌ 加载规则失败: \(error)")
             rules = []
         }
     }

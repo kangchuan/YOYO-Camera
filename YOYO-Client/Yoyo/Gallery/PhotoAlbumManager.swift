@@ -44,10 +44,10 @@ final class PhotoAlbumManager {
         deviceOrientation: UIDeviceOrientation? = nil,
         saveOptions: SaveSettingsSnapshot? = nil
     ) async throws -> (assetIdentifier: String, originalAssetIdentifier: String?) {
-        print("📸 [PhotoAlbum] saveImageToAlbum start - Memory: \(String(format: "%.1f", getMemoryUsage()))MB")
+        debugLog("📸 [PhotoAlbum] saveImageToAlbum start - Memory: \(String(format: "%.1f", getMemoryUsage()))MB")
 
         let album = try await getOrCreateYoyoAlbum()
-        print("📸 [PhotoAlbum] after getOrCreateYoyoAlbum - Memory: \(String(format: "%.1f", getMemoryUsage()))MB")
+        debugLog("📸 [PhotoAlbum] after getOrCreateYoyoAlbum - Memory: \(String(format: "%.1f", getMemoryUsage()))MB")
 
         let finalMetadata = await prepareMetadata(
             metadata,
@@ -66,7 +66,7 @@ final class PhotoAlbumManager {
             fileType: .photo,
             isOriginal: false
         )
-        print("📸 [PhotoAlbum] after generateImageFile (filtered) - Memory: \(String(format: "%.1f", getMemoryUsage()))MB")
+        debugLog("📸 [PhotoAlbum] after generateImageFile (filtered) - Memory: \(String(format: "%.1f", getMemoryUsage()))MB")
 
         // Then process the original image if it exists.
         var originalFileURL: URL?
@@ -92,10 +92,10 @@ final class PhotoAlbumManager {
                 fileType: .photo,
                 isOriginal: true
             )
-            print("📸 [PhotoAlbum] after generateImageFile (original) - Memory: \(String(format: "%.1f", getMemoryUsage()))MB")
+            debugLog("📸 [PhotoAlbum] after generateImageFile (original) - Memory: \(String(format: "%.1f", getMemoryUsage()))MB")
         }
 
-        print("📸 [PhotoAlbum] after all generateImageFile - Memory: \(String(format: "%.1f", getMemoryUsage()))MB")
+        debugLog("📸 [PhotoAlbum] after all generateImageFile - Memory: \(String(format: "%.1f", getMemoryUsage()))MB")
 
         let result = try await saveAssetsToAlbum(
             album: album,
@@ -108,13 +108,13 @@ final class PhotoAlbumManager {
             currentLocation: currentLocation
         )
 
-        print("📸 [PhotoAlbum] after saveAssetsToAlbum - Memory: \(String(format: "%.1f", getMemoryUsage()))MB")
+        debugLog("📸 [PhotoAlbum] after saveAssetsToAlbum - Memory: \(String(format: "%.1f", getMemoryUsage()))MB")
 
         // Clean temporary files, consistent with the Live Photo flow.
         let filesToCleanup = [processedFileURL, originalFileURL].compactMap { $0 }
-        print("🔬 [MemoryDebug] 准备清理临时文件: \(filesToCleanup.map(\.lastPathComponent))")
+        debugLog("🔬 [MemoryDebug] 准备清理临时文件: \(filesToCleanup.map(\.lastPathComponent))")
         await FileManager.safeRemoveItems(at: filesToCleanup)
-        print("📸 [PhotoAlbum] after cleanup temp files - Memory: \(String(format: "%.1f", getMemoryUsage()))MB")
+        debugLog("📸 [PhotoAlbum] after cleanup temp files - Memory: \(String(format: "%.1f", getMemoryUsage()))MB")
 
         return result
     }
@@ -270,7 +270,7 @@ final class PhotoAlbumManager {
                 }
             }
         } catch {
-            print("❌ [LivePhoto] Failed to load metadata from original video: \(error)")
+            debugLog("❌ [LivePhoto] Failed to load metadata from original video: \(error)")
         }
         return nil
     }
@@ -445,14 +445,14 @@ final class PhotoAlbumManager {
         // Verify file existence.
         if let processedURL = processedFileURL {
             guard FileManager.default.fileExists(atPath: processedURL.path) else {
-                print("❌ [PhotoAlbum] Processed file doesn't exist: \(processedURL.path)")
+                debugLog("❌ [PhotoAlbum] Processed file doesn't exist: \(processedURL.path)")
                 throw PhotoAlbumError.photoSaveFailed
             }
         }
 
         if let originalURL = originalFileURL {
             guard FileManager.default.fileExists(atPath: originalURL.path) else {
-                print("❌ [PhotoAlbum] Original file doesn't exist: \(originalURL.path)")
+                debugLog("❌ [PhotoAlbum] Original file doesn't exist: \(originalURL.path)")
                 throw PhotoAlbumError.photoSaveFailed
             }
         }
@@ -496,10 +496,10 @@ final class PhotoAlbumManager {
                 }
             }) { success, error in
                 if success, let processed = processedPlaceholder {
-                    print("✅ [PhotoAlbum] Save successful - assetID: \(processed.localIdentifier)")
+                    debugLog("✅ [PhotoAlbum] Save successful - assetID: \(processed.localIdentifier)")
                     continuation.resume(returning: (processed.localIdentifier, originalPlaceholder?.localIdentifier))
                 } else {
-                    print("❌ [PhotoAlbum] Save failed: \(error?.localizedDescription ?? "unknown")")
+                    debugLog("❌ [PhotoAlbum] Save failed: \(error?.localizedDescription ?? "unknown")")
                     // Cleanup on failure
                     [processedFileURL, originalFileURL].compactMap { $0 }.forEach { url in
                         try? FileManager.default.removeItem(at: url)
@@ -545,7 +545,7 @@ final class PhotoAlbumManager {
             try data.write(to: fileURL)
             return fileURL
         } catch {
-            print("❌ [PhotoAlbum] Failed to write RAW file: \(error)")
+            debugLog("❌ [PhotoAlbum] Failed to write RAW file: \(error)")
             return nil
         }
     }
@@ -564,7 +564,7 @@ final class PhotoAlbumManager {
         let fileURL = await MainActor.run {
             makeTempURL(ext: ext, saveOptions: saveOptions, fileType: fileType, isOriginal: isOriginal)
         }
-        print("🔬 [MemoryDebug] generateImageFile - isOriginal: \(isOriginal), fileURL: \(fileURL.lastPathComponent)")
+        debugLog("🔬 [MemoryDebug] generateImageFile - isOriginal: \(isOriginal), fileURL: \(fileURL.lastPathComponent)")
 
         // Ensure the directory exists.
         let dir = fileURL.deletingLastPathComponent()
@@ -803,7 +803,7 @@ final class PhotoAlbumManager {
 
             let isReliable = !existing.isEmpty
             if !isReliable {
-                print("⚠️ [PhotoAlbumManager] Photos fetch returned 0 of \(identifiers.count) identifiers; treating as transient.")
+                debugLog("⚠️ [PhotoAlbumManager] Photos fetch returned 0 of \(identifiers.count) identifiers; treating as transient.")
             }
 
             return AssetIdentifierCheckResult(existing: existing, isReliable: isReliable)
@@ -813,7 +813,7 @@ final class PhotoAlbumManager {
     private func createPhotoAsset(fileURL: URL, uti: String, location: CLLocation?) -> PHObjectPlaceholder? {
         // Simplified validation: only check file existence and size.
         guard FileManager.default.fileExists(atPath: fileURL.path) else {
-            print("❌ [PhotoAlbumManager] File doesn't exist: \(fileURL.path)")
+            debugLog("❌ [PhotoAlbumManager] File doesn't exist: \(fileURL.path)")
             return nil
         }
 
@@ -822,11 +822,11 @@ final class PhotoAlbumManager {
             let fileSize = attributes[.size] as? Int64 ?? 0
 
             if fileSize == 0 {
-                print("❌ [PhotoAlbumManager] File is empty: \(fileURL.path)")
+                debugLog("❌ [PhotoAlbumManager] File is empty: \(fileURL.path)")
                 return nil
             }
         } catch {
-            print("❌ [PhotoAlbumManager] File validation failed: \(error.localizedDescription)")
+            debugLog("❌ [PhotoAlbumManager] File validation failed: \(error.localizedDescription)")
             return nil
         }
 

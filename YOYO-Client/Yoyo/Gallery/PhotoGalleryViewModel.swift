@@ -157,7 +157,7 @@ final class PhotoGalleryViewModel: ObservableObject {
         let checkResult = await PhotoAlbumManager.shared.existingAssetIdentifiers(for: identifiers)
 
         guard checkResult.isReliable else {
-            print("⚠️ [PhotoGallery] Photos fetch was unreliable; skipping destructive validation.")
+            debugLog("⚠️ [PhotoGallery] Photos fetch was unreliable; skipping destructive validation.")
             return ValidationResult(photos: photos, isReliable: false)
         }
 
@@ -224,16 +224,16 @@ final class PhotoGalleryViewModel: ObservableObject {
 
                     do {
                         try self.modelContext?.save()
-                        print("批量删除 \(selectedCount) 张照片成功")
+                        debugLog("批量删除 \(selectedCount) 张照片成功")
                     } catch {
-                        print("保存 SwiftData 更改失败: \(error)")
+                        debugLog("保存 SwiftData 更改失败: \(error)")
                     }
 
                     self.startPrefetchWork(for: self.photos)
                 }
 
             } catch {
-                print("批量删除失败: \(error.localizedDescription)")
+                debugLog("批量删除失败: \(error.localizedDescription)")
             }
         }
     }

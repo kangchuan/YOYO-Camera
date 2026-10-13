@@ -161,7 +161,7 @@ final class ExposureManager: NSObject, ObservableObject {
             }
 
         } catch {
-            print("Set exposure error: \(error)")
+            debugLog("Set exposure error: \(error)")
             DispatchQueue.main.async {
                 self.exposureState = .failed
             }
@@ -189,7 +189,7 @@ final class ExposureManager: NSObject, ObservableObject {
             }
 
         } catch {
-            print("Exposure Lock error: \(error)")
+            debugLog("Exposure Lock error: \(error)")
         }
     }
 
@@ -215,7 +215,7 @@ final class ExposureManager: NSObject, ObservableObject {
             }
 
         } catch {
-            print("Exposure Unlock error: \(error)")
+            debugLog("Exposure Unlock error: \(error)")
         }
     }
 
@@ -242,7 +242,7 @@ final class ExposureManager: NSObject, ObservableObject {
             camera.unlockForConfiguration()
 
         } catch {
-            print("Exposure compensation error: \(error)")
+            debugLog("Exposure compensation error: \(error)")
         }
     }
 
@@ -266,7 +266,7 @@ final class ExposureManager: NSObject, ObservableObject {
             }
 
         } catch {
-            print("Continuous exposure setup error: \(error)")
+            debugLog("Continuous exposure setup error: \(error)")
         }
     }
 
@@ -289,7 +289,7 @@ final class ExposureManager: NSObject, ObservableObject {
             }
 
         } catch {
-            print("Disable continuous exposure error: \(error)")
+            debugLog("Disable continuous exposure error: \(error)")
         }
     }
 
@@ -325,7 +325,7 @@ final class ExposureManager: NSObject, ObservableObject {
             camera.setExposureModeCustom(duration: AVCaptureDevice.currentExposureDuration, iso: clampedISO) { _ in }
             camera.unlockForConfiguration()
         } catch {
-            print("ISO adjustment error: \(error)")
+            debugLog("ISO adjustment error: \(error)")
         }
     }
 
@@ -344,7 +344,7 @@ final class ExposureManager: NSObject, ObservableObject {
             camera.setExposureModeCustom(duration: duration, iso: AVCaptureDevice.currentISO) { _ in }
             camera.unlockForConfiguration()
         } catch {
-            print("Shutter speed adjustment error: \(error)")
+            debugLog("Shutter speed adjustment error: \(error)")
         }
     }
 
@@ -374,7 +374,7 @@ final class ExposureManager: NSObject, ObservableObject {
                 self.isManualISOMode = false
             }
         } catch {
-            print("Enable auto ISO error: \(error)")
+            debugLog("Enable auto ISO error: \(error)")
         }
     }
 
@@ -404,7 +404,7 @@ final class ExposureManager: NSObject, ObservableObject {
                 self.isManualShutterSpeedMode = false
             }
         } catch {
-            print("Enable auto shutter speed error: \(error)")
+            debugLog("Enable auto shutter speed error: \(error)")
         }
     }
 

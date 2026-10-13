@@ -55,8 +55,8 @@ final class CameraSaveService {
     /// A: data, CaptureResult
     private func performSaveOperation(result: CaptureResult, settings: SaveSettingsSnapshot) async {
         let startMemory = getMemoryUsage()
-        print("💾 [SaveService] Starting save - Memory: \(String(format: "%.1f", startMemory))MB")
-        print("💾 [SaveService] CaptureResult size - originalImage: \(result.originalImage.size), filteredImage: \(result.filteredImage.size), originalData: \(result.originalImageData?.count ?? 0) bytes")
+        debugLog("💾 [SaveService] Starting save - Memory: \(String(format: "%.1f", startMemory))MB")
+        debugLog("💾 [SaveService] CaptureResult size - originalImage: \(result.originalImage.size), filteredImage: \(result.filteredImage.size), originalData: \(result.originalImageData?.count ?? 0) bytes")
 
         // need to data, let result release
         let isVideo = result.isVideo
@@ -68,7 +68,7 @@ final class CameraSaveService {
         let originalImageData = result.originalImageData
         let livePhotoURL = result.livePhotoURL
 
-        print("💾 [SaveService] Data extracted from CaptureResult - Memory: \(String(format: "%.1f", getMemoryUsage()))MB")
+        debugLog("💾 [SaveService] Data extracted from CaptureResult - Memory: \(String(format: "%.1f", getMemoryUsage()))MB")
 
         do {
             if isVideo, let videoURL {
@@ -86,20 +86,20 @@ final class CameraSaveService {
                 )
             }
 
-            print("✅ [SaveService] Save completed successfully")
+            debugLog("✅ [SaveService] Save completed successfully")
             await notifySaveResult(success: true)
         } catch {
             if !Task.isCancelled {
-                print("❌ [SaveService] Save operation failed: \(error.localizedDescription)")
+                debugLog("❌ [SaveService] Save operation failed: \(error.localizedDescription)")
                 await handleSaveError(error)
             } else {
-                print("⚠️ [SaveService] Save operation cancelled")
+                debugLog("⚠️ [SaveService] Save operation cancelled")
                 await notifySaveResult(success: false)
             }
         }
 
         let endMemory = getMemoryUsage()
-        print("💾 [SaveService] Save completed - Memory: \(String(format: "%.1f", endMemory))MB (Δ: \(String(format: "%.1f", endMemory - startMemory))MB)")
+        debugLog("💾 [SaveService] Save completed - Memory: \(String(format: "%.1f", endMemory))MB (Δ: \(String(format: "%.1f", endMemory - startMemory))MB)")
     }
 
     /// notifysaveresult
@@ -140,7 +140,7 @@ final class CameraSaveService {
         // data
         let metadataData = try await serializeMetadata(metadata)
 
-        print("💾 [SaveService] Before savePhotoToAlbum - Memory: \(String(format: "%.1f", getMemoryUsage()))MB")
+        debugLog("💾 [SaveService] Before savePhotoToAlbum - Memory: \(String(format: "%.1f", getMemoryUsage()))MB")
 
         // savephoto library
         let (assetIdentifier, originalAssetIdentifier) = try await savePhotoToAlbum(
@@ -154,7 +154,7 @@ final class CameraSaveService {
             isRaw: isRaw
         )
 
-        print("💾 [SaveService] After savePhotoToAlbum - Memory: \(String(format: "%.1f", getMemoryUsage()))MB")
+        debugLog("💾 [SaveService] After savePhotoToAlbum - Memory: \(String(format: "%.1f", getMemoryUsage()))MB")
 
         // save SwiftData(need to main thread)
         try await MainActor.run { [weak self] in
@@ -171,7 +171,7 @@ final class CameraSaveService {
             try modelContext.save()
         }
 
-        print("💾 [SaveService] After SwiftData save - Memory: \(String(format: "%.1f", getMemoryUsage()))MB")
+        debugLog("💾 [SaveService] After SwiftData save - Memory: \(String(format: "%.1f", getMemoryUsage()))MB")
     }
 
     /// savephotophoto library
@@ -254,10 +254,10 @@ final class CameraSaveService {
         let orientationManager = OrientationManager.shared
         let locationManager = LocationManager.shared
 
-        print("💾 [SaveService] 准备保存视频:")
-        print("   - 带滤镜视频: \(videoURL.lastPathComponent)")
-        print("   - 原始视频: \(originalVideoURL?.lastPathComponent ?? "无")")
-        print("   - 保存原片开关: \(settings.saveOriginalEnabled)")
+        debugLog("💾 [SaveService] 准备保存视频:")
+        debugLog("   - 带滤镜视频: \(videoURL.lastPathComponent)")
+        debugLog("   - 原始视频: \(originalVideoURL?.lastPathComponent ?? "无")")
+        debugLog("   - 保存原片开关: \(settings.saveOriginalEnabled)")
 
         let deviceOrientation = orientationManager.currentDeviceOrientation
         let location = await locationManager.currentLocation
@@ -267,7 +267,7 @@ final class CameraSaveService {
         // onlyoriginalsaveoriginalvideo
         let finalOriginalVideoURL = shouldSaveOriginal ? originalVideoURL : nil
 
-        print("💾 [SaveService] 实际保存: 原始视频=\(finalOriginalVideoURL != nil ? "是" : "否")")
+        debugLog("💾 [SaveService] 实际保存: 原始视频=\(finalOriginalVideoURL != nil ? "是" : "否")")
 
         // savevideophoto library
         let (assetIdentifier, originalAssetIdentifier) = try await PhotoAlbumManager.shared.saveVideoToAlbum(

@@ -47,12 +47,12 @@ final class PhotoProcessor: NSObject {
     // MARK: - Deinitialization
 
     deinit {
-        print("🗑️ [PhotoProcessor] deinit called - Cleaning up resources")
+        debugLog("🗑️ [PhotoProcessor] deinit called - Cleaning up resources")
         // Clean up temporary data
         photoCaptureCompletion = nil
         // Clean up shared component caches
         imageProcessor.clearCaches()
-        print("✅ [PhotoProcessor] deinit complete")
+        debugLog("✅ [PhotoProcessor] deinit complete")
     }
 
     // MARK: - Performance Monitoring
@@ -107,25 +107,25 @@ extension PhotoProcessor: AVCapturePhotoCaptureDelegate {
         didFinishProcessingPhoto photo: AVCapturePhoto,
         error: Error?
     ) {
-        print("📸 [PhotoOutput] 🎯 DELEGATE METHOD CALLED! 拍照委托方法被系统调用")
-        print("📸 [PhotoOutput] Photo uniqueID: \(photo.resolvedSettings.uniqueID)")
-        print("📸 [PhotoOutput] Is RAW: \(photo.isRawPhoto)")
+        debugLog("📸 [PhotoOutput] 🎯 DELEGATE METHOD CALLED! 拍照委托方法被系统调用")
+        debugLog("📸 [PhotoOutput] Photo uniqueID: \(photo.resolvedSettings.uniqueID)")
+        debugLog("📸 [PhotoOutput] Is RAW: \(photo.isRawPhoto)")
 
         let processStartTime = Date()
         let startMemory = getMemoryUsage()
-        print("📸 [PhotoOutput] ===== 拍照处理开始 =====")
-        print("📸 [PhotoOutput] 初始内存: \(String(format: "%.1f", startMemory))MB")
+        debugLog("📸 [PhotoOutput] ===== 拍照处理开始 =====")
+        debugLog("📸 [PhotoOutput] 初始内存: \(String(format: "%.1f", startMemory))MB")
 
         // Capture completion handler
         guard let completion = photoCaptureCompletion else {
-            print("⚠️ [PhotoOutput] photoCaptureCompletion is nil, early return")
+            debugLog("⚠️ [PhotoOutput] photoCaptureCompletion is nil, early return")
             return
         }
         photoCaptureCompletion = nil
 
         // Handle error case
         if let error {
-            print("❌ [PhotoOutput] 拍照过程中发生错误: \(error.localizedDescription)")
+            debugLog("❌ [PhotoOutput] 拍照过程中发生错误: \(error.localizedDescription)")
             completion(nil)
             delegate?.photoProcessor(self, didFailWithError: error)
             return
@@ -155,7 +155,7 @@ extension PhotoProcessor: AVCapturePhotoCaptureDelegate {
         }
 
         if backgroundTaskID != .invalid {
-            print("⏳ [PhotoProcessor] 开启后台保活任务 (ID: \(backgroundTaskID))")
+            debugLog("⏳ [PhotoProcessor] 开启后台保活任务 (ID: \(backgroundTaskID))")
         }
 
         // Process photo in background
@@ -168,7 +168,7 @@ extension PhotoProcessor: AVCapturePhotoCaptureDelegate {
                         UIApplication.shared.endBackgroundTask(taskToEnd)
                     }
                     backgroundTaskID = .invalid
-                    print("✅ [PhotoProcessor] 后台保活任务结束")
+                    debugLog("✅ [PhotoProcessor] 后台保活任务结束")
                 }
             }
 
@@ -177,10 +177,10 @@ extension PhotoProcessor: AVCapturePhotoCaptureDelegate {
                 var result: InternalProcessedResult?
 
                 let imageData = photo.fileDataRepresentation()
-                print("📸 [PhotoOutput] Got image data - Size: \(imageData?.count ?? 0) bytes")
+                debugLog("📸 [PhotoOutput] Got image data - Size: \(imageData?.count ?? 0) bytes")
 
                 guard let imageData else {
-                    print("❌ [PhotoOutput] Failed to get image data representation")
+                    debugLog("❌ [PhotoOutput] Failed to get image data representation")
                     DispatchQueue.main.async { [weak self] in
                         completion(nil)
                         self?.delegate?.photoProcessor(self!, didFailWithError: nil)
@@ -190,7 +190,7 @@ extension PhotoProcessor: AVCapturePhotoCaptureDelegate {
 
                 // Process image
                 if photo.isRawPhoto == true {
-                    print("🎨 [ImageProcess] 处理RAW格式图片")
+                    debugLog("🎨 [ImageProcess] 处理RAW格式图片")
                     result = self.processRAWInBackground(
                         metadata: photo.metadata,
                         originalImageData: imageData,
@@ -200,7 +200,7 @@ extension PhotoProcessor: AVCapturePhotoCaptureDelegate {
                         cameraPosition: currentCameraPosition
                     )
                 } else {
-                    print("🎨 [ImageProcess] 处理JPEG格式图片")
+                    debugLog("🎨 [ImageProcess] 处理JPEG格式图片")
                     result = self.processImageInBackground(
                         imageData: imageData,
                         metadata: photo.metadata,
@@ -210,7 +210,7 @@ extension PhotoProcessor: AVCapturePhotoCaptureDelegate {
                 }
 
                 guard let result else {
-                    print("❌ [PhotoOutput] Failed to process image")
+                    debugLog("❌ [PhotoOutput] Failed to process image")
                     DispatchQueue.main.async { [weak self] in
                         completion(nil)
                         self?.delegate?.photoProcessor(self!, didFailWithError: nil)
@@ -220,9 +220,9 @@ extension PhotoProcessor: AVCapturePhotoCaptureDelegate {
 
                 let totalDuration = Date().timeIntervalSince(processStartTime)
                 let totalEndMemory = self.getMemoryUsage()
-                print("📸 [PhotoOutput] ===== 拍照处理完成 =====")
-                print("📸 [PhotoOutput] 总耗时: \(String(format: "%.3f", totalDuration))s")
-                print("📸 [PhotoOutput] 总内存增长: \(String(format: "%.1f", totalEndMemory - startMemory))MB")
+                debugLog("📸 [PhotoOutput] ===== 拍照处理完成 =====")
+                debugLog("📸 [PhotoOutput] 总耗时: \(String(format: "%.3f", totalDuration))s")
+                debugLog("📸 [PhotoOutput] 总内存增长: \(String(format: "%.1f", totalEndMemory - startMemory))MB")
 
                 // Check whether this is Live Photo mode (from `photo.resolvedSettings`)
                 let isLivePhoto = photo.resolvedSettings.livePhotoMovieDimensions.width > 0 && photo.resolvedSettings.livePhotoMovieDimensions.height > 0
@@ -231,7 +231,7 @@ extension PhotoProcessor: AVCapturePhotoCaptureDelegate {
                     guard let self else { return }
                     if isLivePhoto {
                         // Live Photo mode: create metadata containing `uniqueID` and return it through the delegate
-                        print("🎬 [PhotoOutput] LivePhoto mode - Creating result with uniqueID")
+                        debugLog("🎬 [PhotoOutput] LivePhoto mode - Creating result with uniqueID")
 
                         var updatedMetadata = result.metadata
                         updatedMetadata["uniqueID"] = Int(photo.resolvedSettings.uniqueID)
@@ -280,7 +280,7 @@ private extension PhotoProcessor {
                 )
 
                 guard let rawFilter else {
-                    print("❌ [PhotoProcessor] processRAWInBackground: Failed to create CIRAWFilter")
+                    debugLog("❌ [PhotoProcessor] processRAWInBackground: Failed to create CIRAWFilter")
                     throw NSError(domain: "com.day1-labs.yoyo", code: -1)
                 }
 
@@ -297,9 +297,9 @@ private extension PhotoProcessor {
                 )
 
                 if let outputImage = rawFilter.outputImage {
-                    print("✅ [RAW] Output image created successfully")
-                    print("📊 [RAW] Output extent: \(outputImage.extent)")
-                    print("📊 [RAW] Output colorSpace: \(outputImage.colorSpace?.name as String? ?? "nil")")
+                    debugLog("✅ [RAW] Output image created successfully")
+                    debugLog("📊 [RAW] Output extent: \(outputImage.extent)")
+                    debugLog("📊 [RAW] Output colorSpace: \(outputImage.colorSpace?.name as String? ?? "nil")")
 
                     return self.processCIImageWithSharedComponents(
                         outputImage,
@@ -314,10 +314,10 @@ private extension PhotoProcessor {
                         fixedOrientation: cameraPosition == .front ? .up : nil
                     )
                 } else {
-                    print("❌ [PhotoProcessor] processRAWInBackground: RAW filter output image is nil")
+                    debugLog("❌ [PhotoProcessor] processRAWInBackground: RAW filter output image is nil")
                 }
             } catch {
-                print("❌ [PhotoProcessor] processRAWInBackground: CIRAWFilter creation failed with error: \(error)")
+                debugLog("❌ [PhotoProcessor] processRAWInBackground: CIRAWFilter creation failed with error: \(error)")
             }
 
             return nil
@@ -333,11 +333,11 @@ private extension PhotoProcessor {
     ) -> InternalProcessedResult {
         autoreleasepool {
             let jpegProcessStart = Date()
-            print("🖼️ [JPEGProcess] 开始JPEG处理")
+            debugLog("🖼️ [JPEGProcess] 开始JPEG处理")
 
             let options = [CIImageOption.applyOrientationProperty: true]
             guard let ciImage = CIImage(data: imageData, options: options) else {
-                print("❌ [PhotoProcessor] processImageInBackground: Failed to create CIImage from image data")
+                debugLog("❌ [PhotoProcessor] processImageInBackground: Failed to create CIImage from image data")
                 let emptyResult = ProcessedImageResult(originalImage: UIImage(), filteredImage: UIImage())
                 return InternalProcessedResult(
                     processedImages: emptyResult,
@@ -348,7 +348,7 @@ private extension PhotoProcessor {
             }
 
             let ciImageCreateTime = Date().timeIntervalSince(jpegProcessStart)
-            print("🖼️ [JPEGProcess] CIImage创建耗时: \(String(format: "%.3f", ciImageCreateTime))s")
+            debugLog("🖼️ [JPEGProcess] CIImage创建耗时: \(String(format: "%.3f", ciImageCreateTime))s")
 
             let result = processCIImageWithSharedComponents(
                 ciImage,
@@ -360,7 +360,7 @@ private extension PhotoProcessor {
             )
 
             let totalJpegDuration = Date().timeIntervalSince(jpegProcessStart)
-            print("🖼️ [JPEGProcess] JPEG处理总耗时: \(String(format: "%.3f", totalJpegDuration))s")
+            debugLog("🖼️ [JPEGProcess] JPEG处理总耗时: \(String(format: "%.3f", totalJpegDuration))s")
 
             return result
         }
@@ -368,7 +368,7 @@ private extension PhotoProcessor {
 
     /// Handle image results that finished background processing (regular photos)
     private func handleProcessedResult(_ result: InternalProcessedResult, completion: @escaping (Data?) -> Void) {
-        print("📸 [HandleResult] Processing regular photo result")
+        debugLog("📸 [HandleResult] Processing regular photo result")
 
         let captureResult = CaptureResult(
             originalImage: result.processedImages.originalImage,
@@ -381,7 +381,7 @@ private extension PhotoProcessor {
 
         delegate?.photoProcessor(self, didFinishProcessing: captureResult)
         completion(nil)
-        print("✅ [HandleResult] Regular photo processing complete")
+        debugLog("✅ [HandleResult] Regular photo processing complete")
     }
 
     /// Process `CIImage` with shared components
@@ -395,7 +395,7 @@ private extension PhotoProcessor {
         fixedOrientation: UIImage.Orientation? = nil
     ) -> InternalProcessedResult {
         let processStart = Date()
-        print("🎯 [SharedProcess] 开始使用共享组件处理图像 (isRaw: \(isRaw))")
+        debugLog("🎯 [SharedProcess] 开始使用共享组件处理图像 (isRaw: \(isRaw))")
 
         // Use the shared image processor
         guard let processedImages = imageProcessor.processImage(
@@ -404,7 +404,7 @@ private extension PhotoProcessor {
             applyFilter: applyFilter,
             fixedOrientation: fixedOrientation
         ) else {
-            print("❌ [SharedProcess] 图像处理失败")
+            debugLog("❌ [SharedProcess] 图像处理失败")
             let emptyResult = ProcessedImageResult(originalImage: UIImage(), filteredImage: UIImage())
             return InternalProcessedResult(
                 processedImages: emptyResult,
@@ -418,7 +418,7 @@ private extension PhotoProcessor {
         let finalMetadata = metadataBuilder.buildPhotoMetadata(originalMetadata: metadata)
 
         let processDuration = Date().timeIntervalSince(processStart)
-        print("🎯 [SharedProcess] 共享组件处理完成，耗时: \(String(format: "%.3f", processDuration))s")
+        debugLog("🎯 [SharedProcess] 共享组件处理完成，耗时: \(String(format: "%.3f", processDuration))s")
 
         return InternalProcessedResult(
             processedImages: processedImages,

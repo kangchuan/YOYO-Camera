@@ -80,7 +80,7 @@ struct TimerCountdownView: View {
         countdownSeconds: 3,
         isActive: isActive,
         onCountdownFinished: {
-            print("Countdown finished")
+            debugLog("Countdown finished")
             isActive = false
         }
     )

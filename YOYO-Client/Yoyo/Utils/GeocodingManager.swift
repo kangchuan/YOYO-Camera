@@ -16,7 +16,7 @@ final class GeocodingManager {
                 return placemark.locality ?? placemark.administrativeArea ?? placemark.name
             }
         } catch {
-            print("Geocoding failed: \(error.localizedDescription)")
+            debugLog("Geocoding failed: \(error.localizedDescription)")
         }
         return nil
     }

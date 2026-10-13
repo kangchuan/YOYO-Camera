@@ -79,6 +79,6 @@ extension LocationManager: CLLocationManagerDelegate {
 
     func locationManager(_: CLLocationManager, didFailWithError error: Error) {
         // Keep minimal logging; upstream can decide how to surface errors
-        print("位置获取失败: \(error.localizedDescription)")
+        debugLog("位置获取失败: \(error.localizedDescription)")
     }
 }

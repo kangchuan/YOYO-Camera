@@ -52,7 +52,7 @@ actor LivePhotoProcessor {
             orientation: orientation
         )
         activeCaptures[uniqueID] = capture
-        print("🎬 [LivePhoto] Begin capture - uniqueID: \(uniqueID)")
+        debugLog("🎬 [LivePhoto] Begin capture - uniqueID: \(uniqueID)")
 
         // setclean up
         Task { [weak self] in
@@ -103,7 +103,7 @@ actor LivePhotoProcessor {
 
         while Date().timeIntervalSince(startTime) < maxWaitTime {
             guard let capture = activeCaptures[uniqueID] else {
-                print("❌ [LivePhoto] Finish failed - capture not found for uniqueID: \(uniqueID)")
+                debugLog("❌ [LivePhoto] Finish failed - capture not found for uniqueID: \(uniqueID)")
                 return nil
             }
 
@@ -117,14 +117,14 @@ actor LivePhotoProcessor {
         }
 
         guard var capture = activeCaptures[uniqueID] else {
-            print("❌ [LivePhoto] Finish failed - capture not found for uniqueID: \(uniqueID)")
+            debugLog("❌ [LivePhoto] Finish failed - capture not found for uniqueID: \(uniqueID)")
             return nil
         }
 
         guard let filteredImage = capture.filteredImage,
               let originalImage = capture.originalImage
         else {
-            print("❌ [LivePhoto] Finish failed - image data not ready after waiting for uniqueID: \(uniqueID)")
+            debugLog("❌ [LivePhoto] Finish failed - image data not ready after waiting for uniqueID: \(uniqueID)")
             return nil
         }
 
@@ -132,7 +132,7 @@ actor LivePhotoProcessor {
         capture.isFinishing = true
         activeCaptures[uniqueID] = capture
 
-        print("🎬 [LivePhoto] Starting video processing wait for uniqueID: \(uniqueID)")
+        debugLog("🎬 [LivePhoto] Starting video processing wait for uniqueID: \(uniqueID)")
 
         // ⚡️ waitvideocomplete
         let processedVideoURL: URL? = await {
@@ -155,13 +155,13 @@ actor LivePhotoProcessor {
         metadata["livePhotoAssetIdentifier"] = capture.assetIdentifier
 
         guard let videoURL = processedVideoURL else {
-            print("❌ [LivePhoto] Finish failed - no video URL")
+            debugLog("❌ [LivePhoto] Finish failed - no video URL")
             return nil
         }
 
         // clean upstate
         activeCaptures.removeValue(forKey: uniqueID)
-        print("✅ [LivePhoto] Finish capture - uniqueID: \(uniqueID)")
+        debugLog("✅ [LivePhoto] Finish capture - uniqueID: \(uniqueID)")
 
         return CaptureResult(
             originalImage: originalImage,
@@ -209,14 +209,14 @@ actor LivePhotoProcessor {
         if let capture = activeCaptures[uniqueID] {
             // ifin progresscomplete, not clean up
             if capture.isFinishing {
-                print("⏳ [LivePhoto] Timeout skipped - finishing in progress for uniqueID: \(uniqueID)")
+                debugLog("⏳ [LivePhoto] Timeout skipped - finishing in progress for uniqueID: \(uniqueID)")
                 return
             }
 
             let elapsed = Date().timeIntervalSince(capture.timestamp)
             if elapsed >= captureTimeout {
                 activeCaptures.removeValue(forKey: uniqueID)
-                print("⚠️ [LivePhoto] Timeout cleanup - uniqueID: \(uniqueID), elapsed: \(String(format: "%.1f", elapsed))s")
+                debugLog("⚠️ [LivePhoto] Timeout cleanup - uniqueID: \(uniqueID), elapsed: \(String(format: "%.1f", elapsed))s")
             }
         }
     }

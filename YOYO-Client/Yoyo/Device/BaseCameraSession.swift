@@ -35,7 +35,7 @@ class BaseCameraSession {
         // error, preview/
         let code = error.code.rawValue
         let userInfo = notification.userInfo ?? [:]
-        print("❌ [\(type(of: self))] Session runtime error: \(error.localizedDescription) (code: \(code), domain: \(error._nsError.domain), userInfo: \(userInfo))")
+        debugLog("❌ [\(type(of: self))] Session runtime error: \(error.localizedDescription) (code: \(code), domain: \(error._nsError.domain), userInfo: \(userInfo))")
 
         if error.code == .mediaServicesWereReset {
             sessionQueue.async { [weak self] in
@@ -51,7 +51,7 @@ class BaseCameraSession {
               let reasonValue = userInfo[AVCaptureSessionInterruptionReasonKey] as? Int
         else { return }
 
-        print("⚠️ [\(type(of: self))] Session interrupted, reason: \(reasonValue)")
+        debugLog("⚠️ [\(type(of: self))] Session interrupted, reason: \(reasonValue)")
 
         // 1: videoDeviceNotAvailableInBackground
         // 2: audioDeviceInUseByAnotherApp
@@ -59,12 +59,12 @@ class BaseCameraSession {
         if reasonValue == 1 {
             // background
         } else if reasonValue == 2 || reasonValue == 3 {
-            print("⚠️ [\(type(of: self))] Device in use by another app")
+            debugLog("⚠️ [\(type(of: self))] Device in use by another app")
         }
     }
 
     @objc private func handleSessionInterruptionEnded(notification _: Notification) {
-        print("✅ [\(type(of: self))] Session interruption ended")
+        debugLog("✅ [\(type(of: self))] Session interruption ended")
         sessionQueue.async { [weak self] in
             guard let self else { return }
             if self.isRunning, !self.session.isRunning {
@@ -153,7 +153,7 @@ class BaseCameraSession {
         // setzoom 1.0x(wide camera)
         // use force: true (setZoomFactor)
         // need to main thread, becauseupdate @Published properties
-        print("🔍 [\(type(of: self))] 应用初始缩放")
+        debugLog("🔍 [\(type(of: self))] 应用初始缩放")
         DispatchQueue.main.async {
             deviceManager.zoomManager.resetZoom()
         }
@@ -166,7 +166,7 @@ class BaseCameraSession {
             if self.session.isRunning {
                 self.session.stopRunning()
                 self.isRunning = false
-                print("⏹️ [\(type(of: self))] Session stopped")
+                debugLog("⏹️ [\(type(of: self))] Session stopped")
             }
         }
     }
@@ -181,13 +181,13 @@ class BaseCameraSession {
             // use inputConfigurator configurecamerainput, onlyremovevideoinput, audioinput
             // removeInput($0) audioinput, switchmodeno
             if CameraInputConfigurator.shared.configureCameraInput(for: self.session, device: device) {
-                print("✅ [\(type(of: self))] Camera input switched to: \(device.deviceType.rawValue), position: \(device.position == .front ? "Front" : "Back")")
+                debugLog("✅ [\(type(of: self))] Camera input switched to: \(device.deviceType.rawValue), position: \(device.position == .front ? "Front" : "Back")")
             }
 
             // ✅ ifzoom, device(commitConfiguration)
             // this waycan ensuredevicezoom,
             if let targetZoom {
-                print("⚡ [\(type(of: self))] Applying immediate zoom: \(targetZoom)x")
+                debugLog("⚡ [\(type(of: self))] Applying immediate zoom: \(targetZoom)x")
                 CameraDeviceManager.shared.zoomManager.applyZoomImmediately(to: device, deviceZoom: targetZoom)
             }
 
@@ -212,7 +212,7 @@ class BaseCameraSession {
     func reconfigureAudioInput() {
         sessionQueue.async { [weak self] in
             guard let self else { return }
-            print("🎤 [\(type(of: self))] Reconfiguring audio input...")
+            debugLog("🎤 [\(type(of: self))] Reconfiguring audio input...")
             self.session.beginConfiguration()
             CameraInputConfigurator.shared.configureAudioInput(for: self.session)
             self.session.commitConfiguration()

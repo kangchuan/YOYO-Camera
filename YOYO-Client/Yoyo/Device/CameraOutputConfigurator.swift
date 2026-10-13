@@ -14,7 +14,7 @@ final class CameraOutputConfigurator {
     ///   - enableLive Photo: whether Live Photo
     /// - Returns: photooutput instances
     func configurePhotoOutput(for session: AVCaptureSession, device: AVCaptureDevice?, enableLivePhoto: Bool) -> AVCapturePhotoOutput? {
-        print("📸 [CameraOutputConfigurator] 开始配置照片输出")
+        debugLog("📸 [CameraOutputConfigurator] 开始配置照片输出")
 
         // removephotooutput
         removeExistingPhotoOutput(from: session)
@@ -22,19 +22,19 @@ final class CameraOutputConfigurator {
         let photoOutput = AVCapturePhotoOutput()
 
         guard session.canAddOutput(photoOutput) else {
-            print("❌ [CameraOutputConfigurator] 无法添加照片输出")
+            debugLog("❌ [CameraOutputConfigurator] 无法添加照片输出")
             return nil
         }
 
         session.addOutput(photoOutput)
-        print("✅ [CameraOutputConfigurator] 照片输出配置成功")
+        debugLog("✅ [CameraOutputConfigurator] 照片输出配置成功")
 
         // configure ProRAW
         if photoOutput.isAppleProRAWSupported {
             photoOutput.isAppleProRAWEnabled = true
-            print("✅ [CameraOutputConfigurator] Apple ProRAW 已启用")
+            debugLog("✅ [CameraOutputConfigurator] Apple ProRAW 已启用")
         } else {
-            print("ℹ️ [CameraOutputConfigurator] 当前设备/格式不支持 Apple ProRAW")
+            debugLog("ℹ️ [CameraOutputConfigurator] 当前设备/格式不支持 Apple ProRAW")
         }
 
         // configure Live Photo
@@ -44,7 +44,7 @@ final class CameraOutputConfigurator {
         if hasVideoInput(in: session) {
             configureHighResolution(for: photoOutput, device: device)
         } else {
-            print("⚠️ [CameraOutputConfigurator] Session 没有视频输入，跳过高分辨率配置")
+            debugLog("⚠️ [CameraOutputConfigurator] Session 没有视频输入，跳过高分辨率配置")
         }
 
         return photoOutput
@@ -54,7 +54,7 @@ final class CameraOutputConfigurator {
     /// - Parameter session: session
     /// - Returns: videooutput instances
     func configureMovieFileOutput(for session: AVCaptureSession) -> AVCaptureMovieFileOutput? {
-        print("🎥 [CameraOutputConfigurator] 开始配置视频文件输出")
+        debugLog("🎥 [CameraOutputConfigurator] 开始配置视频文件输出")
 
         // removevideooutput
         removeExistingMovieOutput(from: session)
@@ -62,7 +62,7 @@ final class CameraOutputConfigurator {
         let movieOutput = AVCaptureMovieFileOutput()
 
         guard session.canAddOutput(movieOutput) else {
-            print("❌ [CameraOutputConfigurator] 无法添加视频文件输出")
+            debugLog("❌ [CameraOutputConfigurator] 无法添加视频文件输出")
             return nil
         }
 
@@ -73,10 +73,10 @@ final class CameraOutputConfigurator {
            connection.isVideoStabilizationSupported
         {
             connection.preferredVideoStabilizationMode = .auto
-            print("✅ [CameraOutputConfigurator] 视频稳定已启用")
+            debugLog("✅ [CameraOutputConfigurator] 视频稳定已启用")
         }
 
-        print("✅ [CameraOutputConfigurator] 视频文件输出配置成功")
+        debugLog("✅ [CameraOutputConfigurator] 视频文件输出配置成功")
         return movieOutput
     }
 
@@ -86,11 +86,11 @@ final class CameraOutputConfigurator {
     ///   - discardsLateFrames: whether(preview true, recording false)
     /// - Returns: videodataoutput instances
     func configureVideoDataOutput(for session: AVCaptureSession, discardsLateFrames: Bool = true) -> AVCaptureVideoDataOutput? {
-        print("📹 [CameraOutputConfigurator] 开始配置视频数据输出, discardsLateFrames: \(discardsLateFrames)")
+        debugLog("📹 [CameraOutputConfigurator] 开始配置视频数据输出, discardsLateFrames: \(discardsLateFrames)")
 
         // checkwhether
         if let existingOutput = findExistingVideoDataOutput(in: session) {
-            print("📋 [CameraOutputConfigurator] 视频数据输出已存在，更新配置并返回")
+            debugLog("📋 [CameraOutputConfigurator] 视频数据输出已存在，更新配置并返回")
             existingOutput.alwaysDiscardsLateVideoFrames = discardsLateFrames
             return existingOutput
         }
@@ -99,12 +99,12 @@ final class CameraOutputConfigurator {
         videoOutput.alwaysDiscardsLateVideoFrames = discardsLateFrames
 
         guard session.canAddOutput(videoOutput) else {
-            print("❌ [CameraOutputConfigurator] 无法添加视频数据输出")
+            debugLog("❌ [CameraOutputConfigurator] 无法添加视频数据输出")
             return nil
         }
 
         session.addOutput(videoOutput)
-        print("✅ [CameraOutputConfigurator] 视频数据输出配置成功")
+        debugLog("✅ [CameraOutputConfigurator] 视频数据输出配置成功")
         return videoOutput
     }
 
@@ -112,23 +112,23 @@ final class CameraOutputConfigurator {
     /// - Parameter session: session
     /// - Returns: audiodataoutput instances
     func configureAudioDataOutput(for session: AVCaptureSession) -> AVCaptureAudioDataOutput? {
-        print("🎤 [CameraOutputConfigurator] 开始配置音频数据输出")
+        debugLog("🎤 [CameraOutputConfigurator] 开始配置音频数据输出")
 
         // checkwhether
         if let existingOutput = findExistingAudioDataOutput(in: session) {
-            print("📋 [CameraOutputConfigurator] 音频数据输出已存在，返回现有实例")
+            debugLog("📋 [CameraOutputConfigurator] 音频数据输出已存在，返回现有实例")
             return existingOutput
         }
 
         let audioOutput = AVCaptureAudioDataOutput()
 
         guard session.canAddOutput(audioOutput) else {
-            print("❌ [CameraOutputConfigurator] 无法添加音频数据输出")
+            debugLog("❌ [CameraOutputConfigurator] 无法添加音频数据输出")
             return nil
         }
 
         session.addOutput(audioOutput)
-        print("✅ [CameraOutputConfigurator] 音频数据输出配置成功")
+        debugLog("✅ [CameraOutputConfigurator] 音频数据输出配置成功")
         return audioOutput
     }
 
@@ -138,7 +138,7 @@ final class CameraOutputConfigurator {
     private func removeExistingPhotoOutput(from session: AVCaptureSession) {
         for output in session.outputs {
             if output is AVCapturePhotoOutput {
-                print("🗑️ [CameraOutputConfigurator] 移除现有照片输出")
+                debugLog("🗑️ [CameraOutputConfigurator] 移除现有照片输出")
                 session.removeOutput(output)
             }
         }
@@ -148,7 +148,7 @@ final class CameraOutputConfigurator {
     private func removeExistingMovieOutput(from session: AVCaptureSession) {
         for output in session.outputs {
             if output is AVCaptureMovieFileOutput {
-                print("🗑️ [CameraOutputConfigurator] 移除现有视频文件输出")
+                debugLog("🗑️ [CameraOutputConfigurator] 移除现有视频文件输出")
                 session.removeOutput(output)
             }
         }
@@ -176,9 +176,9 @@ final class CameraOutputConfigurator {
     private func configureLivePhoto(for output: AVCapturePhotoOutput, enabled: Bool) {
         if output.isLivePhotoCaptureSupported {
             output.isLivePhotoCaptureEnabled = enabled
-            print("✅ [CameraOutputConfigurator] Live Photo 配置: \(enabled)")
+            debugLog("✅ [CameraOutputConfigurator] Live Photo 配置: \(enabled)")
         } else {
-            print("⚠️ [CameraOutputConfigurator] 不支持 Live Photo")
+            debugLog("⚠️ [CameraOutputConfigurator] 不支持 Live Photo")
         }
     }
 
@@ -198,11 +198,11 @@ final class CameraOutputConfigurator {
                 bestDimensions.height > 0
             {
                 output.maxPhotoDimensions = bestDimensions
-                print("✅ [CameraOutputConfigurator] 高分辨率配置: \(bestDimensions.width)x\(bestDimensions.height)")
+                debugLog("✅ [CameraOutputConfigurator] 高分辨率配置: \(bestDimensions.width)x\(bestDimensions.height)")
             }
         } else {
             output.isHighResolutionCaptureEnabled = true
-            print("✅ [CameraOutputConfigurator] 高分辨率捕获已启用")
+            debugLog("✅ [CameraOutputConfigurator] 高分辨率捕获已启用")
         }
     }
 }

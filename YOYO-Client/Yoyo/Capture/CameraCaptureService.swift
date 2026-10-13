@@ -129,7 +129,7 @@ final class CameraCaptureService: NSObject, ObservableObject {
     }
 
     private func handleSaveFinished(success: Bool) {
-        print("📡 [CaptureService] Received save finished notification. Success: \(success)")
+        debugLog("📡 [CaptureService] Received save finished notification. Success: \(success)")
         if success {
             captureStateMachine.completeSaving()
         } else {
@@ -138,7 +138,7 @@ final class CameraCaptureService: NSObject, ObservableObject {
     }
 
     private func handleUserAction(_ action: CameraViewState.UserAction) {
-        print("📡 [CaptureService] Received broadcast action: \(action)")
+        debugLog("📡 [CaptureService] Received broadcast action: \(action)")
         switch action {
         case .startCapture, .startTimerCapture:
             startCapture()
@@ -162,7 +162,7 @@ final class CameraCaptureService: NSObject, ObservableObject {
     }
 
     deinit {
-        print("🗑️ [CaptureService] deinit")
+        debugLog("🗑️ [CaptureService] deinit")
         stateTimeoutTask?.cancel()
     }
 
@@ -240,7 +240,7 @@ final class CameraCaptureService: NSObject, ObservableObject {
            let originalRecorder = originalMovieRecorder,
            let originalConfig = createRecordingConfig(isOriginal: true)
         {
-            print("🎬 [CaptureService] 启动原片录制器 (isOriginal=\(originalConfig.isOriginal))")
+            debugLog("🎬 [CaptureService] 启动原片录制器 (isOriginal=\(originalConfig.isOriginal))")
             originalRecorder.startRecording(with: originalConfig)
         }
 
@@ -336,11 +336,11 @@ final class CameraCaptureService: NSObject, ObservableObject {
 
         if state.isWaiting || (settingsState.currentCaptureMode == .movie && state.isCapturing) {
             // ifin progresswait(countdown/prepare)in progressrecordingvideo, stop/
-            print("📸 [CaptureService] 快门触发：停止或取消当前操作 (state: \(state))")
+            debugLog("📸 [CaptureService] 快门触发：停止或取消当前操作 (state: \(state))")
             endCapture()
         } else if state.canStartCapture {
             // otherwise, ifidlestate, startcapture
-            print("📸 [CaptureService] 快门触发：开始拍摄流程")
+            debugLog("📸 [CaptureService] 快门触发：开始拍摄流程")
             startCapture()
         }
     }
@@ -379,7 +379,7 @@ final class CameraCaptureService: NSObject, ObservableObject {
     func handleCaptureStateChange(_ old: CaptureState, _ new: CaptureState) async {
         // memory
         let memory = getMemoryUsage()
-        print("📊 [Memory] State: \(old) → \(new), Memory: \(String(format: "%.1f", memory))MB")
+        debugLog("📊 [Memory] State: \(old) → \(new), Memory: \(String(format: "%.1f", memory))MB")
 
         stateTimeoutTask?.cancel()
         capturingTimeoutTask?.cancel()
@@ -393,7 +393,7 @@ final class CameraCaptureService: NSObject, ObservableObject {
                     guard let self,
                           self.captureStateMachine.currentState == .capturing
                     else { return }
-                    print("⚠️ [CaptureService] Capturing timeout - forcing error state")
+                    debugLog("⚠️ [CaptureService] Capturing timeout - forcing error state")
                     self.reportError(CaptureError.captureTimeout)
                 }
             }
@@ -456,7 +456,7 @@ final class CameraCaptureService: NSObject, ObservableObject {
 
             // memory
             let completedMemory = getMemoryUsage()
-            print("📊 [Memory] Completed state cleanup - Memory: \(String(format: "%.1f", completedMemory))MB")
+            debugLog("📊 [Memory] Completed state cleanup - Memory: \(String(format: "%.1f", completedMemory))MB")
 
         case .idle:
             pendingCaptureResult = nil
@@ -526,7 +526,7 @@ final class CameraCaptureService: NSObject, ObservableObject {
             let values = try fileURL.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey])
             return (values.volumeAvailableCapacityForImportantUsage ?? 0) > minStorageSpace
         } catch {
-            print("❌ [CaptureService] Failed to check storage space: \(error)")
+            debugLog("❌ [CaptureService] Failed to check storage space: \(error)")
             return true // defaultrecording
         }
     }
@@ -570,14 +570,14 @@ extension CameraCaptureService: PhotoProcessorDelegate {
 extension CameraCaptureService: MovieRecorderDelegate {
     func movieRecorder(_ recorder: MovieRecorder, didStartRecordingTo _: URL) {
         let isOriginal = recorder === originalMovieRecorder
-        print("🎬 [CaptureService] \(isOriginal ? "原始" : "带滤镜")视频录制开始")
+        debugLog("🎬 [CaptureService] \(isOriginal ? "原始" : "带滤镜")视频录制开始")
     }
 
     func movieRecorder(_ recorder: MovieRecorder, didFinishRecordingTo url: URL, error: Error?) {
         let isOriginal = recorder === originalMovieRecorder
 
         if let error {
-            print("❌ [CaptureService] \(isOriginal ? "原始" : "带滤镜")视频录制失败: \(error.localizedDescription)")
+            debugLog("❌ [CaptureService] \(isOriginal ? "原始" : "带滤镜")视频录制失败: \(error.localizedDescription)")
             try? FileManager.default.removeItem(at: url)
             if !isOriginal {
                 reportError(error)
@@ -585,7 +585,7 @@ extension CameraCaptureService: MovieRecorderDelegate {
             return
         }
 
-        print("✅ [CaptureService] \(isOriginal ? "原始" : "带滤镜")视频录制完成: \(url.lastPathComponent)")
+        debugLog("✅ [CaptureService] \(isOriginal ? "原始" : "带滤镜")视频录制完成: \(url.lastPathComponent)")
 
         // save URL
         if isOriginal {
@@ -596,7 +596,7 @@ extension CameraCaptureService: MovieRecorderDelegate {
 
         // checkwhetherpreparecomplete: filtervideo
         guard pendingFilteredVideoURL != nil else {
-            print("⏳ [CaptureService] 等待带滤镜视频录制完成...")
+            debugLog("⏳ [CaptureService] 等待带滤镜视频录制完成...")
             return
         }
 
@@ -604,10 +604,10 @@ extension CameraCaptureService: MovieRecorderDelegate {
         let needsOriginal = settingsState.saveOriginalEnabled
         if needsOriginal, pendingOriginalVideoURL == nil {
             if originalMovieRecorder?.isRecording == true {
-                print("⏳ [CaptureService] 等待原始视频录制完成...")
+                debugLog("⏳ [CaptureService] 等待原始视频录制完成...")
                 return
             } else {
-                print("⚠️ [CaptureService] 需要保存原片但原始视频未就绪，将仅保存带滤镜视频")
+                debugLog("⚠️ [CaptureService] 需要保存原片但原始视频未就绪，将仅保存带滤镜视频")
             }
         }
 
@@ -623,7 +623,7 @@ extension CameraCaptureService: MovieRecorderDelegate {
             originalVideoURL: pendingOriginalVideoURL
         )
 
-        print("💾 [CaptureService] 视频结果生成 - 带滤镜: \(pendingFilteredVideoURL?.lastPathComponent ?? "nil"), 原始: \(pendingOriginalVideoURL?.lastPathComponent ?? "nil")")
+        debugLog("💾 [CaptureService] 视频结果生成 - 带滤镜: \(pendingFilteredVideoURL?.lastPathComponent ?? "nil"), 原始: \(pendingOriginalVideoURL?.lastPathComponent ?? "nil")")
 
         // setresult, thentriggerstate
         pendingCaptureResult = captureResult
@@ -645,7 +645,7 @@ extension CameraCaptureService: AVCapturePhotoCaptureDelegate {
     func photoOutput(_: AVCapturePhotoOutput, didFinishProcessingLivePhotoToMovieFileAt outputFileURL: URL, duration _: CMTime, photoDisplayTime: CMTime, resolvedSettings: AVCaptureResolvedPhotoSettings, error: Error?) {
         if let error {
             Task { await livePhotoProcessor.cancelCapture(uniqueID: Int(resolvedSettings.uniqueID)) }
-            print("❌ [CaptureService] Live Photo 视频处理失败: \(error.localizedDescription)")
+            debugLog("❌ [CaptureService] Live Photo 视频处理失败: \(error.localizedDescription)")
             return
         }
 

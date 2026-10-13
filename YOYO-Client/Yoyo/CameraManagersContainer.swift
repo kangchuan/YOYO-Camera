@@ -57,7 +57,7 @@ final class CameraManagersContainer: ObservableObject {
         captureService.errorPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] errorMessage in
-                print("❌ [CameraManagersContainer] Received capture error: \(errorMessage)")
+                debugLog("❌ [CameraManagersContainer] Received capture error: \(errorMessage)")
                 self?.viewState.showError(errorMessage)
             }
             .store(in: &cancellables)
@@ -77,7 +77,7 @@ final class CameraManagersContainer: ObservableObject {
         let resolution = settingsState.videoResolution.dimensions
         let frameRate = settingsState.videoFrameRate.value
         let currentMode = settingsState.currentCaptureMode
-        print("🔄 [CameraManagersContainer] 更新视频配置: \(resolution.width)x\(resolution.height) @ \(frameRate)fps, 当前模式: \(currentMode.rawValue)")
+        debugLog("🔄 [CameraManagersContainer] 更新视频配置: \(resolution.width)x\(resolution.height) @ \(frameRate)fps, 当前模式: \(currentMode.rawValue)")
         sessionManager.updateVideoConfiguration(videoResolution: resolution, videoFrameRate: frameRate)
     }
 
@@ -102,12 +102,12 @@ final class CameraManagersContainer: ObservableObject {
 
     private func setupNotifications() {
         observeNotification(.videoResolutionDidChange) { container in
-            print("📡 [CameraManagersContainer] 收到 videoResolutionDidChange 通知")
+            debugLog("📡 [CameraManagersContainer] 收到 videoResolutionDidChange 通知")
             container.updateVideoConfiguration()
         }
 
         observeNotification(.videoFrameRateDidChange) { container in
-            print("📡 [CameraManagersContainer] 收到 videoFrameRateDidChange 通知")
+            debugLog("📡 [CameraManagersContainer] 收到 videoFrameRateDidChange 通知")
             container.updateVideoConfiguration()
         }
 
@@ -134,7 +134,7 @@ final class CameraManagersContainer: ObservableObject {
     }
 
     private func handleCaptureModeChange(_ captureMode: CameraCaptureMode) {
-        print("🔄 [CameraManagersContainer] 拍摄模式变化: \(captureMode.rawValue)")
+        debugLog("🔄 [CameraManagersContainer] 拍摄模式变化: \(captureMode.rawValue)")
 
         // 1. Before switching modes, stop the previous capture if capture or recording is in progress
         captureService.endCapture()
@@ -174,7 +174,7 @@ final class CameraManagersContainer: ObservableObject {
             }
         }
 
-        print("🔦 [CameraManagersContainer] 恢复手电筒状态: \(shouldEnable)")
+        debugLog("🔦 [CameraManagersContainer] 恢复手电筒状态: \(shouldEnable)")
         deviceManager.setTorch(enabled: shouldEnable)
     }
 

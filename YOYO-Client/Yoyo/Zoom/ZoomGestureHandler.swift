@@ -54,7 +54,7 @@ final class ZoomGestureHandler {
         lastGestureUpdateTime = Date()
         zoomLevelCrossedThresholds.removeAll()
 
-        print("[Zoom Gesture] 🎬 Pinch began - Initial: \(String(format: "%.2f", initialZoomLevel))x")
+        debugLog("[Zoom Gesture] 🎬 Pinch began - Initial: \(String(format: "%.2f", initialZoomLevel))x")
     }
 
     /// handle gesture changes
@@ -71,7 +71,7 @@ final class ZoomGestureHandler {
     /// handle gesture end
     private func handleGestureEnded() {
         let finalZoom = ZoomManager.shared.deviceZoomFactor
-        print("[Zoom Gesture] ✅ Pinch ended - Final: \(String(format: "%.2f", finalZoom))x")
+        debugLog("[Zoom Gesture] ✅ Pinch ended - Final: \(String(format: "%.2f", finalZoom))x")
 
         // gestureend, checkwhetherneed to switchdevice
         // use allowDeviceSwitch: true let ZoomManager

@@ -51,7 +51,7 @@ private final class WriterPipeline {
             assetWriter = writer
             return true
         } catch {
-            print("❌ [WriterPipeline] 创建 AssetWriter 失败: \(error.localizedDescription)")
+            debugLog("❌ [WriterPipeline] 创建 AssetWriter 失败: \(error.localizedDescription)")
             return false
         }
     }
@@ -62,7 +62,7 @@ private final class WriterPipeline {
                          audioSettings: [String: Any]?) -> Bool
     {
         guard let writer = assetWriter else {
-            print("❌ [WriterPipeline] AssetWriter 未初始化")
+            debugLog("❌ [WriterPipeline] AssetWriter 未初始化")
             return false
         }
 
@@ -77,7 +77,7 @@ private final class WriterPipeline {
         }
 
         guard writer.canAdd(videoInput) else {
-            print("❌ [WriterPipeline] 无法添加视频输入")
+            debugLog("❌ [WriterPipeline] 无法添加视频输入")
             return false
         }
         writer.add(videoInput)
@@ -102,22 +102,22 @@ private final class WriterPipeline {
             if writer.canAdd(audioInput) {
                 writer.add(audioInput)
                 self.audioInput = audioInput
-                print("✅ [WriterPipeline] 音频输入添加成功")
+                debugLog("✅ [WriterPipeline] 音频输入添加成功")
             } else {
-                print("⚠️ [WriterPipeline] 无法添加音频输入，将录制无声视频")
+                debugLog("⚠️ [WriterPipeline] 无法添加音频输入，将录制无声视频")
             }
         }
 
         guard writer.startWriting() else {
             let error = writer.error
-            print("❌ [WriterPipeline] 无法开始写入: \(error?.localizedDescription ?? "未知错误")")
+            debugLog("❌ [WriterPipeline] 无法开始写入: \(error?.localizedDescription ?? "未知错误")")
             if let error {
-                print("🔍 [WriterPipeline] 详细错误信息: \(error)")
+                debugLog("🔍 [WriterPipeline] 详细错误信息: \(error)")
             }
             return false
         }
 
-        print("✅ [WriterPipeline] AssetWriter 配置完成，状态: \(writer.status.rawValue)")
+        debugLog("✅ [WriterPipeline] AssetWriter 配置完成，状态: \(writer.status.rawValue)")
         return true
     }
 
@@ -254,13 +254,13 @@ final class MovieRecorder {
     private func validateDeviceFrameRate() -> Double? {
         guard let currentCamera = CameraDeviceManager.shared.getCurrentCamera()
         else {
-            print("⚠️ [MovieRecorder] 无法获取当前设备")
+            debugLog("⚠️ [MovieRecorder] 无法获取当前设备")
             return currentRecordingConfig?.videoFrameRate ?? 30.0
         }
         // key
         if let session = sessionManager?.captureSession {
             let dim = CMVideoFormatDescriptionGetDimensions(currentCamera.activeFormat.formatDescription)
-            print("🟡 [实时检查-MovieRecorder] activeFormat=\(dim.width)x\(dim.height), min=\(currentCamera.activeVideoMinFrameDuration), max=\(currentCamera.activeVideoMaxFrameDuration), sessionPreset=\(session.sessionPreset)")
+            debugLog("🟡 [实时检查-MovieRecorder] activeFormat=\(dim.width)x\(dim.height), min=\(currentCamera.activeVideoMinFrameDuration), max=\(currentCamera.activeVideoMaxFrameDuration), sessionPreset=\(session.sessionPreset)")
         }
 
         let minFrameDuration = currentCamera.activeVideoMinFrameDuration
@@ -271,7 +271,7 @@ final class MovieRecorder {
             let maxFrameRate = Double(maxFrameDuration.timescale) / Double(maxFrameDuration.value)
             let actualFrameRate = (minFrameRate + maxFrameRate) / 2.0
 
-            print("🔍 [MovieRecorder] 设备实际帧率检测: \(actualFrameRate) fps (范围: \(minFrameRate)-\(maxFrameRate))")
+            debugLog("🔍 [MovieRecorder] 设备实际帧率检测: \(actualFrameRate) fps (范围: \(minFrameRate)-\(maxFrameRate))")
             return actualFrameRate
         }
 
@@ -280,7 +280,7 @@ final class MovieRecorder {
     }
 
     deinit {
-        print("🗑️ [MovieRecorder] deinit - 清理资源")
+        debugLog("🗑️ [MovieRecorder] deinit - 清理资源")
         stopRecording()
     }
 
@@ -290,7 +290,7 @@ final class MovieRecorder {
     func startRecording(with config: RecordingConfig) -> Bool {
         recordingQueue.sync {
             guard !isRecording else {
-                print("⚠️ [MovieRecorder] 已经在录制中")
+                debugLog("⚠️ [MovieRecorder] 已经在录制中")
                 return false
             }
 
@@ -299,7 +299,7 @@ final class MovieRecorder {
             // recording
             if let currentCamera = CameraDeviceManager.shared.getCurrentCamera(), let session = sessionManager?.captureSession {
                 let dim = CMVideoFormatDescriptionGetDimensions(currentCamera.activeFormat.formatDescription)
-                print("🟡 [采集入口检查-MovieRecorder] activeFormat=\(dim.width)x\(dim.height), min=\(currentCamera.activeVideoMinFrameDuration), max=\(currentCamera.activeVideoMaxFrameDuration), sessionPreset=\(session.sessionPreset)")
+                debugLog("🟡 [采集入口检查-MovieRecorder] activeFormat=\(dim.width)x\(dim.height), min=\(currentCamera.activeVideoMinFrameDuration), max=\(currentCamera.activeVideoMaxFrameDuration), sessionPreset=\(session.sessionPreset)")
             }
 
             // createtemporary URL
@@ -326,26 +326,26 @@ final class MovieRecorder {
             if FileManager.default.fileExists(atPath: fileURL.path) {
                 do {
                     try FileManager.default.removeItem(at: fileURL)
-                    print("🗑️ [MovieRecorder] 删除旧文件: \(fileURL.lastPathComponent)")
+                    debugLog("🗑️ [MovieRecorder] 删除旧文件: \(fileURL.lastPathComponent)")
                 } catch {
-                    print("⚠️ [MovieRecorder] 无法删除旧文件: \(error.localizedDescription)")
+                    debugLog("⚠️ [MovieRecorder] 无法删除旧文件: \(error.localizedDescription)")
                 }
             }
 
             currentVideoURL = fileURL
 
-            print("🎬 [MovieRecorder] 开始录制: \(fileURL.path)")
+            debugLog("🎬 [MovieRecorder] 开始录制: \(fileURL.path)")
             let fileType = config.videoSaveFormat.fileType
-            print("🎬 [MovieRecorder] 第一阶段：创建基础 AssetWriter - URL: \(fileURL.path), 格式: \(fileType)")
+            debugLog("🎬 [MovieRecorder] 第一阶段：创建基础 AssetWriter - URL: \(fileURL.path), 格式: \(fileType)")
 
             let phase1Success = pipeline.prepareWriter(outputURL: fileURL, fileType: fileType)
             if !phase1Success {
-                print("❌ [MovieRecorder] 第一阶段失败")
+                debugLog("❌ [MovieRecorder] 第一阶段失败")
                 // : herenot stopRecordingWithError, because delegate can prepare, sync
                 return false
             }
 
-            print("✅ [MovieRecorder] 第一阶段成功，等待第一帧获取实际尺寸")
+            debugLog("✅ [MovieRecorder] 第一阶段成功，等待第一帧获取实际尺寸")
 
             isRecording = true
             isFirstFrame = true
@@ -367,7 +367,7 @@ final class MovieRecorder {
             guard let strongSelf = self, strongSelf.isRecording else { return }
 
             guard let status = strongSelf.pipeline.status else {
-                print("⚠️ [MovieRecorder] AssetWriter 未初始化，直接清理")
+                debugLog("⚠️ [MovieRecorder] AssetWriter 未初始化，直接清理")
                 strongSelf.isRecording = false
                 strongSelf.cleanup()
                 return
@@ -376,7 +376,7 @@ final class MovieRecorder {
             if status == .unknown {
                 // if(not yet successfullydata), stop, not wait
                 if strongSelf.isFirstFrame {
-                    print("⚠️ [MovieRecorder] 停止录制时状态为 unknown 且未写入任何帧，视为录制失败或取消")
+                    debugLog("⚠️ [MovieRecorder] 停止录制时状态为 unknown 且未写入任何帧，视为录制失败或取消")
                     strongSelf.isRecording = false
                     strongSelf.cleanup()
 
@@ -393,7 +393,7 @@ final class MovieRecorder {
                     return
                 }
 
-                print("⏳ [MovieRecorder] 等待 AssetWriter 状态变化...")
+                debugLog("⏳ [MovieRecorder] 等待 AssetWriter 状态变化...")
                 // delay 100ms
                 strongSelf.recordingQueue.asyncAfter(deadline: .now() + 0.1) { [weak strongSelf] in
                     strongSelf?.stopRecording()
@@ -403,12 +403,12 @@ final class MovieRecorder {
 
             strongSelf.isRecording = false
 
-            print("🎬 [MovieRecorder] 停止录制，writer 状态: \(status.rawValue)")
+            debugLog("🎬 [MovieRecorder] 停止录制，writer 状态: \(status.rawValue)")
 
             strongSelf.pipeline.markInputsFinished()
 
             guard let outputURL = strongSelf.currentVideoURL else {
-                print("⚠️ [MovieRecorder] 输出 URL 为空")
+                debugLog("⚠️ [MovieRecorder] 输出 URL 为空")
                 strongSelf.cleanup()
                 return
             }
@@ -421,15 +421,15 @@ final class MovieRecorder {
                     }
                 }
             case .completed, .failed, .cancelled:
-                print("⚠️ [MovieRecorder] AssetWriter 已处于结束状态: \(status.rawValue)，触发完成回调")
+                debugLog("⚠️ [MovieRecorder] AssetWriter 已处于结束状态: \(status.rawValue)，触发完成回调")
                 DispatchQueue.main.async {
                     strongSelf.handleWriterCompletion(at: outputURL)
                 }
             case .unknown:
-                print("⚠️ [MovieRecorder] AssetWriter 状态仍为 unknown，直接清理")
+                debugLog("⚠️ [MovieRecorder] AssetWriter 状态仍为 unknown，直接清理")
                 strongSelf.cleanup()
             @unknown default:
-                print("⚠️ [MovieRecorder] AssetWriter 未知状态，直接清理")
+                debugLog("⚠️ [MovieRecorder] AssetWriter 未知状态，直接清理")
                 strongSelf.cleanup()
             }
         }
@@ -441,7 +441,7 @@ final class MovieRecorder {
         let writerError = pipeline.writerError
 
         if status == .completed {
-            print("✅ [MovieRecorder] 录制完成: \(url.path)")
+            debugLog("✅ [MovieRecorder] 录制完成: \(url.path)")
             delegate?.movieRecorder(self, didFinishRecordingTo: url, error: nil)
             cleanup()
             return
@@ -451,9 +451,9 @@ final class MovieRecorder {
             NSLocalizedDescriptionKey: "视频录制失败，AssetWriter状态: \(status?.rawValue ?? -1)",
         ])
 
-        print("❌ [MovieRecorder] 录制失败: \(error.localizedDescription)")
+        debugLog("❌ [MovieRecorder] 录制失败: \(error.localizedDescription)")
         if let status {
-            print("🔍 [MovieRecorder] Writer状态: \(status.rawValue), 错误详情: \(error)")
+            debugLog("🔍 [MovieRecorder] Writer状态: \(status.rawValue), 错误详情: \(error)")
         }
 
         delegate?.movieRecorder(self, didFinishRecordingTo: url, error: error)
@@ -481,12 +481,12 @@ final class MovieRecorder {
     private func ensureWriterConfigured(for sampleBuffer: CMSampleBuffer) -> Bool {
         if videoSize != nil {
             guard pipeline.isConfigured else {
-                print("⏳ [MovieRecorder] AssetWriter 正在配置中，跳过帧")
+                debugLog("⏳ [MovieRecorder] AssetWriter 正在配置中，跳过帧")
                 return false
             }
 
             guard pipeline.status == .writing else {
-                print("⚠️ [MovieRecorder] AssetWriter 状态: \(pipeline.status?.rawValue ?? -1)，等待写入")
+                debugLog("⚠️ [MovieRecorder] AssetWriter 状态: \(pipeline.status?.rawValue ?? -1)，等待写入")
                 return false
             }
 
@@ -494,7 +494,7 @@ final class MovieRecorder {
         }
 
         guard let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
-            print("⚠️ [MovieRecorder] 无法获取 image buffer 用于初始化")
+            debugLog("⚠️ [MovieRecorder] 无法获取 image buffer 用于初始化")
             stopRecordingWithError(NSError(domain: "MovieRecorder", code: -1, userInfo: [
                 NSLocalizedDescriptionKey: "无法读取首帧图像",
             ]))
@@ -505,7 +505,7 @@ final class MovieRecorder {
         let height = CVPixelBufferGetHeight(imageBuffer)
 
         guard width > 0, height > 0 else {
-            print("❌ [MovieRecorder] 检测到无效的视频尺寸: \(width)x\(height)")
+            debugLog("❌ [MovieRecorder] 检测到无效的视频尺寸: \(width)x\(height)")
             stopRecordingWithError(NSError(domain: "MovieRecorder", code: -1, userInfo: [
                 NSLocalizedDescriptionKey: "检测到无效的视频尺寸",
             ]))
@@ -514,9 +514,9 @@ final class MovieRecorder {
 
         let deviceOrientation = orientationManager?.currentDeviceOrientation ?? .unknown
 
-        print("📹 [MovieRecorder] 第一帧分析:")
-        print("   - 原始帧尺寸: \(width)x\(height)")
-        print("   - 设备方向: \(deviceOrientation.rawValue) (\(deviceOrientation))")
+        debugLog("📹 [MovieRecorder] 第一帧分析:")
+        debugLog("   - 原始帧尺寸: \(width)x\(height)")
+        debugLog("   - 设备方向: \(deviceOrientation.rawValue) (\(deviceOrientation))")
 
         let evenWidth = width - (width % 2)
         let evenHeight = height - (height % 2)
@@ -528,12 +528,12 @@ final class MovieRecorder {
         let finalSize = CGSize(width: alignedWidth, height: alignedHeight)
 
         videoSize = finalSize
-        print("📹 [MovieRecorder] 检测到视频尺寸: \(width)x\(height) -> 调整为: \(alignedWidth)x\(alignedHeight) (16字节对齐)")
+        debugLog("📹 [MovieRecorder] 检测到视频尺寸: \(width)x\(height) -> 调整为: \(alignedWidth)x\(alignedHeight) (16字节对齐)")
 
         guard configureWriter(with: finalSize) else {
-            print("❌ [MovieRecorder] 第二阶段失败 - Writer状态: \(pipeline.status?.rawValue ?? -1)")
+            debugLog("❌ [MovieRecorder] 第二阶段失败 - Writer状态: \(pipeline.status?.rawValue ?? -1)")
             if let error = pipeline.writerError {
-                print("🔍 [MovieRecorder] Writer错误详情: \(error)")
+                debugLog("🔍 [MovieRecorder] Writer错误详情: \(error)")
             }
             stopRecordingWithError(NSError(domain: "MovieRecorder", code: -1, userInfo: [
                 NSLocalizedDescriptionKey: "无法配置视频写入器",
@@ -541,7 +541,7 @@ final class MovieRecorder {
             return false
         }
 
-        print("✅ [MovieRecorder] 第二阶段成功 - Writer状态: \(pipeline.status?.rawValue ?? -1)")
+        debugLog("✅ [MovieRecorder] 第二阶段成功 - Writer状态: \(pipeline.status?.rawValue ?? -1)")
         return true
     }
 
@@ -552,7 +552,7 @@ final class MovieRecorder {
         pipeline.startSession(at: presentationTime)
         isFirstFrame = false
         sessionStarted = true
-        print("📸 [MovieRecorder] 开始会话，时间: \(presentationTime.seconds)")
+        debugLog("📸 [MovieRecorder] 开始会话，时间: \(presentationTime.seconds)")
     }
 
     /// stop recording and report an error
@@ -577,7 +577,7 @@ final class MovieRecorder {
             guard self.pipeline.isAudioInputReady() else { return }
 
             if !self.pipeline.appendAudioBuffer(sampleBuffer) {
-                print("⚠️ [MovieRecorder] 无法写入音频帧")
+                debugLog("⚠️ [MovieRecorder] 无法写入音频帧")
             }
         }
     }
@@ -586,13 +586,13 @@ final class MovieRecorder {
 
     private func configureWriter(with size: CGSize) -> Bool {
         let videoSettings = createVideoOutputSettings(size: size)
-        print("🎬 [MovieRecorder] 视频设置: \(videoSettings)")
+        debugLog("🎬 [MovieRecorder] 视频设置: \(videoSettings)")
 
         let audioSettings = createAudioOutputSettings()
         let orientation = orientationManager?.currentDeviceOrientation ?? .unknown
         let transform = transformForOrientation(orientation)
 
-        print("🎬 [MovieRecorder] 视频帧尺寸: \(size), transform: \(transform)")
+        debugLog("🎬 [MovieRecorder] 视频帧尺寸: \(size), transform: \(transform)")
 
         let configured = pipeline.configureWriter(
             size: size,
@@ -616,37 +616,37 @@ final class MovieRecorder {
             var pb: CVPixelBuffer?
             let status = CVPixelBufferPoolCreatePixelBuffer(nil, pool, &pb)
             if status != kCVReturnSuccess {
-                print("⚠️ [MovieRecorder] 像素缓冲池预热失败，status=\(status)")
+                debugLog("⚠️ [MovieRecorder] 像素缓冲池预热失败，status=\(status)")
                 break
             }
             // release, letavailable
             pb = nil
         }
-        print("✅ [MovieRecorder] 像素缓冲池预热完成: \(count) 个缓冲")
+        debugLog("✅ [MovieRecorder] 像素缓冲池预热完成: \(count) 个缓冲")
     }
 
     private func renderAndAppendVideoFrame(_ sampleBuffer: CMSampleBuffer) {
         guard pipeline.status == .writing else { return }
 
         guard pipeline.isVideoInputReady() else {
-            print("⚠️ [MovieRecorder] videoInput not ready for more media data")
+            debugLog("⚠️ [MovieRecorder] videoInput not ready for more media data")
             return
         }
 
         guard pipeline.hasPixelBufferAdaptor() else {
-            print("⚠️ [MovieRecorder] pixelBufferAdaptor is nil")
+            debugLog("⚠️ [MovieRecorder] pixelBufferAdaptor is nil")
             return
         }
 
         guard let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
-            print("⚠️ [MovieRecorder] 无法获取 image buffer")
+            debugLog("⚠️ [MovieRecorder] 无法获取 image buffer")
             return
         }
 
         let presentationTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
 
         guard let pool = pipeline.pixelBufferPool() else {
-            print("⚠️ [MovieRecorder] pixelBufferPool is nil")
+            debugLog("⚠️ [MovieRecorder] pixelBufferPool is nil")
             return
         }
 
@@ -657,7 +657,7 @@ final class MovieRecorder {
         let status = CVPixelBufferPoolCreatePixelBuffer(nil, pool, &pixelBuffer)
 
         guard status == kCVReturnSuccess, let outputBuffer = pixelBuffer else {
-            print("⚠️ [MovieRecorder] 无法创建 pixel buffer")
+            debugLog("⚠️ [MovieRecorder] 无法创建 pixel buffer")
             return
         }
 
@@ -686,12 +686,12 @@ final class MovieRecorder {
 
         guard pipeline.isVideoInputReady() else {
             frameDropCount += 1
-            print("⚠️ [MovieRecorder] 写入时状态变化，丢弃帧 (总丢帧: \(frameDropCount))")
+            debugLog("⚠️ [MovieRecorder] 写入时状态变化，丢弃帧 (总丢帧: \(frameDropCount))")
             return
         }
 
         if !pipeline.appendVideoBuffer(outputBuffer, at: presentationTime) {
-            print("⚠️ [MovieRecorder] 写入帧失败，时间: \(presentationTime.seconds)")
+            debugLog("⚠️ [MovieRecorder] 写入帧失败，时间: \(presentationTime.seconds)")
         }
     }
 
@@ -717,9 +717,9 @@ final class MovieRecorder {
         let effectiveFrameRate = deviceFrameRate
 
         if abs(deviceFrameRate - targetFrameRate) > 1.0 {
-            print("⚠️ [MovieRecorder] 设备帧率 \(deviceFrameRate) 与目标帧率 \(targetFrameRate) 不匹配，使用设备帧率: \(effectiveFrameRate)")
+            debugLog("⚠️ [MovieRecorder] 设备帧率 \(deviceFrameRate) 与目标帧率 \(targetFrameRate) 不匹配，使用设备帧率: \(effectiveFrameRate)")
         } else {
-            print("✅ [MovieRecorder] 帧率验证通过: \(effectiveFrameRate) fps")
+            debugLog("✅ [MovieRecorder] 帧率验证通过: \(effectiveFrameRate) fps")
         } // useconfigure, ifuseconfiguredefault
         let dimensions: CGSize
         if let size {
@@ -771,7 +771,7 @@ final class MovieRecorder {
             // Note: HEVC usually does not require `ProfileLevel` to be set explicitly; some SDKs do not provide HEVC profile constants
         ]
 
-        print("🎬 [MovieRecorder] 编码器配置 - 分辨率: \(finalWidth)x\(finalHeight), 帧率: \(effectiveFrameRate) fps, 码率: \(Double(bitRate) / 1_000_000.0) Mbps, Codec: HEVC")
+        debugLog("🎬 [MovieRecorder] 编码器配置 - 分辨率: \(finalWidth)x\(finalHeight), 帧率: \(effectiveFrameRate) fps, 码率: \(Double(bitRate) / 1_000_000.0) Mbps, Codec: HEVC")
 
         return [
             AVVideoCodecKey: AVVideoCodecType.hevc,
@@ -821,6 +821,6 @@ final class MovieRecorder {
         frameDropCount = 0
         currentRecordingConfig = nil
 
-        print("🧹 [MovieRecorder] 资源清理完成")
+        debugLog("🧹 [MovieRecorder] 资源清理完成")
     }
 }

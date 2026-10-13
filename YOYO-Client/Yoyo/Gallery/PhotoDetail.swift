@@ -192,13 +192,13 @@ struct PhotoDetailView: View {
         .statusBarHidden(false)
         .preferredColorScheme(.dark)
         .task {
-            print("🚀 PhotoDetailView.task初始化: 接收照片数: \(photos.count)，初始索引: \(currentIndex)")
+            debugLog("🚀 PhotoDetailView.task初始化: 接收照片数: \(photos.count)，初始索引: \(currentIndex)")
             localPhotos = photos
             scheduleStatusRefresh(for: currentIndex)
-            print("📸 PhotoDetailView.task初始化完成: localPhotos.count: \(localPhotos.count)")
+            debugLog("📸 PhotoDetailView.task初始化完成: localPhotos.count: \(localPhotos.count)")
         }
         .onChange(of: currentIndex) { oldValue, newIndex in
-            print("🔄 PhotoDetailView.currentIndex变化: 从 \(oldValue) 到 \(newIndex)，localPhotos.count: \(localPhotos.count)")
+            debugLog("🔄 PhotoDetailView.currentIndex变化: 从 \(oldValue) 到 \(newIndex)，localPhotos.count: \(localPhotos.count)")
             scheduleStatusRefresh(for: newIndex)
         }
         .onChange(of: showingOriginal) { _, _ in
@@ -536,7 +536,7 @@ struct PhotoDetailView: View {
                     try? await PhotoAlbumManager.shared.toggleFavorite(for: originalId, isFavorite: newStatus)
                 }
             } catch {
-                print("Failed to toggle favorite in system library: \(error)")
+                debugLog("Failed to toggle favorite in system library: \(error)")
                 // Roll back on failure.
                 await MainActor.run {
                     photo.isFavorite = !newStatus
@@ -602,7 +602,7 @@ struct PhotoDetailView: View {
                     }
                 }
             } catch {
-                print("Failed to save image: \(error)")
+                debugLog("Failed to save image: \(error)")
             }
         }
     }
@@ -694,7 +694,7 @@ struct PhotoDetailView: View {
         guard let photoToDelete = photo else { return }
         AnalyticsManager.shared.log(.galleryAction(action: "delete_single"))
 
-        print("🗑️ PhotoDetailView.deletePhoto开始: 删除照片ID: \(photoToDelete.id.uuidString.prefix(8))，当前索引: \(currentIndex)，总照片数: \(localPhotos.count)")
+        debugLog("🗑️ PhotoDetailView.deletePhoto开始: 删除照片ID: \(photoToDelete.id.uuidString.prefix(8))，当前索引: \(currentIndex)，总照片数: \(localPhotos.count)")
 
         Task {
             do {
@@ -703,7 +703,7 @@ struct PhotoDetailView: View {
                     assetIdentifiersToDelete.append(originalAssetId)
                 }
 
-                print("🗑️ PhotoDetailView.deletePhoto: 准备删除资源标识符: \(assetIdentifiersToDelete)")
+                debugLog("🗑️ PhotoDetailView.deletePhoto: 准备删除资源标识符: \(assetIdentifiersToDelete)")
 
                 try await PhotoAlbumManager.shared
                     .deletePhotosFromAlbum(
@@ -724,12 +724,12 @@ struct PhotoDetailView: View {
                             )
                     }
 
-                    print("🗑️ PhotoDetailView.deletePhoto: 清理缓存完成")
+                    debugLog("🗑️ PhotoDetailView.deletePhoto: 清理缓存完成")
 
                     modelContext.delete(photoToDelete)
                     try? modelContext.save()
 
-                    print("🗑️ PhotoDetailView.deletePhoto: 数据库删除完成")
+                    debugLog("🗑️ PhotoDetailView.deletePhoto: 数据库删除完成")
 
                     onPhotoDeleted?()
 
@@ -740,20 +740,20 @@ struct PhotoDetailView: View {
                         0
                     ) : oldIndex
 
-                    print("🗑️ PhotoDetailView.deletePhoto: 准备切换索引 - oldIndex: \(oldIndex)，newIndex: \(newIndex)，willBeEmpty: \(willBeEmpty)，剩余照片数: \(localPhotos.count - 1)")
+                    debugLog("🗑️ PhotoDetailView.deletePhoto: 准备切换索引 - oldIndex: \(oldIndex)，newIndex: \(newIndex)，willBeEmpty: \(willBeEmpty)，剩余照片数: \(localPhotos.count - 1)")
 
                     if !willBeEmpty {
                         currentIndex = newIndex
                         localPhotos.remove(at: oldIndex)
                         showingOriginal = false
                         hasOriginal = false
-                        print("✅ PhotoDetailView.deletePhoto: 索引切换完成，新索引: \(currentIndex)，照片数: \(localPhotos.count)")
+                        debugLog("✅ PhotoDetailView.deletePhoto: 索引切换完成，新索引: \(currentIndex)，照片数: \(localPhotos.count)")
                     } else {
                         localPhotos.remove(at: oldIndex)
                         if let onDismissOverride { onDismissOverride() } else {
                             dismiss()
                         }
-                        print("📸 PhotoDetailView.deletePhoto: 照片已全部删除，关闭预览")
+                        debugLog("📸 PhotoDetailView.deletePhoto: 照片已全部删除，关闭预览")
                     }
                 }
 
@@ -761,7 +761,7 @@ struct PhotoDetailView: View {
                     scheduleStatusRefresh(for: currentIndex)
                 }
             } catch {
-                print("❌ PhotoDetailView.deletePhoto失败: \(error.localizedDescription)")
+                debugLog("❌ PhotoDetailView.deletePhoto失败: \(error.localizedDescription)")
             }
         }
     }

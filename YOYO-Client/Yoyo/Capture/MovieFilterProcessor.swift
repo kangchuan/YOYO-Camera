@@ -525,7 +525,7 @@ final class MovieFilterProcessor {
     private func validateProcessedMovie(outputURL: URL, originalURL: URL) -> URL? {
         // check
         guard FileManager.default.fileExists(atPath: outputURL.path) else {
-            print("❌ [MovieFilter] Output file does not exist")
+            debugLog("❌ [MovieFilter] Output file does not exist")
             return originalURL
         }
 
@@ -535,12 +535,12 @@ final class MovieFilterProcessor {
             let fileSize = attributes[.size] as? Int64 ?? 0
 
             if fileSize < 1024 {
-                print("❌ [MovieFilter] Output file too small: \(fileSize) bytes")
+                debugLog("❌ [MovieFilter] Output file too small: \(fileSize) bytes")
                 FileManager.safeRemoveItem(at: outputURL)
                 return originalURL
             }
         } catch {
-            print("❌ [MovieFilter] Failed to get file attributes: \(error)")
+            debugLog("❌ [MovieFilter] Failed to get file attributes: \(error)")
             return originalURL
         }
 

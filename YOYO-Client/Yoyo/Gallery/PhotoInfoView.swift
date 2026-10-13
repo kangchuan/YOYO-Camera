@@ -315,7 +315,7 @@ struct PhotoInfoView: View {
                 }
             }
         } catch {
-            print("计算图片美学评分失败: \(error.localizedDescription)")
+            debugLog("计算图片美学评分失败: \(error.localizedDescription)")
             await MainActor.run {
                 isCalculatingScore = false
             }

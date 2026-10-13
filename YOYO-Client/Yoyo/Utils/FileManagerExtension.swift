@@ -27,12 +27,12 @@ extension FileManager {
         do {
             if FileManager.default.fileExists(atPath: url.path) {
                 try FileManager.default.removeItem(at: url)
-                print("🗑️ [FileManager] Removed file: \(url.lastPathComponent)")
+                debugLog("🗑️ [FileManager] Removed file: \(url.lastPathComponent)")
             } else {
-                print("⚠️ [FileManager] File not found, skip removal: \(url.lastPathComponent)")
+                debugLog("⚠️ [FileManager] File not found, skip removal: \(url.lastPathComponent)")
             }
         } catch {
-            print("❌ [FileManager] Failed to remove file \(url.lastPathComponent): \(error.localizedDescription)")
+            debugLog("❌ [FileManager] Failed to remove file \(url.lastPathComponent): \(error.localizedDescription)")
         }
     }
 

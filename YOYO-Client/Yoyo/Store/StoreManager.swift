@@ -42,20 +42,20 @@ final class StoreManager: ObservableObject {
     }
 
     func requestProducts() async {
-        print("🛒 StoreKit Environment: \(isSandbox ? "Sandbox" : "Production")")
-        print("🛒 Requesting products: \(productIDs)")
-        print("🛒 Bundle ID: \(Bundle.main.bundleIdentifier ?? "Unknown")")
+        debugLog("🛒 StoreKit Environment: \(isSandbox ? "Sandbox" : "Production")")
+        debugLog("🛒 Requesting products: \(productIDs)")
+        debugLog("🛒 Bundle ID: \(Bundle.main.bundleIdentifier ?? "Unknown")")
         do {
             products = try await Product.products(for: productIDs)
-            print("✅ Successfully fetched \(products.count) products")
+            debugLog("✅ Successfully fetched \(products.count) products")
             for product in products {
-                print("   - \(product.displayName): \(product.displayPrice) (\(product.id))")
+                debugLog("   - \(product.displayName): \(product.displayPrice) (\(product.id))")
             }
             if products.isEmpty {
-                print("⚠️ No products returned. Please check App Store Connect configuration or StoreKit setup.")
+                debugLog("⚠️ No products returned. Please check App Store Connect configuration or StoreKit setup.")
             }
         } catch {
-            print("❌ Failed to fetch products: \(error)")
+            debugLog("❌ Failed to fetch products: \(error)")
             errorMessage = "Failed to load products: \(error.localizedDescription)"
         }
     }
@@ -65,17 +65,17 @@ final class StoreManager: ObservableObject {
         isLoading = true
         defer { isLoading = false }
 
-        print("🛍️ Initiating purchase for product: \(product.id)")
+        debugLog("🛍️ Initiating purchase for product: \(product.id)")
         let result = try await product.purchase()
 
         switch result {
         case let .success(verification):
-            print("🛍️ Purchase result: .success")
+            debugLog("🛍️ Purchase result: .success")
             // Check whether the transaction is verified. If it isn't,
             // this function rethrows the verification error.
             let transaction = try checkVerified(verification)
 
-            print("""
+            debugLog("""
             🛍️ Transaction Details:
             - Product ID: \(transaction.productID)
             - Transaction ID: \(transaction.id)
@@ -97,15 +97,15 @@ final class StoreManager: ObservableObject {
             return true
 
         case .userCancelled:
-            print("🛍️ Purchase result: .userCancelled")
+            debugLog("🛍️ Purchase result: .userCancelled")
             return false
 
         case .pending:
-            print("🛍️ Purchase result: .pending")
+            debugLog("🛍️ Purchase result: .pending")
             return false
 
         default:
-            print("🛍️ Purchase result: unknown default case")
+            debugLog("🛍️ Purchase result: unknown default case")
             return false
         }
     }
@@ -146,7 +146,7 @@ final class StoreManager: ObservableObject {
                     await transaction.finish()
                 } catch {
                     // StoreKit has a transaction that fails verification. Don't deliver content to the user.
-                    print("Transaction failed verification")
+                    debugLog("Transaction failed verification")
                 }
             }
         }
@@ -169,7 +169,7 @@ final class StoreManager: ObservableObject {
                     purchasedIDs.insert(transaction.productID)
                 }
             } catch {
-                print("Failed to verify transaction in entitlements")
+                debugLog("Failed to verify transaction in entitlements")
             }
         }
 
@@ -179,13 +179,13 @@ final class StoreManager: ObservableObject {
         // from App Store to sync the correct status (Expired/Revoked) to server.
         // This handles the case where user deleted the app (lost UserDefaults) and reinstalled it after expiration.
         if purchasedIDs.isEmpty, syncLatestIfNoEntitlement {
-            print("🔄 No active entitlement found. Checking latest transaction history...")
+            debugLog("🔄 No active entitlement found. Checking latest transaction history...")
             for productID in productIDs {
                 if let result = await Transaction.latest(for: productID) {
                     // Even if verification fails or it's expired, we want the ID to sync status.
                     // However, we typically only trust verified transactions.
                     if let transaction = try? checkVerified(result) {
-                        print("Found historical transaction for \(productID). Syncing...")
+                        debugLog("Found historical transaction for \(productID). Syncing...")
                         await syncWithServer(transaction: transaction)
                         // Once we find one valid historical transaction for our sub group, that's enough to establish status
                         break
@@ -222,9 +222,9 @@ final class StoreManager: ObservableObject {
     private func syncWithServer(originalTransactionId: String) async {
         do {
             try await AuthService.shared.syncSubscription(originalTransactionId: originalTransactionId)
-            print("✅ Subscription synced with server (ID: \(originalTransactionId))")
+            debugLog("✅ Subscription synced with server (ID: \(originalTransactionId))")
         } catch {
-            print("❌ Failed to sync subscription: \(error)")
+            debugLog("❌ Failed to sync subscription: \(error)")
         }
     }
 }

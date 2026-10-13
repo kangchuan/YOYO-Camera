@@ -188,7 +188,7 @@ struct AIDarkroomPanelView: View {
             } catch {
                 await MainActor.run {
                     isProcessingAI = false
-                    print("AI Processing failed: \(error)")
+                    debugLog("AI Processing failed: \(error)")
                 }
             }
         }

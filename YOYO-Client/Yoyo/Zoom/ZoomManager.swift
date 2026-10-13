@@ -55,7 +55,7 @@ final class ZoomManager: ObservableObject {
 
     /// set the current camera device
     func setCurrentCamera(_ camera: AVCaptureDevice?, deviceType: AVCaptureDevice.DeviceType) {
-        print("[Zoom Debug] 🎥 setCurrentCamera - deviceType: \(deviceType.rawValue)")
+        debugLog("[Zoom Debug] 🎥 setCurrentCamera - deviceType: \(deviceType.rawValue)")
 
         guard currentCamera?.deviceType != deviceType || currentCamera !== camera else {
             return
@@ -91,7 +91,7 @@ final class ZoomManager: ObservableObject {
             camera.videoZoomFactor = CGFloat(clamped)
             camera.unlockForConfiguration()
         } catch {
-            print("[ZoomManager] Failed to set zoom factor: \(error)")
+            debugLog("[ZoomManager] Failed to set zoom factor: \(error)")
         }
     }
 
@@ -117,12 +117,12 @@ final class ZoomManager: ObservableObject {
         guard !isDeviceSwitching else { return }
         // Prevent switching to same device type if already active (unless position differs, handled by Manager)
         if currentCamera?.deviceType == deviceType, currentCamera?.position == .back {
-            print("[ZoomManager] Already on device \(deviceType.rawValue), resetting zoom to 1.0")
+            debugLog("[ZoomManager] Already on device \(deviceType.rawValue), resetting zoom to 1.0")
             resetZoom()
             return
         }
 
-        print("[ZoomManager] Requesting switch to \(deviceType.rawValue)")
+        debugLog("[ZoomManager] Requesting switch to \(deviceType.rawValue)")
         isDeviceSwitching = true
 
         // Calculate target interface zoom based on device capability
@@ -154,7 +154,7 @@ final class ZoomManager: ObservableObject {
             self.updateZoomRange()
 
             self.resetZoom()
-            print("[ZoomManager] Device switch confirmed. Zoom reset to 1.0x")
+            debugLog("[ZoomManager] Device switch confirmed. Zoom reset to 1.0x")
         }
     }
 
@@ -172,7 +172,7 @@ final class ZoomManager: ObservableObject {
 
         if zoomRange.min != newRange.min || zoomRange.max != newRange.max {
             zoomRange = newRange
-            print("[ZoomManager] Range updated to [\(newRange.min), \(newRange.max)]")
+            debugLog("[ZoomManager] Range updated to [\(newRange.min), \(newRange.max)]")
         }
     }
 
@@ -238,16 +238,16 @@ final class ZoomManager: ObservableObject {
         let maxDev = min(Double(device.maxAvailableVideoZoomFactor), Double(device.activeFormat.videoMaxZoomFactor), Self.maxZoomLimit)
         let clampedDeviceZoom = max(minDev, min(maxDev, clampedZoom))
 
-        print("[Zoom Debug] ⚡ applyZoomImmediately to \(device.deviceType.rawValue):")
-        print("  - Device zoom: \(String(format: "%.3f", clampedDeviceZoom))x")
+        debugLog("[Zoom Debug] ⚡ applyZoomImmediately to \(device.deviceType.rawValue):")
+        debugLog("  - Device zoom: \(String(format: "%.3f", clampedDeviceZoom))x")
 
         do {
             try device.lockForConfiguration()
             device.videoZoomFactor = CGFloat(clampedDeviceZoom)
             device.unlockForConfiguration()
-            print("[Zoom Debug] ✅ Immediate zoom set successfully")
+            debugLog("[Zoom Debug] ✅ Immediate zoom set successfully")
         } catch {
-            print("[Zoom Debug] ❌ Failed to set immediate zoom: \(error)")
+            debugLog("[Zoom Debug] ❌ Failed to set immediate zoom: \(error)")
         }
     }
 }

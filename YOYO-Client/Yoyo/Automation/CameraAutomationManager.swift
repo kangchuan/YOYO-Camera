@@ -202,15 +202,15 @@ final class CameraAutomationManager: ObservableObject {
             // print recognized objects
             let detectedObjects = analysis.objectsDetected
             if !detectedObjects.isEmpty {
-                print("🎯 [DEBUG] AI实时物体检测:")
-                print("   - 实时检测到物体数量: \(detectedObjects.count)")
+                debugLog("🎯 [DEBUG] AI实时物体检测:")
+                debugLog("   - 实时检测到物体数量: \(detectedObjects.count)")
                 for (index, object) in detectedObjects.enumerated() {
-                    print("   - 实时物体\(index + 1): \(object.label) (置信度: \(String(format: "%.1f", object.confidence * 100))%)")
+                    debugLog("   - 实时物体\(index + 1): \(object.label) (置信度: \(String(format: "%.1f", object.confidence * 100))%)")
                 }
                 let objectNames = detectedObjects.map { "\($0.label)(\(Int($0.confidence * 100))%)" }
-                print("   - 实时物体列表: \(objectNames.joined(separator: ", "))")
+                debugLog("   - 实时物体列表: \(objectNames.joined(separator: ", "))")
             } else {
-                print("🎯 [DEBUG] AI实时检测: 当前帧未检测到物体")
+                debugLog("🎯 [DEBUG] AI实时检测: 当前帧未检测到物体")
             }
 
             // Use AutomationEngine to generate the plan uniformly (with toast)
@@ -268,9 +268,9 @@ final class CameraAutomationManager: ObservableObject {
 
             // apply only rules that do not require confirmation
             if !rulesForAutoExecution.isEmpty {
-                print("🚀 [DEBUG] 准备执行 \(rulesForAutoExecution.count) 条自动规则")
+                debugLog("🚀 [DEBUG] 准备执行 \(rulesForAutoExecution.count) 条自动规则")
                 for rule in rulesForAutoExecution {
-                    print("   - 规则: \(rule.name)")
+                    debugLog("   - 规则: \(rule.name)")
                 }
 
                 // Record rule execution time (used for cooldown)
@@ -286,11 +286,11 @@ final class CameraAutomationManager: ObservableObject {
                                     toastMessages: autoPlan.toasts,
                                     pendingFilterImports: autoPlan.pendingFilterImports)
             } else {
-                print("ℹ️ [DEBUG] 没有需要自动执行的规则")
+                debugLog("ℹ️ [DEBUG] 没有需要自动执行的规则")
             }
         } catch {
             if !Task.isCancelled {
-                print("⚠️ 实时分析失败: \(error)")
+                debugLog("⚠️ 实时分析失败: \(error)")
             }
         }
 
@@ -304,9 +304,9 @@ final class CameraAutomationManager: ObservableObject {
 
     /// Confirm the pending rule to execute
     func confirmPendingRules() {
-        print("🔵 [DEBUG] confirmPendingRules 被调用, pendingConfirmation = \(pendingConfirmation != nil ? "有值" : "nil")")
+        debugLog("🔵 [DEBUG] confirmPendingRules 被调用, pendingConfirmation = \(pendingConfirmation != nil ? "有值" : "nil")")
         guard let pending = pendingConfirmation else {
-            print("🔵 [DEBUG] pendingConfirmation 为 nil，直接返回")
+            debugLog("🔵 [DEBUG] pendingConfirmation 为 nil，直接返回")
             return
         }
 
@@ -330,7 +330,7 @@ final class CameraAutomationManager: ObservableObject {
         }
 
         finishPendingConfirmationLifecycle()
-        print("✅ 用户确认执行规则: \(pending.ruleNames)")
+        debugLog("✅ 用户确认执行规则: \(pending.ruleNames)")
     }
 
     /// Check whether the rule is cooling down
@@ -340,16 +340,16 @@ final class CameraAutomationManager: ObservableObject {
         let elapsed = Date().timeIntervalSince(lastTime)
         let inCooldown = elapsed < rule.executionInterval
         if inCooldown {
-            print("⏳ 规则 '\(rule.name)' 冷却中，剩余 \(Int(rule.executionInterval - elapsed)) 秒")
+            debugLog("⏳ 规则 '\(rule.name)' 冷却中，剩余 \(Int(rule.executionInterval - elapsed)) 秒")
         }
         return inCooldown
     }
 
     /// Cancel the pending rule
     func dismissPendingRules() {
-        print("🔴 [DEBUG] dismissPendingRules 被调用, pendingConfirmation = \(pendingConfirmation != nil ? "有值" : "nil")")
+        debugLog("🔴 [DEBUG] dismissPendingRules 被调用, pendingConfirmation = \(pendingConfirmation != nil ? "有值" : "nil")")
         guard let pending = pendingConfirmation else {
-            print("🔴 [DEBUG] pendingConfirmation 为 nil，直接返回")
+            debugLog("🔴 [DEBUG] pendingConfirmation 为 nil，直接返回")
             return
         }
 
@@ -365,7 +365,7 @@ final class CameraAutomationManager: ObservableObject {
         }
 
         finishPendingConfirmationLifecycle()
-        print("❌ 用户取消执行规则: \(pending.ruleNames)")
+        debugLog("❌ 用户取消执行规则: \(pending.ruleNames)")
     }
 
     /// Interrupt the analysis process
@@ -377,7 +377,7 @@ final class CameraAutomationManager: ObservableObject {
         currentAnalysis = nil
         suggestedSettings = nil
 
-        print("AI 分析已中断")
+        debugLog("AI 分析已中断")
     }
 
     /// Manually execute a single rule once
@@ -401,7 +401,7 @@ final class CameraAutomationManager: ObservableObject {
                             toastMessages: plan.toasts,
                             pendingFilterImports: plan.pendingFilterImports)
 
-        print("✅ 手动执行规则: \(rule.name)")
+        debugLog("✅ 手动执行规则: \(rule.name)")
         return true
     }
 
@@ -410,13 +410,13 @@ final class CameraAutomationManager: ObservableObject {
         guard cameraSettings.automationEnabled else { return }
         guard let analysis = currentAnalysis else { return }
 
-        print("📸 [DEBUG] 触发拍摄前自动化")
+        debugLog("📸 [DEBUG] 触发拍摄前自动化")
 
         // use AutomationEngine to generate the pre-capture plan
         let (plan, matchedRules) = automationEngine.composeSettings(for: analysis, captureState: .beforeCapture)
 
         if !matchedRules.isEmpty {
-            print("   - 匹配拍摄前规则: \(matchedRules.map(\.name).joined(separator: ", "))")
+            debugLog("   - 匹配拍摄前规则: \(matchedRules.map(\.name).joined(separator: ", "))")
             await applySettings(plan.camera, includeWhiteBalance: true,
                                 matchedRules: matchedRules,
                                 executionStartTime: Date(),
@@ -432,13 +432,13 @@ final class CameraAutomationManager: ObservableObject {
         guard cameraSettings.automationEnabled else { return }
         guard let analysis = currentAnalysis else { return }
 
-        print("📸 [DEBUG] 触发拍摄后自动化")
+        debugLog("📸 [DEBUG] 触发拍摄后自动化")
 
         // use AutomationEngine to generate the post-capture plan
         let (plan, matchedRules) = automationEngine.composeSettings(for: analysis, captureState: .afterCapture)
 
         if !matchedRules.isEmpty {
-            print("   - 匹配拍摄后规则: \(matchedRules.map(\.name).joined(separator: ", "))")
+            debugLog("   - 匹配拍摄后规则: \(matchedRules.map(\.name).joined(separator: ", "))")
             await applySettings(plan.camera, includeWhiteBalance: true,
                                 matchedRules: matchedRules,
                                 executionStartTime: Date(),
@@ -459,23 +459,23 @@ final class CameraAutomationManager: ObservableObject {
                                toastMessages: [(type: ToastType, message: String, duration: Double, customIcon: String?)] = [],
                                pendingFilterImports: [(url: String, displayName: String?)] = []) async
     {
-        print("🎬 [DEBUG] applySettings 被调用")
-        print("   - 匹配规则数: \(matchedRules.count)")
-        if !matchedRules.isEmpty { print("   - 规则名称: \(matchedRules.map(\.name).joined(separator: ", "))") }
-        print("   - settings.zoom: \(settings.zoom?.description ?? "nil")")
-        print("   - settings.exposureBias: \(settings.exposureBias?.description ?? "nil")")
-        print("   - settings.focusPoint: \(settings.focusPoint?.debugDescription ?? "nil")")
-        print("   - settings.filter: \(settings.filter?.displayName ?? "nil")")
-        print("   - settings.flashMode: \(settings.flashMode?.rawValue.description ?? "nil")")
-        print("   - autoAdjustExposure: \(cameraSettings.autoAdjustExposure)")
-        print("   - autoAdjustFocus: \(cameraSettings.autoAdjustFocus)")
+        debugLog("🎬 [DEBUG] applySettings 被调用")
+        debugLog("   - 匹配规则数: \(matchedRules.count)")
+        if !matchedRules.isEmpty { debugLog("   - 规则名称: \(matchedRules.map(\.name).joined(separator: ", "))") }
+        debugLog("   - settings.zoom: \(settings.zoom?.description ?? "nil")")
+        debugLog("   - settings.exposureBias: \(settings.exposureBias?.description ?? "nil")")
+        debugLog("   - settings.focusPoint: \(settings.focusPoint?.debugDescription ?? "nil")")
+        debugLog("   - settings.filter: \(settings.filter?.displayName ?? "nil")")
+        debugLog("   - settings.flashMode: \(settings.flashMode?.rawValue.description ?? "nil")")
+        debugLog("   - autoAdjustExposure: \(cameraSettings.autoAdjustExposure)")
+        debugLog("   - autoAdjustFocus: \(cameraSettings.autoAdjustFocus)")
 
         applyFilter(from: settings)
         applyFocus(from: settings)
         applyExposureBias(from: settings)
 
         if let zoom = settings.zoom {
-            print("🔍 [DEBUG] 准备应用缩放: \(zoom)x")
+            debugLog("🔍 [DEBUG] 准备应用缩放: \(zoom)x")
             await applyZoom(zoom)
         }
 
@@ -503,18 +503,18 @@ final class CameraAutomationManager: ObservableObject {
     private func applyFilter(from settings: CameraSettings) {
         if let filter = settings.filter, cameraSettings.autoSelectFilter {
             FilterManager.shared.selectedFilter = filter
-            print("AI 应用滤镜: \(filter.displayName)")
+            debugLog("AI 应用滤镜: \(filter.displayName)")
         }
     }
 
     /// Import a filter from URL and apply it
     private func importFilterFromURL(_ urlString: String, displayName: String?) async {
         guard cameraSettings.autoSelectFilter else {
-            print("⏭️ 跳过滤镜导入: autoSelectFilter 未启用")
+            debugLog("⏭️ 跳过滤镜导入: autoSelectFilter 未启用")
             return
         }
 
-        print("📥 [DEBUG] 开始从 URL 导入滤镜: \(urlString)")
+        debugLog("📥 [DEBUG] 开始从 URL 导入滤镜: \(urlString)")
 
         // check whether a filter with the same name already exists(determine by the filename in the URL)
         let fileName = URL(string: urlString)?.lastPathComponent ?? ""
@@ -524,7 +524,7 @@ final class CameraAutomationManager: ObservableObject {
 
         if let existing = existingFilter {
             // filter already exists, apply it directly
-            print("✅ 滤镜已存在，直接应用: \(existing.name)")
+            debugLog("✅ 滤镜已存在，直接应用: \(existing.name)")
             await MainActor.run {
                 FilterManager.shared.selectCustomFilter(existing)
                 CameraViewState.shared.showToast(
@@ -552,7 +552,7 @@ final class CameraAutomationManager: ObservableObject {
                             }
                         }
 
-                        print("✅ 滤镜导入成功: \(importedFilter.name)")
+                        debugLog("✅ 滤镜导入成功: \(importedFilter.name)")
                         FilterManager.shared.selectCustomFilter(importedFilter)
                         CameraViewState.shared.showToast(
                             type: .success,
@@ -561,7 +561,7 @@ final class CameraAutomationManager: ObservableObject {
                         )
 
                     case let .failure(error):
-                        print("❌ 滤镜导入失败: \(error.localizedDescription)")
+                        debugLog("❌ 滤镜导入失败: \(error.localizedDescription)")
                         CameraViewState.shared.showToast(
                             type: .error,
                             message: String.automationFilterImportFailed.localized,
@@ -591,41 +591,41 @@ final class CameraAutomationManager: ObservableObject {
             let threshold: CGFloat = 0.05
             if diff > threshold {
                 focusManager.focusAtDevicePoint(focusPoint)
-                print("AI 应用对焦点: \(focusPoint) (差异: \(String(format: "%.3f", diff)))")
+                debugLog("AI 应用对焦点: \(focusPoint) (差异: \(String(format: "%.3f", diff)))")
             } else {
-                print("AI 跳过对焦点应用: 差异过小 (\(String(format: "%.3f", diff)))")
+                debugLog("AI 跳过对焦点应用: 差异过小 (\(String(format: "%.3f", diff)))")
             }
         } else {
             focusManager.focusAtDevicePoint(focusPoint)
-            print("AI 应用对焦点: \(focusPoint)")
+            debugLog("AI 应用对焦点: \(focusPoint)")
         }
     }
 
     private func applyExposureBias(from settings: CameraSettings) {
         guard let exposureBias = settings.exposureBias, cameraSettings.autoAdjustExposure else {
-            print("❌ [DEBUG] 曝光补偿未应用:")
-            print("   - settings.exposureBias 有值: \(settings.exposureBias != nil)")
-            print("   - autoAdjustExposure: \(cameraSettings.autoAdjustExposure)")
+            debugLog("❌ [DEBUG] 曝光补偿未应用:")
+            debugLog("   - settings.exposureBias 有值: \(settings.exposureBias != nil)")
+            debugLog("   - autoAdjustExposure: \(cameraSettings.autoAdjustExposure)")
             return
         }
 
         let current = exposureManager.exposureCompensation
         let diff = abs(exposureBias - current)
-        print("📸 [DEBUG] 曝光补偿检查:")
-        print("   - 目标曝光: \(exposureBias)")
-        print("   - 当前曝光: \(current)")
-        print("   - 差异: \(String(format: "%.2f", diff)) EV")
+        debugLog("📸 [DEBUG] 曝光补偿检查:")
+        debugLog("   - 目标曝光: \(exposureBias)")
+        debugLog("   - 当前曝光: \(current)")
+        debugLog("   - 差异: \(String(format: "%.2f", diff)) EV")
 
         let threshold: Float = 0.1
         if diff > threshold {
             let maxBias = Float(cameraSettings.maxExposureBias)
             let clamped = min(max(exposureBias, -maxBias), maxBias)
             let em = exposureManager
-            print("   - 🔧 通过 ExposureManager 应用曝光补偿")
+            debugLog("   - 🔧 通过 ExposureManager 应用曝光补偿")
             em.exposureCompensation = clamped
-            print("✅ AI 应用曝光补偿: \(clamped) (差异: \(String(format: "%.2f", diff)) EV)")
+            debugLog("✅ AI 应用曝光补偿: \(clamped) (差异: \(String(format: "%.2f", diff)) EV)")
         } else {
-            print("⏭️ AI 跳过曝光补偿应用: 差异过小 (\(String(format: "%.2f", diff)) EV)")
+            debugLog("⏭️ AI 跳过曝光补偿应用: 差异过小 (\(String(format: "%.2f", diff)) EV)")
         }
     }
 
@@ -638,9 +638,9 @@ final class CameraAutomationManager: ObservableObject {
             exposureManager.enableManualISO()
             let clamped = min(Float(iso), Float(cameraSettings.maxISO))
             exposureManager.adjustISO(clamped)
-            print("AI 应用 ISO: \(clamped) (差异: \(String(format: "%.0f", diff))) (上限: \(cameraSettings.maxISO))")
+            debugLog("AI 应用 ISO: \(clamped) (差异: \(String(format: "%.0f", diff))) (上限: \(cameraSettings.maxISO))")
         } else {
-            print("AI 跳过 ISO 应用: 差异过小 (\(String(format: "%.0f", diff)))")
+            debugLog("AI 跳过 ISO 应用: 差异过小 (\(String(format: "%.0f", diff)))")
         }
     }
 
@@ -654,9 +654,9 @@ final class CameraAutomationManager: ObservableObject {
             exposureManager.enableManualShutterSpeed()
             let clamped = max(newValue, cameraSettings.minShutterSpeed)
             exposureManager.adjustShutterSpeed(clamped)
-            print("AI 应用快门速度: 1/\(Int(1.0 / clamped))s (差异: \(String(format: "%.3f", diff))s) (最慢: 1/\(Int(1.0 / cameraSettings.minShutterSpeed))s)")
+            debugLog("AI 应用快门速度: 1/\(Int(1.0 / clamped))s (差异: \(String(format: "%.3f", diff))s) (最慢: 1/\(Int(1.0 / cameraSettings.minShutterSpeed))s)")
         } else {
-            print("AI 跳过快门速度应用: 差异过小 (\(String(format: "%.3f", diff))s)")
+            debugLog("AI 跳过快门速度应用: 差异过小 (\(String(format: "%.3f", diff))s)")
         }
     }
 
@@ -671,9 +671,9 @@ final class CameraAutomationManager: ObservableObject {
         if tempDiff > tempThreshold || tintDiff > tintThreshold {
             CameraDeviceManager.shared.whiteBalanceManager.enableManualMode()
             CameraDeviceManager.shared.setWhiteBalance(temperature: wb.temperature, tint: wb.tint)
-            print("AI 应用白平衡: 温度=\(wb.temperature)K (差异: \(String(format: "%.0f", tempDiff))K), 色调=\(wb.tint) (差异: \(String(format: "%.1f", tintDiff)))")
+            debugLog("AI 应用白平衡: 温度=\(wb.temperature)K (差异: \(String(format: "%.0f", tempDiff))K), 色调=\(wb.tint) (差异: \(String(format: "%.1f", tintDiff)))")
         } else {
-            print("AI 跳过白平衡应用: 差异过小 (色温差异: \(String(format: "%.0f", tempDiff))K, 色调差异: \(String(format: "%.1f", tintDiff)))")
+            debugLog("AI 跳过白平衡应用: 差异过小 (色温差异: \(String(format: "%.0f", tempDiff))K, 色调差异: \(String(format: "%.1f", tintDiff)))")
         }
     }
 
@@ -689,7 +689,7 @@ final class CameraAutomationManager: ObservableObject {
                 if cameraSettings.torchEnabled != enabled {
                     cameraSettings.torchEnabled = enabled
                     CameraDeviceManager.shared.setTorch(enabled: enabled)
-                    print("AI 应用手电筒设置: \(enabled ? "开启" : "关闭")")
+                    debugLog("AI 应用手电筒设置: \(enabled ? "开启" : "关闭")")
                 }
             @unknown default:
                 return
@@ -697,7 +697,7 @@ final class CameraAutomationManager: ObservableObject {
         } else {
             if cameraSettings.flashMode != flashMode {
                 cameraSettings.flashMode = flashMode
-                print("AI 应用闪光灯模式: \(flashMode.rawValue)")
+                debugLog("AI 应用闪光灯模式: \(flashMode.rawValue)")
             }
         }
     }
@@ -752,19 +752,19 @@ final class CameraAutomationManager: ObservableObject {
         let currentZoom = CameraDeviceManager.shared.zoomManager.deviceZoomFactor
         let zoomDifference = abs(suggestedZoom - currentZoom)
 
-        print("🔎 [DEBUG] applyZoom:")
-        print("   - 建议缩放: \(suggestedZoom)x")
-        print("   - 当前缩放: \(currentZoom)x")
-        print("   - 差异: \(String(format: "%.2f", zoomDifference))x")
+        debugLog("🔎 [DEBUG] applyZoom:")
+        debugLog("   - 建议缩放: \(suggestedZoom)x")
+        debugLog("   - 当前缩放: \(currentZoom)x")
+        debugLog("   - 差异: \(String(format: "%.2f", zoomDifference))x")
 
         // do not adjust if the difference is very small
         if zoomDifference < 0.2 {
-            print("⏭️ [DEBUG] 缩放差异过小，跳过")
+            debugLog("⏭️ [DEBUG] 缩放差异过小，跳过")
             return
         }
 
         // handle zoom according to user settings
-        print("✅ [DEBUG] 自动应用缩放: \(suggestedZoom)x")
+        debugLog("✅ [DEBUG] 自动应用缩放: \(suggestedZoom)x")
         CameraDeviceManager.shared.zoomManager.setZoomFactor(suggestedZoom)
     }
 
@@ -779,13 +779,13 @@ final class CameraAutomationManager: ObservableObject {
         // return the default analysis result if no analysis is required
         guard requirements.needsAnyAnalysis else {
             if withLogs {
-                print("⏭️ [DEBUG] 无分析需求，跳过图像分析")
+                debugLog("⏭️ [DEBUG] 无分析需求，跳过图像分析")
             }
             return SceneAnalysis.empty(location: locationManager.currentLocation)
         }
 
         if withLogs {
-            print("📊 [DEBUG] 按需分析: objects=\(requirements.needsObjectDetection), composition=\(requirements.needsComposition), lighting=\(requirements.needsLighting), colors=\(requirements.needsColors)")
+            debugLog("📊 [DEBUG] 按需分析: objects=\(requirements.needsObjectDetection), composition=\(requirements.needsComposition), lighting=\(requirements.needsLighting), colors=\(requirements.needsColors)")
         }
 
         return try await withThrowingTaskGroup(of: AnalysisResult.self) { group in

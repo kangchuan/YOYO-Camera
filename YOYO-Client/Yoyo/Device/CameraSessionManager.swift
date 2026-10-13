@@ -88,7 +88,7 @@ final class CameraSessionManager {
 
         // 2. ifinitialization, configure
         guard !isSessionInitialized else {
-            print("⚠️ [CameraSessionManager] Session已初始化，仅更新Delegate")
+            debugLog("⚠️ [CameraSessionManager] Session已初始化，仅更新Delegate")
             return
         }
 
@@ -107,7 +107,7 @@ final class CameraSessionManager {
     /// start the camera session
     func startSession() {
         guard let activeSession else {
-            print("⚠️ [CameraSessionManager] 没有活跃Session，需要先调用setupSession")
+            debugLog("⚠️ [CameraSessionManager] 没有活跃Session，需要先调用setupSession")
             return
         }
         activeSession.startSession()
@@ -215,7 +215,7 @@ final class CameraSessionManager {
     /// switchcapturemode(videomodecan videoset)
     func switchCaptureMode(to captureMode: CameraCaptureMode, videoSettings: VideoSettingsSnapshot?) {
         guard currentCaptureMode != captureMode else {
-            print("⚠️ [CameraSessionManager] 模式未变化(\(captureMode.rawValue))，跳过重复配置")
+            debugLog("⚠️ [CameraSessionManager] 模式未变化(\(captureMode.rawValue))，跳过重复配置")
             return
         }
 
@@ -249,7 +249,7 @@ final class CameraSessionManager {
             let isVideoSession = self.activeSession is VideoCameraSession
             VideoConnectionManager.shared.isVideoCaptureModeActive = isVideoSession
 
-            print("🎥 [CameraSessionManager] 更新防抖偏好: \(enabled) (VideoSession: \(isVideoSession))")
+            debugLog("🎥 [CameraSessionManager] 更新防抖偏好: \(enabled) (VideoSession: \(isVideoSession))")
 
             if was != enabled, self.isVideoConnectionReady {
                 VideoConnectionManager.shared.configureVideoConnection()
@@ -328,7 +328,7 @@ final class CameraSessionManager {
             .sink { [weak self] notification in
                 guard let camera = notification.object as? AVCaptureDevice else { return }
                 let targetZoom = notification.userInfo?["targetZoom"] as? Double
-                print("[SessionManager] 📡 收到相机切换请求: \(camera.deviceType.rawValue), targetZoom: \(String(describing: targetZoom))")
+                debugLog("[SessionManager] 📡 收到相机切换请求: \(camera.deviceType.rawValue), targetZoom: \(String(describing: targetZoom))")
                 self?.handleCameraSwitchRequest(camera, targetZoom: targetZoom)
             }
             .store(in: &cancellables)
@@ -336,7 +336,7 @@ final class CameraSessionManager {
 
     /// cameraswitch(DeviceManager)
     private func handleCameraSwitchRequest(_ camera: AVCaptureDevice, targetZoom: Double? = nil) {
-        print("📹 [SessionManager] 处理相机切换请求: \(camera.deviceType.rawValue)")
+        debugLog("📹 [SessionManager] 处理相机切换请求: \(camera.deviceType.rawValue)")
 
         sessionQueue.async { [weak self] in
             guard let self else { return }
@@ -359,7 +359,7 @@ final class CameraSessionManager {
             // update the video connection configuration
             self.updateVideoConnectionConfiguration()
 
-            print("✅ [SessionManager] 相机切换完成")
+            debugLog("✅ [SessionManager] 相机切换完成")
         }
     }
 
@@ -367,7 +367,7 @@ final class CameraSessionManager {
     func switchCaptureMode(to captureMode: CameraCaptureMode) {
         // configuremode
         guard currentCaptureMode != captureMode else {
-            print("⚠️ [CameraSessionManager] 模式未变化(\(captureMode.rawValue))，跳过重复配置")
+            debugLog("⚠️ [CameraSessionManager] 模式未变化(\(captureMode.rawValue))，跳过重复配置")
             return
         }
 
@@ -415,7 +415,7 @@ final class CameraSessionManager {
 
     /// switchcamera(/)-
     func switchCameraPosition() {
-        print("📹 [CameraSessionManager] 开始切换相机位置")
+        debugLog("📹 [CameraSessionManager] 开始切换相机位置")
         sessionQueue.async { [weak self] in
             self?.isVideoConnectionReady = false
         }
@@ -428,11 +428,11 @@ final class CameraSessionManager {
 
         // 2. ✅ usesyncgetcamera
         guard let newCamera = deviceManager.switchToSync(position: targetPosition) else {
-            print("⚠️ [CameraSessionManager] switchCameraPosition: 无法获取新相机")
+            debugLog("⚠️ [CameraSessionManager] switchCameraPosition: 无法获取新相机")
             return
         }
 
-        print("📹 [CameraSessionManager] 目标相机: \(newCamera.position == .front ? "前置" : "后置") (\(newCamera.deviceType.rawValue))")
+        debugLog("📹 [CameraSessionManager] 目标相机: \(newCamera.position == .front ? "前置" : "后置") (\(newCamera.deviceType.rawValue))")
 
         // 3. session cameraswitch
         activeSession?.switchCamera(to: newCamera) {
@@ -441,7 +441,7 @@ final class CameraSessionManager {
             }
         }
 
-        print("✅ [CameraSessionManager] 相机切换完成")
+        debugLog("✅ [CameraSessionManager] 相机切换完成")
     }
 
     // MARK: - Output Access Methods

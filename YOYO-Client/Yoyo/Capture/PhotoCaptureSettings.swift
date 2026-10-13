@@ -37,12 +37,12 @@ final class PhotoCaptureSettings {
             let newOutput = sessionManager.getStillImageOutput()
             if let newOutput {
                 photoOutput = newOutput
-                print("🔍 [PhotoCaptureSettings] Retrieved photoOutput from sessionManager: \(newOutput)")
+                debugLog("🔍 [PhotoCaptureSettings] Retrieved photoOutput from sessionManager: \(newOutput)")
             }
             return newOutput
         }
 
-        print("⚠️ [PhotoCaptureSettings] Unable to get photoOutput reference")
+        debugLog("⚠️ [PhotoCaptureSettings] Unable to get photoOutput reference")
         return nil
     }
 
@@ -73,35 +73,35 @@ final class PhotoCaptureSettings {
 
     /// update Live Photo state
     func updateLivePhoto(_ enabled: Bool) async {
-        print("🔍 [updateLivePhoto] Setting LivePhoto enabled: \(enabled)")
+        debugLog("🔍 [updateLivePhoto] Setting LivePhoto enabled: \(enabled)")
         livePhotoEnabled = enabled
         var outputRef = getPhotoOutput()
 
-        print("🔍 [updateLivePhoto] outputRef: \(outputRef != nil ? "exists" : "nil")")
+        debugLog("🔍 [updateLivePhoto] outputRef: \(outputRef != nil ? "exists" : "nil")")
         if let output = outputRef {
-            print("🔍 [updateLivePhoto] isLivePhotoCaptureSupported: \(output.isLivePhotoCaptureSupported)")
-            print("🔍 [updateLivePhoto] current isLivePhotoCaptureEnabled: \(output.isLivePhotoCaptureEnabled)")
-            print("🔍 [updateLivePhoto] sessionPreset: \(String(describing: sessionManager?.captureSession?.sessionPreset.rawValue ?? "unknown"))")
+            debugLog("🔍 [updateLivePhoto] isLivePhotoCaptureSupported: \(output.isLivePhotoCaptureSupported)")
+            debugLog("🔍 [updateLivePhoto] current isLivePhotoCaptureEnabled: \(output.isLivePhotoCaptureEnabled)")
+            debugLog("🔍 [updateLivePhoto] sessionPreset: \(String(describing: sessionManager?.captureSession?.sessionPreset.rawValue ?? "unknown"))")
             if let camera = CameraDeviceManager.shared.getCurrentCamera() {
-                print("🔍 [updateLivePhoto] camera activeFormat: \(String(describing: camera.activeFormat))")
-                print("🔍 [updateLivePhoto] camera deviceType: \(camera.deviceType.rawValue)")
+                debugLog("🔍 [updateLivePhoto] camera activeFormat: \(String(describing: camera.activeFormat))")
+                debugLog("🔍 [updateLivePhoto] camera deviceType: \(camera.deviceType.rawValue)")
             }
         }
 
         guard let output = outputRef, output.isLivePhotoCaptureSupported else {
-            print("🔍 [updateLivePhoto] Cannot enable LivePhoto - not supported")
+            debugLog("🔍 [updateLivePhoto] Cannot enable LivePhoto - not supported")
             return
         }
 
         if let sessionManager {
             await sessionManager.configureLivePhoto(enabled)
-            print("🔍 [updateLivePhoto] Set isLivePhotoCaptureEnabled = \(enabled) via sessionManager")
+            debugLog("🔍 [updateLivePhoto] Set isLivePhotoCaptureEnabled = \(enabled) via sessionManager")
         } else {
             output.isLivePhotoCaptureEnabled = enabled
-            print("🔍 [updateLivePhoto] Set isLivePhotoCaptureEnabled = \(enabled) directly")
+            debugLog("🔍 [updateLivePhoto] Set isLivePhotoCaptureEnabled = \(enabled) directly")
         }
 
-        print("🔍 [updateLivePhoto] Final isLivePhotoCaptureEnabled: \(output.isLivePhotoCaptureEnabled)")
+        debugLog("🔍 [updateLivePhoto] Final isLivePhotoCaptureEnabled: \(output.isLivePhotoCaptureEnabled)")
     }
 
     /// photocaptureset
@@ -165,13 +165,13 @@ final class PhotoCaptureSettings {
                output.isAppleProRAWSupported,
                let proRawFormat = output.availableRawPhotoPixelFormatTypes.first(where: { AVCapturePhotoOutput.isAppleProRAWPixelFormat($0) })
             {
-                print("📸 [PhotoCaptureSettings] ProRAW requested, using format: \(proRawFormat)")
+                debugLog("📸 [PhotoCaptureSettings] ProRAW requested, using format: \(proRawFormat)")
                 photoSettings = AVCapturePhotoSettings(
                     rawPixelFormatType: proRawFormat
                 )
                 actualQuality = .proRaw
             } else {
-                print("⚠️ [PhotoCaptureSettings] ProRAW requested but not supported/found. Fallback to Standard")
+                debugLog("⚠️ [PhotoCaptureSettings] ProRAW requested but not supported/found. Fallback to Standard")
                 // ProRAW not supportdowngrade Standard
                 let pair = makeStandardPhotoSettings(format: format)
                 photoSettings = pair.0
@@ -213,14 +213,14 @@ final class PhotoCaptureSettings {
         AVCapturePhotoSettings,
         CameraSettingsState.CaptureQuality
     ) {
-        print("🔍 [configureLivePhoto] Starting configuration...")
-        print("🔍 [configureLivePhoto] livePhotoEnabled: \(livePhotoEnabled)")
-        print("🔍 [configureLivePhoto] actualQuality: \(actualQuality)")
-        print("🔍 [configureLivePhoto] isRaw: \(actualQuality.isRaw)")
+        debugLog("🔍 [configureLivePhoto] Starting configuration...")
+        debugLog("🔍 [configureLivePhoto] livePhotoEnabled: \(livePhotoEnabled)")
+        debugLog("🔍 [configureLivePhoto] actualQuality: \(actualQuality)")
+        debugLog("🔍 [configureLivePhoto] isRaw: \(actualQuality.isRaw)")
 
         // ifnot yet Live Photo,
         guard livePhotoEnabled else {
-            print("🔍 [configureLivePhoto] Skipping LivePhoto - livePhotoEnabled: false")
+            debugLog("🔍 [configureLivePhoto] Skipping LivePhoto - livePhotoEnabled: false")
             livePhotoMovieURL = nil
             // Ensure the returned `photoSettings` does not set `livePhotoMovieFileURL`
             // Avoid the error "livePhotoMovieFileURL must be nil if self.livePhotoCaptureEnabled is NO"
@@ -231,32 +231,32 @@ final class PhotoCaptureSettings {
         // : actualQuality RAW, if Live Photo, configure
         // logiccreateformat Settings (because Live Photo not support RAW), implementautodowngrade
         if actualQuality.isRaw {
-            print("🔍 [configureLivePhoto] LivePhoto enabled with RAW quality - will attempt to downgrade to Standard")
+            debugLog("🔍 [configureLivePhoto] LivePhoto enabled with RAW quality - will attempt to downgrade to Standard")
         }
 
         var outputRef = getPhotoOutput()
 
-        print("🔍 [configureLivePhoto] outputRef: \(outputRef != nil ? "exists" : "nil")")
+        debugLog("🔍 [configureLivePhoto] outputRef: \(outputRef != nil ? "exists" : "nil")")
         if let output = outputRef {
-            print("🔍 [configureLivePhoto] isLivePhotoCaptureSupported: \(output.isLivePhotoCaptureSupported)")
-            print("🔍 [configureLivePhoto] isLivePhotoCaptureEnabled: \(output.isLivePhotoCaptureEnabled)")
-            print("🔍 [configureLivePhoto] sessionPreset: \(String(describing: sessionManager?.captureSession?.sessionPreset.rawValue ?? "unknown"))")
+            debugLog("🔍 [configureLivePhoto] isLivePhotoCaptureSupported: \(output.isLivePhotoCaptureSupported)")
+            debugLog("🔍 [configureLivePhoto] isLivePhotoCaptureEnabled: \(output.isLivePhotoCaptureEnabled)")
+            debugLog("🔍 [configureLivePhoto] sessionPreset: \(String(describing: sessionManager?.captureSession?.sessionPreset.rawValue ?? "unknown"))")
             if let camera = CameraDeviceManager.shared.getCurrentCamera() {
-                print("🔍 [configureLivePhoto] camera activeFormat: \(String(describing: camera.activeFormat))")
-                print("🔍 [configureLivePhoto] camera deviceType: \(camera.deviceType.rawValue)")
+                debugLog("🔍 [configureLivePhoto] camera activeFormat: \(String(describing: camera.activeFormat))")
+                debugLog("🔍 [configureLivePhoto] camera deviceType: \(camera.deviceType.rawValue)")
             }
         }
 
         guard let output = outputRef, output.isLivePhotoCaptureSupported else {
-            print("🔍 [configureLivePhoto] LivePhoto not supported - output: \(outputRef != nil), isSupported: \(outputRef?.isLivePhotoCaptureSupported ?? false)")
+            debugLog("🔍 [configureLivePhoto] LivePhoto not supported - output: \(outputRef != nil), isSupported: \(outputRef?.isLivePhotoCaptureSupported ?? false)")
             livePhotoMovieURL = nil
             return (photoSettings, actualQuality)
         }
 
-        print("🔍 [configureLivePhoto] LivePhoto is supported, configuring...")
+        debugLog("🔍 [configureLivePhoto] LivePhoto is supported, configuring...")
 
         let livePhotoMovieFileURL = createTempLivePhotoMovieURL()
-        print("[LivePhoto] livePhotoMovieFileURL: \(livePhotoMovieFileURL.path)")
+        debugLog("[LivePhoto] livePhotoMovieFileURL: \(livePhotoMovieFileURL.path)")
 
         let pair = makeStandardPhotoSettings(format: format)
         let newPhotoSettings = pair.0
@@ -265,10 +265,10 @@ final class PhotoCaptureSettings {
 
         if #available(iOS 11.0, *) {
             newPhotoSettings.livePhotoVideoCodecType = AVVideoCodecType.h264
-            print("🔍 [configureLivePhoto] Set livePhotoVideoCodecType to h264")
+            debugLog("🔍 [configureLivePhoto] Set livePhotoVideoCodecType to h264")
         }
 
-        print("🔍 [configureLivePhoto] Configuration complete - URL: \(livePhotoMovieFileURL.path)")
+        debugLog("🔍 [configureLivePhoto] Configuration complete - URL: \(livePhotoMovieFileURL.path)")
 
         return (newPhotoSettings, pair.1)
     }
@@ -291,7 +291,7 @@ final class PhotoCaptureSettings {
         if #available(iOS 13.0, *), !actualQuality.isRaw {
             configureQualityPrioritization(photoSettings: photoSettings)
         } else if actualQuality.isRaw {
-            print(
+            debugLog(
                 "[PhotoCaptureSettings] RAW format does not support quality prioritization"
             )
         } else {

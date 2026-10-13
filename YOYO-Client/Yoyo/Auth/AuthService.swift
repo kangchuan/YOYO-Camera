@@ -66,18 +66,18 @@ final class AuthService: ObservableObject {
             guard let httpResponse = response as? HTTPURLResponse else { return }
 
             if httpResponse.statusCode == 401 {
-                print("⚠️ Token expired or invalid, signing out...")
+                debugLog("⚠️ Token expired or invalid, signing out...")
                 signOut()
                 return
             }
 
             guard httpResponse.statusCode == 200 else {
-                print("❌ Fetch user profile failed: \(httpResponse.statusCode)")
+                debugLog("❌ Fetch user profile failed: \(httpResponse.statusCode)")
                 return
             }
 
             if let responseString = String(data: data, encoding: .utf8) {
-                print("📥 Fetch user profile response: \(responseString)")
+                debugLog("📥 Fetch user profile response: \(responseString)")
             }
 
             let user = try JSONDecoder().decode(User.self, from: data)
@@ -85,17 +85,17 @@ final class AuthService: ObservableObject {
             await MainActor.run {
                 self.currentUser = user
                 self.cacheUser(user)
-                print("✅ User profile updated: \(user.fullName ?? "Unknown")")
+                debugLog("✅ User profile updated: \(user.fullName ?? "Unknown")")
             }
         } catch {
-            print("❌ Fetch user profile error: \(error)")
+            debugLog("❌ Fetch user profile error: \(error)")
         }
     }
 
     func syncSubscription(originalTransactionId: String) async throws {
         guard let token = authToken else {
             // Check if user is logged in, if not, we can't sync to a user account
-            print("⚠️ Cannot sync subscription: User not logged in")
+            debugLog("⚠️ Cannot sync subscription: User not logged in")
             return
         }
 
@@ -119,7 +119,7 @@ final class AuthService: ObservableObject {
 
         if httpResponse.statusCode != 200 {
             let errorMessage = String(data: data, encoding: .utf8) ?? "Unknown error"
-            print("❌ Sync Subscription Error (\(httpResponse.statusCode)): \(errorMessage)")
+            debugLog("❌ Sync Subscription Error (\(httpResponse.statusCode)): \(errorMessage)")
             throw AuthError.serverError(httpResponse.statusCode)
         }
 
@@ -149,14 +149,14 @@ final class AuthService: ObservableObject {
 
     func signInWithApple(authorization: ASAuthorization) async {
         guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential else {
-            print("❌ Invalid credential type")
+            debugLog("❌ Invalid credential type")
             return
         }
 
         guard let identityTokenData = credential.identityToken,
               let identityToken = String(data: identityTokenData, encoding: .utf8)
         else {
-            print("❌ Missing identity token")
+            debugLog("❌ Missing identity token")
             return
         }
 
@@ -184,14 +184,14 @@ final class AuthService: ObservableObject {
             if let cached = getPendingUserInfo(userIdentifier: userIdentifier) {
                 fullName = fullName ?? cached.fullName
                 email = email ?? cached.email
-                print("ℹ️ Using cached pending user info for \(userIdentifier)")
+                debugLog("ℹ️ Using cached pending user info for \(userIdentifier)")
             }
         }
 
-        print("🔵 Sending auth request to server...")
-        print("   userIdentifier: \(userIdentifier)")
-        print("   fullName: \(fullName ?? "nil")")
-        print("   email: \(email ?? "nil")")
+        debugLog("🔵 Sending auth request to server...")
+        debugLog("   userIdentifier: \(userIdentifier)")
+        debugLog("   fullName: \(fullName ?? "nil")")
+        debugLog("   email: \(email ?? "nil")")
 
         isLoading = true
         defer { isLoading = false }
@@ -211,9 +211,9 @@ final class AuthService: ObservableObject {
             authToken = token
             cacheUser(user)
             cacheToken(token)
-            print("✅ User authenticated: \(user)")
+            debugLog("✅ User authenticated: \(user)")
         } catch {
-            print("❌ Auth error: \(error)")
+            debugLog("❌ Auth error: \(error)")
             // Keep the cache on authentication failure so the next sign-in retry can attempt syncing again
         }
     }
@@ -245,13 +245,13 @@ final class AuthService: ObservableObject {
 
         guard httpResponse.statusCode == 200 else {
             let errorMessage = String(data: data, encoding: .utf8) ?? "Unknown error"
-            print("❌ Server error (\(httpResponse.statusCode)): \(errorMessage)")
+            debugLog("❌ Server error (\(httpResponse.statusCode)): \(errorMessage)")
             throw AuthError.serverError(httpResponse.statusCode)
         }
 
         // Sign out after successful deletion
         signOut()
-        print("✅ Account deleted successfully")
+        debugLog("✅ Account deleted successfully")
     }
 
     func updateCredits(_ newCredits: Int) {
@@ -269,7 +269,7 @@ final class AuthService: ObservableObject {
 
         currentUser = user
         cacheUser(user)
-        print("✅ Credits updated: \(newCredits)")
+        debugLog("✅ Credits updated: \(newCredits)")
     }
 
     func updateName(_ newName: String) async throws {
@@ -297,12 +297,12 @@ final class AuthService: ObservableObject {
 
         guard httpResponse.statusCode == 200 else {
             let errorMessage = String(data: data, encoding: .utf8) ?? "Unknown error"
-            print("❌ Server error (\(httpResponse.statusCode)): \(errorMessage)")
+            debugLog("❌ Server error (\(httpResponse.statusCode)): \(errorMessage)")
             throw AuthError.serverError(httpResponse.statusCode)
         }
 
         if let responseString = String(data: data, encoding: .utf8) {
-            print("✅ Server response: \(responseString)")
+            debugLog("✅ Server response: \(responseString)")
         }
 
         let updateResponse = try JSONDecoder().decode(UpdateNameResponse.self, from: data)
@@ -323,7 +323,7 @@ final class AuthService: ObservableObject {
             }
         }
 
-        print("✅ Name updated: \(newName)")
+        debugLog("✅ Name updated: \(newName)")
     }
 
     // MARK: - Debug
@@ -342,7 +342,7 @@ final class AuthService: ObservableObject {
 
         currentUser = updatedUser
         // Note: We intentionally do not cache this debug state so it resets on relaunch
-        print("🔧 Debug: Pro status set to \(isPro)")
+        debugLog("🔧 Debug: Pro status set to \(isPro)")
     }
 
     var isLoggedIn: Bool {
@@ -395,7 +395,7 @@ final class AuthService: ObservableObject {
 
         guard httpResponse.statusCode == 200 else {
             let errorMessage = String(data: data, encoding: .utf8) ?? "Unknown error"
-            print("❌ Server error (\(httpResponse.statusCode)): \(errorMessage)")
+            debugLog("❌ Server error (\(httpResponse.statusCode)): \(errorMessage)")
             throw AuthError.serverError(httpResponse.statusCode)
         }
 

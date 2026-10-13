@@ -65,10 +65,10 @@ final class WhiteBalanceManager: NSObject, ObservableObject {
 
     /// autowhite balance
     func enableAutoMode() {
-        print("[WhiteBalance] Enabling auto mode")
+        debugLog("[WhiteBalance] Enabling auto mode")
 
         guard let camera = currentCamera else {
-            print("[WhiteBalance] ⚠️ enableAutoMode called but currentCamera is nil")
+            debugLog("[WhiteBalance] ⚠️ enableAutoMode called but currentCamera is nil")
             // camera, setautomode
             DispatchQueue.main.async {
                 self.isManualMode = false
@@ -81,10 +81,10 @@ final class WhiteBalanceManager: NSObject, ObservableObject {
 
             if camera.isWhiteBalanceModeSupported(.continuousAutoWhiteBalance) {
                 camera.whiteBalanceMode = .continuousAutoWhiteBalance
-                print("[WhiteBalance] ✅ Set to continuous auto white balance")
+                debugLog("[WhiteBalance] ✅ Set to continuous auto white balance")
             } else if camera.isWhiteBalanceModeSupported(.autoWhiteBalance) {
                 camera.whiteBalanceMode = .autoWhiteBalance
-                print("[WhiteBalance] ✅ Set to auto white balance")
+                debugLog("[WhiteBalance] ✅ Set to auto white balance")
             }
 
             camera.unlockForConfiguration()
@@ -93,7 +93,7 @@ final class WhiteBalanceManager: NSObject, ObservableObject {
                 self.isManualMode = false
             }
         } catch {
-            print("[WhiteBalance] ❌ Failed to enable auto white balance: \(error)")
+            debugLog("[WhiteBalance] ❌ Failed to enable auto white balance: \(error)")
             // setfailed, update UI state
             DispatchQueue.main.async {
                 self.isManualMode = false
@@ -103,7 +103,7 @@ final class WhiteBalanceManager: NSObject, ObservableObject {
 
     /// manualwhite balancemode
     func enableManualMode() {
-        print("[WhiteBalance] Enabling manual mode")
+        debugLog("[WhiteBalance] Enabling manual mode")
         DispatchQueue.main.async {
             self.isManualMode = true
         }
@@ -115,11 +115,11 @@ final class WhiteBalanceManager: NSObject, ObservableObject {
     ///   - tint: tint (-150 - 150)
     func setWhiteBalance(temperature: Float, tint: Float = 0) {
         guard let camera = currentCamera else {
-            print("[WhiteBalance] ⚠️ setWhiteBalance called but currentCamera is nil")
+            debugLog("[WhiteBalance] ⚠️ setWhiteBalance called but currentCamera is nil")
             return
         }
 
-        print("[WhiteBalance] Setting white balance - Temperature: \(temperature)K, Tint: \(tint)")
+        debugLog("[WhiteBalance] Setting white balance - Temperature: \(temperature)K, Tint: \(tint)")
 
         do {
             try camera.lockForConfiguration()
@@ -147,7 +147,7 @@ final class WhiteBalanceManager: NSObject, ObservableObject {
             camera.setWhiteBalanceModeLocked(with: clampedGains, completionHandler: nil)
             camera.unlockForConfiguration()
         } catch {
-            print("[WhiteBalance] ❌ Failed to set white balance: \(error)")
+            debugLog("[WhiteBalance] ❌ Failed to set white balance: \(error)")
         }
     }
 

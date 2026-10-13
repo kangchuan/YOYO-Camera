@@ -77,7 +77,7 @@ struct FilterIntensityVerticalSlider: View {
                         .onEnded { _ in
                             isDragging = false
                             UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                            print("Filter intensity set to: \(currentIntensity)")
+                            debugLog("Filter intensity set to: \(currentIntensity)")
                         }
                 )
             }

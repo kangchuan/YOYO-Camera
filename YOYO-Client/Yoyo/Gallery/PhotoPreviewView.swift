@@ -30,17 +30,17 @@ struct PhotoPreviewView: View {
                 .tag(idx)
                 .ignoresSafeArea()
                 .onAppear {
-                    print("📸 PhotoPreviewView: 选中索引 \(idx)，照片ID: \(photo.id.uuidString.prefix(8))，总照片数: \(photos.count)")
+                    debugLog("📸 PhotoPreviewView: 选中索引 \(idx)，照片ID: \(photo.id.uuidString.prefix(8))，总照片数: \(photos.count)")
                 }
             }
         }
         .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
         .onChange(of: selectedIndex) { oldValue, newValue in
-            print("🔄 PhotoPreviewView: 索引从 \(oldValue) 变化到 \(newValue)，当前照片数: \(photos.count)")
+            debugLog("🔄 PhotoPreviewView: 索引从 \(oldValue) 变化到 \(newValue)，当前照片数: \(photos.count)")
             if newValue < photos.count {
                 let currentPhotoId = photos[newValue].id.uuidString.prefix(8)
                 let isActive = oldValue == newValue ? "相同" : "不同"
-                print("📍 PhotoPreviewView: 当前选中照片 \(currentPhotoId)，索引变化类型: \(isActive)")
+                debugLog("📍 PhotoPreviewView: 当前选中照片 \(currentPhotoId)，索引变化类型: \(isActive)")
             }
         }
     }
@@ -109,7 +109,7 @@ struct AsyncPhotoView: View {
                                 .font(.system(size: 16))
                                 .foregroundColor(.white.opacity(0.6))
                             Button(String.photoPreviewRetry.localized) {
-                                print("🔄 用户点击重试按钮，照片ID: \(photo.id.uuidString.prefix(8))，isActive: \(isActive)，showingOriginal: \(showingOriginal)")
+                                debugLog("🔄 用户点击重试按钮，照片ID: \(photo.id.uuidString.prefix(8))，isActive: \(isActive)，showingOriginal: \(showingOriginal)")
                                 loadTask?.cancel()
                                 loadTask = Task { await loadImage() }
                             }
@@ -120,19 +120,19 @@ struct AsyncPhotoView: View {
             }
         }
         .task {
-            print("🚀 AsyncPhotoView.task: 开始加载照片ID: \(photo.id.uuidString.prefix(8))，isActive: \(isActive)，showingOriginal: \(showingOriginal)")
+            debugLog("🚀 AsyncPhotoView.task: 开始加载照片ID: \(photo.id.uuidString.prefix(8))，isActive: \(isActive)，showingOriginal: \(showingOriginal)")
             await loadImage()
         }
         .onChange(of: isActive) { oldValue, newValue in
             handleIsActiveChange(oldValue: oldValue, newValue: newValue)
         }
         .onChange(of: showingOriginal) { oldValue, newValue in
-            print("🔄 AsyncPhotoView.showingOriginal变化: 照片ID: \(photo.id.uuidString.prefix(8))，从 \(oldValue) 到 \(newValue)，isActive: \(isActive)")
+            debugLog("🔄 AsyncPhotoView.showingOriginal变化: 照片ID: \(photo.id.uuidString.prefix(8))，从 \(oldValue) 到 \(newValue)，isActive: \(isActive)")
             loadTask?.cancel()
             loadTask = Task { await loadImage() }
         }
         .onChange(of: loadedImage) { oldValue, newValue in
-            print("📷 AsyncPhotoView.loadedImage变化: 照片ID: \(photo.id.uuidString.prefix(8))，从 \(oldValue != nil) 到 \(newValue != nil)，isActive: \(isActive)")
+            debugLog("📷 AsyncPhotoView.loadedImage变化: 照片ID: \(photo.id.uuidString.prefix(8))，从 \(oldValue != nil) 到 \(newValue != nil)，isActive: \(isActive)")
         }
         .onChange(of: frameManager.isFrameOn) { _, _ in updateFramedImage() }
         .onChange(of: frameManager.currentTemplate) { _, _ in updateFramedImage() }
@@ -156,28 +156,28 @@ struct AsyncPhotoView: View {
     }
 
     private func handleIsActiveChange(oldValue: Bool, newValue: Bool) {
-        print("🔄 AsyncPhotoView.isActive变化: 照片ID: \(photo.id.uuidString.prefix(8))，从 \(oldValue) 到 \(newValue)，loadedImage: \(loadedImage != nil)")
+        debugLog("🔄 AsyncPhotoView.isActive变化: 照片ID: \(photo.id.uuidString.prefix(8))，从 \(oldValue) 到 \(newValue)，loadedImage: \(loadedImage != nil)")
         if !newValue {
             if isVideo {
                 player?.pause()
-                print("⏸️ AsyncPhotoView: 暂停视频播放，照片ID: \(photo.id.uuidString.prefix(8))")
+                debugLog("⏸️ AsyncPhotoView: 暂停视频播放，照片ID: \(photo.id.uuidString.prefix(8))")
             }
         } else {
             if isVideo, videoControls.isPlaying {
                 player?.play()
-                print("▶️ AsyncPhotoView: 恢复视频播放，照片ID: \(photo.id.uuidString.prefix(8))")
+                debugLog("▶️ AsyncPhotoView: 恢复视频播放，照片ID: \(photo.id.uuidString.prefix(8))")
             }
         }
     }
 
     private func handleDisappear() {
-        print("👋 AsyncPhotoView.onDisappear: 照片ID: \(photo.id.uuidString.prefix(8))，isActive: \(isActive)，loadedImage: \(loadedImage != nil)，loadError: \(loadError)")
+        debugLog("👋 AsyncPhotoView.onDisappear: 照片ID: \(photo.id.uuidString.prefix(8))，isActive: \(isActive)，loadedImage: \(loadedImage != nil)，loadError: \(loadError)")
         loadTask?.cancel()
         if isVideo {
             player?.pause()
             player = nil
             playerItem = nil
-            print("👋 AsyncPhotoView: 清理视频资源，照片ID: \(photo.id.uuidString.prefix(8))")
+            debugLog("👋 AsyncPhotoView: 清理视频资源，照片ID: \(photo.id.uuidString.prefix(8))")
         }
         if isLivePhoto {
             loadedLivePhoto = nil
@@ -186,7 +186,7 @@ struct AsyncPhotoView: View {
 
     @MainActor
     private func finishLoading(image: UIImage? = nil, live: PHLivePhoto? = nil, error: Bool = false) {
-        print("✅ AsyncPhotoView.finishLoading: 照片ID: \(photo.id.uuidString.prefix(8))，isActive: \(isActive)，image: \(image != nil)，live: \(live != nil)，error: \(error)")
+        debugLog("✅ AsyncPhotoView.finishLoading: 照片ID: \(photo.id.uuidString.prefix(8))，isActive: \(isActive)，image: \(image != nil)，live: \(live != nil)，error: \(error)")
 
         loadedImage = image
         loadedLivePhoto = live
@@ -236,22 +236,22 @@ struct AsyncPhotoView: View {
     }
 
     private func loadImage() async {
-        print("🔍 AsyncPhotoView.loadImage开始: 照片ID: \(photo.id.uuidString.prefix(8))，targetAssetId: \(targetAssetId)，isActive: \(isActive)，originalAvailable: \(originalAvailable)")
+        debugLog("🔍 AsyncPhotoView.loadImage开始: 照片ID: \(photo.id.uuidString.prefix(8))，targetAssetId: \(targetAssetId)，isActive: \(isActive)，originalAvailable: \(originalAvailable)")
 
         if loadedImage == nil, loadedLivePhoto == nil, player == nil {
             await MainActor.run {
                 isLoading = true
                 loadError = false
-                print("🔄 AsyncPhotoView.loadImage: 重置加载状态为isLoading=true, loadError=false")
+                debugLog("🔄 AsyncPhotoView.loadImage: 重置加载状态为isLoading=true, loadError=false")
             }
         } else {
-            print("⚡ AsyncPhotoView.loadImage: 跳过状态重置，当前状态 - loadedImage: \(loadedImage != nil)，loadedLivePhoto: \(loadedLivePhoto != nil)，player: \(player != nil)")
+            debugLog("⚡ AsyncPhotoView.loadImage: 跳过状态重置，当前状态 - loadedImage: \(loadedImage != nil)，loadedLivePhoto: \(loadedLivePhoto != nil)，player: \(player != nil)")
         }
 
         let isVideoAsset = await photo.isVideo(for: targetAssetId)
         let isLive = await photo.isLivePhoto(for: targetAssetId)
 
-        print("🎬 AsyncPhotoView.loadImage: 检测媒体类型 - isVideo: \(isVideoAsset)，isLive: \(isLive)")
+        debugLog("🎬 AsyncPhotoView.loadImage: 检测媒体类型 - isVideo: \(isVideoAsset)，isLive: \(isLive)")
 
         await MainActor.run {
             isVideo = isVideoAsset
@@ -259,11 +259,11 @@ struct AsyncPhotoView: View {
         }
 
         if isVideoAsset {
-            print("🎥 AsyncPhotoView.loadImage: 开始加载视频，targetAssetId: \(targetAssetId)")
+            debugLog("🎥 AsyncPhotoView.loadImage: 开始加载视频，targetAssetId: \(targetAssetId)")
             let videoURL = await PhotoLoader.shared.loadVideoURL(from: targetAssetId, isOriginal: originalAvailable)
             await MainActor.run {
                 if let url = videoURL {
-                    print("✅ AsyncPhotoView.loadImage: 视频URL加载成功，照片ID: \(photo.id.uuidString.prefix(8))")
+                    debugLog("✅ AsyncPhotoView.loadImage: 视频URL加载成功，照片ID: \(photo.id.uuidString.prefix(8))")
                     playerItem = AVPlayerItem(url: url)
                     player = AVPlayer(playerItem: playerItem)
 
@@ -276,7 +276,7 @@ struct AsyncPhotoView: View {
                     loadError = false
                 } else {
                     // Video loading failed
-                    print("❌ AsyncPhotoView.loadImage: 视频URL加载失败，照片ID: \(photo.id.uuidString.prefix(8))，targetAssetId: \(targetAssetId)")
+                    debugLog("❌ AsyncPhotoView.loadImage: 视频URL加载失败，照片ID: \(photo.id.uuidString.prefix(8))，targetAssetId: \(targetAssetId)")
                     loadError = true
                 }
                 isLoading = false
@@ -285,58 +285,58 @@ struct AsyncPhotoView: View {
         }
 
         if isLive {
-            print("📸 AsyncPhotoView.loadImage: 开始加载LivePhoto，targetAssetId: \(targetAssetId)")
+            debugLog("📸 AsyncPhotoView.loadImage: 开始加载LivePhoto，targetAssetId: \(targetAssetId)")
             let liveKey = showingOriginal ? liveKeyOriginal : liveKeyFull
             if let cachedLive = PhotoLoader.shared.getCachedLivePhoto(for: liveKey) {
-                print("✅ AsyncPhotoView.loadImage: 从缓存加载LivePhoto，照片ID: \(photo.id.uuidString.prefix(8))，key: \(liveKey)")
+                debugLog("✅ AsyncPhotoView.loadImage: 从缓存加载LivePhoto，照片ID: \(photo.id.uuidString.prefix(8))，key: \(liveKey)")
                 finishLoading(image: nil, live: cachedLive)
                 return
             }
 
             let livePhoto = await PhotoLoader.shared.loadLivePhoto(from: targetAssetId, key: liveKey, isOriginal: originalAvailable)
             if let livePhoto {
-                print("✅ AsyncPhotoView.loadImage: LivePhoto加载成功，照片ID: \(photo.id.uuidString.prefix(8))")
+                debugLog("✅ AsyncPhotoView.loadImage: LivePhoto加载成功，照片ID: \(photo.id.uuidString.prefix(8))")
                 finishLoading(image: nil, live: livePhoto)
                 return
             } else {
-                print("⚠️ AsyncPhotoView.loadImage: LivePhoto加载失败，回退到静态图，照片ID: \(photo.id.uuidString.prefix(8))")
+                debugLog("⚠️ AsyncPhotoView.loadImage: LivePhoto加载失败，回退到静态图，照片ID: \(photo.id.uuidString.prefix(8))")
             }
             // Fall back to a static image.
         }
 
         if showingOriginal {
-            print("🖼️ AsyncPhotoView.loadImage: 加载原图，照片ID: \(photo.id.uuidString.prefix(8))，key: \(imageKeyOriginal)")
+            debugLog("🖼️ AsyncPhotoView.loadImage: 加载原图，照片ID: \(photo.id.uuidString.prefix(8))，key: \(imageKeyOriginal)")
             if let cached = PhotoLoader.shared.getCachedImage(for: imageKeyOriginal) {
-                print("✅ AsyncPhotoView.loadImage: 从缓存加载原图，照片ID: \(photo.id.uuidString.prefix(8))")
+                debugLog("✅ AsyncPhotoView.loadImage: 从缓存加载原图，照片ID: \(photo.id.uuidString.prefix(8))")
                 finishLoading(image: cached, live: nil)
                 return
             }
-            print("🔍 AsyncPhotoView.loadImage: 缓存未命中，开始加载原图...")
+            debugLog("🔍 AsyncPhotoView.loadImage: 缓存未命中，开始加载原图...")
             let image = await photo.loadOriginalImage(
                 targetSize: PhotoLoader.detailMaxSize,
                 cacheKeySuffix: "original_preview"
             )
             if image != nil {
-                print("✅ AsyncPhotoView.loadImage: 原图加载成功，照片ID: \(photo.id.uuidString.prefix(8))")
+                debugLog("✅ AsyncPhotoView.loadImage: 原图加载成功，照片ID: \(photo.id.uuidString.prefix(8))")
                 finishLoading(image: image, live: nil)
             } else {
-                print("❌ AsyncPhotoView.loadImage: 原图加载失败，照片ID: \(photo.id.uuidString.prefix(8))")
+                debugLog("❌ AsyncPhotoView.loadImage: 原图加载失败，照片ID: \(photo.id.uuidString.prefix(8))")
                 finishLoading(image: nil, live: nil, error: true)
             }
         } else {
-            print("🖼️ AsyncPhotoView.loadImage: 加载全图，照片ID: \(photo.id.uuidString.prefix(8))，key: \(imageKeyFull)")
+            debugLog("🖼️ AsyncPhotoView.loadImage: 加载全图，照片ID: \(photo.id.uuidString.prefix(8))，key: \(imageKeyFull)")
             if let cached = PhotoLoader.shared.getCachedImage(for: imageKeyFull) {
-                print("✅ AsyncPhotoView.loadImage: 从缓存加载全图，照片ID: \(photo.id.uuidString.prefix(8))")
+                debugLog("✅ AsyncPhotoView.loadImage: 从缓存加载全图，照片ID: \(photo.id.uuidString.prefix(8))")
                 finishLoading(image: cached, live: nil)
                 return
             }
-            print("🔍 AsyncPhotoView.loadImage: 缓存未命中，开始加载全图...")
+            debugLog("🔍 AsyncPhotoView.loadImage: 缓存未命中，开始加载全图...")
             let image = await photo.loadFullImage()
             if image != nil {
-                print("✅ AsyncPhotoView.loadImage: 全图加载成功，照片ID: \(photo.id.uuidString.prefix(8))")
+                debugLog("✅ AsyncPhotoView.loadImage: 全图加载成功，照片ID: \(photo.id.uuidString.prefix(8))")
                 finishLoading(image: image, live: nil)
             } else {
-                print("❌ AsyncPhotoView.loadImage: 全图加载失败，照片ID: \(photo.id.uuidString.prefix(8))")
+                debugLog("❌ AsyncPhotoView.loadImage: 全图加载失败，照片ID: \(photo.id.uuidString.prefix(8))")
                 finishLoading(image: nil, live: nil, error: true)
             }
         }

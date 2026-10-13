@@ -134,7 +134,7 @@ final class VolumeButtonManager: NSObject, ObservableObject {
                         .removeObserver(self, forKeyPath: "outputVolume")
                     hasRegisteredSystemVolume = false
                 } catch {
-                    print("移除KVO监听失败: \(error)")
+                    debugLog("移除KVO监听失败: \(error)")
                 }
             }
         }
@@ -192,7 +192,7 @@ final class VolumeButtonManager: NSObject, ObservableObject {
                 volumeView.alpha = 0.01
                 volumeView.layer.zPosition = -1000
                 volumeViewAddedToWindow = true
-                print("MPVolumeView 已添加到窗口以隐藏系统音量 HUD")
+                debugLog("MPVolumeView 已添加到窗口以隐藏系统音量 HUD")
             }
         }
     }
@@ -207,7 +207,7 @@ final class VolumeButtonManager: NSObject, ObservableObject {
         setupVolumeMonitoring()
         configureAudioSession()
         isMonitoring = true
-        print("音量键监听已启动")
+        debugLog("音量键监听已启动")
     }
 
     /// stopobservevolume
@@ -218,7 +218,7 @@ final class VolumeButtonManager: NSObject, ObservableObject {
         removeVolumeMonitoring()
         hasSetupVolumeMonitoring = false
         filledSystemVolumeValue = false // resetinitialization, ensuresyncsystemvolume
-        print("音量键监听已停止")
+        debugLog("音量键监听已停止")
     }
 
     /// getcurrentsystemvolume
@@ -234,7 +234,7 @@ final class VolumeButtonManager: NSObject, ObservableObject {
     /// updatesystemvolume
     func updateSystemVolumeValue() {
         systemVolumeValue = getCurrentSystemVolume()
-        print("更新音量基准值: \(systemVolumeValue)")
+        debugLog("更新音量基准值: \(systemVolumeValue)")
     }
 
     // MARK: - Private Methods
@@ -254,7 +254,7 @@ final class VolumeButtonManager: NSObject, ObservableObject {
             // camera(videomode)use.playAndRecord; here AVCaptureSession runtime error,
             // preview(sampleBuffer not thencallback).
             if audioSession.category == .playAndRecord {
-                print("⚠️ [VolumeButtonManager] Skip configuring AudioSession (.ambient) because current category is .playAndRecord")
+                debugLog("⚠️ [VolumeButtonManager] Skip configuring AudioSession (.ambient) because current category is .playAndRecord")
                 return
             }
 
@@ -267,9 +267,9 @@ final class VolumeButtonManager: NSObject, ObservableObject {
             )
 
             try audioSession.setActive(true)
-            print("音频会话配置成功（ambient模式，不中断背景音频）")
+            debugLog("音频会话配置成功（ambient模式，不中断背景音频）")
         } catch {
-            print("配置音频会话失败: \(error.localizedDescription)")
+            debugLog("配置音频会话失败: \(error.localizedDescription)")
         }
     }
 
@@ -279,7 +279,7 @@ final class VolumeButtonManager: NSObject, ObservableObject {
         autoRecover: Bool,
         immediately: Bool
     ) {
-        print(
+        debugLog(
             "真实修改音量: \(volume), auto: \(autoRecover), immediately: \(immediately)"
         )
 
@@ -335,18 +335,18 @@ final class VolumeButtonManager: NSObject, ObservableObject {
             hasAction = true
         }
 
-        print("音量键当前状态: \(isDown ? "被按下" : "已松手"), action: \(hasAction)")
+        debugLog("音量键当前状态: \(isDown ? "被按下" : "已松手"), action: \(hasAction)")
         return hasAction
     }
 
     /// volumebuttontimerupdate
     @objc private func volumeButtonTimerUpdate(_ updateTimeIndex: NSNumber) {
-        print(
+        debugLog(
             "音量改变定时器触发: \(systemVolumeValue), recover: \(needRecoverSystemVolumeValue)"
         )
 
         if updateTimeIndex.intValue != timeIndex {
-            print("定时器序号已变更: \(updateTimeIndex.intValue) vs \(timeIndex)")
+            debugLog("定时器序号已变更: \(updateTimeIndex.intValue) vs \(timeIndex)")
             return
         }
 
@@ -366,16 +366,16 @@ final class VolumeButtonManager: NSObject, ObservableObject {
                 immediately: false
             )
             needRecoverSystemVolumeValue = false
-            print("属于回滚: \(systemVolumeValue)")
+            debugLog("属于回滚: \(systemVolumeValue)")
         } else {
-            print("不属于回滚: \(systemVolumeValue)")
+            debugLog("不属于回滚: \(systemVolumeValue)")
         }
     }
 
     // MARK: - Notification Handlers
 
     @objc private func didBecomeActive() {
-        print("重新激活: \(getCurrentSystemVolume())")
+        debugLog("重新激活: \(getCurrentSystemVolume())")
         systemVolumeValue = getCurrentSystemVolume()
 
         // ifin progressobserve, configureaudiosessionensureuse.ambient
@@ -399,7 +399,7 @@ final class VolumeButtonManager: NSObject, ObservableObject {
                             self.hasRegisteredSystemVolume = true
                         }
                     } catch {
-                        print("添加KVO监听失败: \(error)")
+                        debugLog("添加KVO监听失败: \(error)")
                     }
                 }
             }
@@ -415,7 +415,7 @@ final class VolumeButtonManager: NSObject, ObservableObject {
                         .removeObserver(self, forKeyPath: "outputVolume")
                     hasRegisteredSystemVolume = false
                 } catch {
-                    print("移除KVO监听失败: \(error)")
+                    debugLog("移除KVO监听失败: \(error)")
                 }
             }
         }
@@ -465,7 +465,7 @@ final class VolumeButtonManager: NSObject, ObservableObject {
 
         // initializationsystemvolume
         if !filledSystemVolumeValue {
-            print("系统音量初始化: \(nextVolume)")
+            debugLog("系统音量初始化: \(nextVolume)")
             systemVolumeValue = nextVolume
             updateSystemMusicPlayerVolume(
                 nextVolume,
@@ -502,11 +502,11 @@ final class VolumeButtonManager: NSObject, ObservableObject {
                 )
 
             if isAutoRecover {
-                print("回滚触发")
+                debugLog("回滚触发")
                 isAutoRecover = false
                 return
             } else if !touching, isAutoRecoverImmediately, abs(nextVolume - systemVolumeValue) < 0.01 {
-                print("立即回滚触发")
+                debugLog("立即回滚触发")
                 isAutoRecoverImmediately = false
                 needRecoverSystemVolumeValue = false
                 return
@@ -516,7 +516,7 @@ final class VolumeButtonManager: NSObject, ObservableObject {
                 let currentTimeIndex = timeIndex
 
                 if !touching {
-                    print("启动定时器1, timeIndex: \(currentTimeIndex)")
+                    debugLog("启动定时器1, timeIndex: \(currentTimeIndex)")
                     perform(
                         #selector(volumeButtonTimerUpdate(_:)),
                         with: NSNumber(value: currentTimeIndex),
@@ -527,7 +527,7 @@ final class VolumeButtonManager: NSObject, ObservableObject {
                     needRecoverSystemVolumeValue = needRecoverSystemVolumeValue || anyAct
 
                     if !anyAct {
-                        print("更新当前音量值: \(nextVolume)")
+                        debugLog("更新当前音量值: \(nextVolume)")
                         systemVolumeValue = nextVolume
                     } else {
                         let playerVolume = fixedMusicPlayerVolume(nextVolume)
@@ -546,7 +546,7 @@ final class VolumeButtonManager: NSObject, ObservableObject {
                             immediately: true
                         )
                     }
-                    print("启动定时器2, timeIndex: \(currentTimeIndex)")
+                    debugLog("启动定时器2, timeIndex: \(currentTimeIndex)")
                     perform(
                         #selector(volumeButtonTimerUpdate(_:)),
                         with: NSNumber(value: currentTimeIndex),
@@ -555,13 +555,13 @@ final class VolumeButtonManager: NSObject, ObservableObject {
                 }
             }
 
-            print(
+            debugLog(
                 "回滚状态: \(needRecoverSystemVolumeValue), volume: \(systemVolumeValue)"
             )
         } else if reason == "RouteChange" {
             if #available(iOS 13.0, *) {
                 if touching {
-                    print("RouteChange return")
+                    debugLog("RouteChange return")
                     return
                 }
             }
@@ -605,7 +605,7 @@ final class VolumeButtonManager: NSObject, ObservableObject {
                 "Source": "outputVolume",
             ] as [String: Any]
 
-            print("KVO音量改变, outputVolume变为: \(newValue)")
+            debugLog("KVO音量改变, outputVolume变为: \(newValue)")
 
             DispatchQueue.main.async {
                 NotificationCenter.default.post(
@@ -622,7 +622,7 @@ final class VolumeButtonManager: NSObject, ObservableObject {
     /// setvolumeviewstate
     /// - Parameter isHidden: true = systemvolume HUD(MPVolumeView can); false = systemvolume HUD(MPVolumeView)
     static func setVolumeViewHidden(_ isHidden: Bool) {
-        print("音量键真实状态: \(isHidden ? "隐藏系统HUD" : "显示系统HUD")")
+        debugLog("音量键真实状态: \(isHidden ? "隐藏系统HUD" : "显示系统HUD")")
         DispatchQueue.main.async {
             // ensure volumeView
             ensureVolumeViewInWindow()
@@ -660,7 +660,7 @@ final class VolumeButtonManager: NSObject, ObservableObject {
     /// volumeview
     /// - Parameter show: true = systemvolume HUD; false = systemvolume HUD
     static func showVolumeView(_ show: Bool) {
-        print("音量键真实状态B: \(!show ? "隐藏系统HUD" : "显示系统HUD")")
+        debugLog("音量键真实状态B: \(!show ? "隐藏系统HUD" : "显示系统HUD")")
         DispatchQueue.main.async {
             if show {
                 // systemvolume HUD: remove MPVolumeView

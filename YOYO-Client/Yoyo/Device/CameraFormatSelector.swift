@@ -25,7 +25,7 @@ final class CameraFormatSelector {
                           desiredResolution: CMVideoDimensions,
                           desiredFrameRate: Int32) -> FormatSelectionResult?
     {
-        print("🔍 [CameraFormatSelector] 开始选择格式: \(desiredResolution.width)x\(desiredResolution.height)@\(desiredFrameRate)fps")
+        debugLog("🔍 [CameraFormatSelector] 开始选择格式: \(desiredResolution.width)x\(desiredResolution.height)@\(desiredFrameRate)fps")
 
         let formats = device.formats
 
@@ -34,7 +34,7 @@ final class CameraFormatSelector {
                                            desiredResolution: desiredResolution,
                                            desiredFrameRate: desiredFrameRate)
         {
-            print("✅ [CameraFormatSelector] 找到完全匹配的格式")
+            debugLog("✅ [CameraFormatSelector] 找到完全匹配的格式")
             return FormatSelectionResult(format: exactMatch,
                                          actualResolution: desiredResolution,
                                          actualFrameRate: desiredFrameRate,
@@ -46,21 +46,21 @@ final class CameraFormatSelector {
                                                                       desiredResolution: desiredResolution,
                                                                       desiredFrameRate: desiredFrameRate)
         {
-            print("⚠️ [CameraFormatSelector] 相同分辨率，保持帧率: \(desiredFrameRate)fps")
+            debugLog("⚠️ [CameraFormatSelector] 相同分辨率，保持帧率: \(desiredFrameRate)fps")
             return sameResolutionResult
         } else {
-            print("ℹ️ [CameraFormatSelector] 相同分辨率下无设备支持 \(desiredFrameRate)fps")
+            debugLog("ℹ️ [CameraFormatSelector] 相同分辨率下无设备支持 \(desiredFrameRate)fps")
         }
 
         // 3. supporttarget frame rate
         if let bestAlternative = findBestAlternativeFormat(formats: formats,
                                                            desiredFrameRate: desiredFrameRate)
         {
-            print("⚠️ [CameraFormatSelector] 使用替代格式: \(bestAlternative.actualResolution.width)x\(bestAlternative.actualResolution.height)@\(bestAlternative.actualFrameRate)fps")
+            debugLog("⚠️ [CameraFormatSelector] 使用替代格式: \(bestAlternative.actualResolution.width)x\(bestAlternative.actualResolution.height)@\(bestAlternative.actualFrameRate)fps")
             return bestAlternative
         }
 
-        print("❌ [CameraFormatSelector] 未找到合适的格式")
+        debugLog("❌ [CameraFormatSelector] 未找到合适的格式")
         return nil
     }
 

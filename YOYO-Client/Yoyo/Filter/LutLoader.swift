@@ -80,7 +80,7 @@ final class LutLoader {
         }
 
         guard let data = loadedData else {
-            print("LUT asset not found for name: \(lutName)")
+            debugLog("LUT asset not found for name: \(lutName)")
             return (nil, 0)
         }
 
@@ -139,7 +139,7 @@ final class LutLoader {
 
         let expectedCount = size * size * size * 3
         guard cubeValues.count == expectedCount else {
-            print("LUT data count mismatch: got \(cubeValues.count), expected \(expectedCount)")
+            debugLog("LUT data count mismatch: got \(cubeValues.count), expected \(expectedCount)")
             return nil
         }
 

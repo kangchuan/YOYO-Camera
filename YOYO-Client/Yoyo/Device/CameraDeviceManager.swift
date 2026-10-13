@@ -99,7 +99,7 @@ final class CameraDeviceManager: NSObject, ObservableObject {
         if let cam = currentCamera {
             currentBackDeviceType = cam.deviceType
         }
-        print("📷 [DeviceManager] 使用设备: \(currentCamera?.deviceType.rawValue ?? "nil")")
+        debugLog("📷 [DeviceManager] 使用设备: \(currentCamera?.deviceType.rawValue ?? "nil")")
 
         // synccamerawhite balance manager
         whiteBalanceManager.setCurrentCamera(currentCamera)
@@ -247,7 +247,7 @@ final class CameraDeviceManager: NSObject, ObservableObject {
 
         // camera
         guard let camera = resolveCamera(for: targetDeviceType, position: position) else {
-            print("[DeviceManager] ⚠️ 无法获取目标设备")
+            debugLog("[DeviceManager] ⚠️ 无法获取目标设备")
             return nil
         }
 
@@ -271,7 +271,7 @@ final class CameraDeviceManager: NSObject, ObservableObject {
 
     /// updatecamerastate(deviceswitchcomplete)
     private func updateCameraState(camera: AVCaptureDevice?, deviceType: AVCaptureDevice.DeviceType) {
-        print("[Camera Switch] 📝 updateCameraState - BEFORE: currentCamera position = \(currentCamera?.position == .front ? "Front" : currentCamera?.position == .back ? "Back" : "nil")")
+        debugLog("[Camera Switch] 📝 updateCameraState - BEFORE: currentCamera position = \(currentCamera?.position == .front ? "Front" : currentCamera?.position == .back ? "Back" : "nil")")
 
         guard let camera else {
             currentCamera = nil
@@ -288,7 +288,7 @@ final class CameraDeviceManager: NSObject, ObservableObject {
         // updatecurrentcameradevice
         currentCameraDeviceType = camera.cameraDeviceType
 
-        print("[Camera Switch] 📝 updateCameraState - AFTER: currentCamera position = \(camera.position == .front ? "Front" : "Back"), deviceType = \(camera.cameraDeviceType.rawValue)")
+        debugLog("[Camera Switch] 📝 updateCameraState - AFTER: currentCamera position = \(camera.position == .front ? "Front" : "Back"), deviceType = \(camera.cameraDeviceType.rawValue)")
 
         // ✅ camerastate(set)
         applyCameraState(camera)
@@ -314,11 +314,11 @@ final class CameraDeviceManager: NSObject, ObservableObject {
             default:
                 deviceName = "未知"
             }
-            print("[DeviceManager] 🎬 选择相机: \(deviceName) (\(deviceType.rawValue)), 位置: \(position == .front ? "Front" : "Back"), 目标缩放: \(String(format: "%.2f", targetZoom))x")
+            debugLog("[DeviceManager] 🎬 选择相机: \(deviceName) (\(deviceType.rawValue)), 位置: \(position == .front ? "Front" : "Back"), 目标缩放: \(String(format: "%.2f", targetZoom))x")
 
             // cameradevice
             guard let camera = self.resolveCamera(for: deviceType, position: position) else {
-                print("[DeviceManager] ⚠️ 无法获取目标设备，回退到当前设备")
+                debugLog("[DeviceManager] ⚠️ 无法获取目标设备，回退到当前设备")
                 if let fallbackCamera = self.currentCamera {
                     self.completeSwitchWithCamera(fallbackCamera, deviceType: fallbackCamera.deviceType)
                 }
@@ -327,7 +327,7 @@ final class CameraDeviceManager: NSObject, ObservableObject {
 
             // checkwhetherneed to switch(switchdevice)
             if self.currentCamera === camera {
-                print("[DeviceManager] ⏭️ 目标相机与当前相机相同，跳过切换")
+                debugLog("[DeviceManager] ⏭️ 目标相机与当前相机相同，跳过切换")
                 // not switch, complete, let ZoomManager zoom
                 self.zoomManager.confirmDeviceSwitchCompleted(deviceType: deviceType, camera: camera)
                 return
@@ -358,18 +358,18 @@ final class CameraDeviceManager: NSObject, ObservableObject {
 
     /// completedeviceswitch, updatestate
     private func completeSwitchWithCamera(_ camera: AVCaptureDevice, deviceType: AVCaptureDevice.DeviceType) {
-        print("[Camera Switch] 🎯 completeSwitchWithCamera - deviceType: \(deviceType.rawValue), actual position: \(camera.position == .front ? "Front" : "Back")")
+        debugLog("[Camera Switch] 🎯 completeSwitchWithCamera - deviceType: \(deviceType.rawValue), actual position: \(camera.position == .front ? "Front" : "Back")")
         updateCameraState(camera: camera, deviceType: deviceType)
         zoomManager.confirmDeviceSwitchCompleted(deviceType: deviceType, camera: camera)
-        print("[Camera Switch] ✅ completeSwitchWithCamera 完成")
+        debugLog("[Camera Switch] ✅ completeSwitchWithCamera 完成")
     }
 
     private func resolveCamera(for deviceType: AVCaptureDevice.DeviceType, position: AVCaptureDevice.Position) -> AVCaptureDevice? {
-        print("[Camera Switch] 🔍 resolveCamera - deviceType: \(deviceType.rawValue), position: \(position == .front ? "Front" : "Back")")
+        debugLog("[Camera Switch] 🔍 resolveCamera - deviceType: \(deviceType.rawValue), position: \(position == .front ? "Front" : "Back")")
 
         if position == .front {
             let camera = frontCamera ?? discoverDevice(deviceTypes: [.builtInWideAngleCamera], position: .front)
-            print("[Camera Switch] 🔍 前置相机: \(camera != nil ? "找到" : "未找到"), position: \(camera?.position == .front ? "Front" : camera?.position == .back ? "Back" : "Unknown")")
+            debugLog("[Camera Switch] 🔍 前置相机: \(camera != nil ? "找到" : "未找到"), position: \(camera?.position == .front ? "Front" : camera?.position == .back ? "Back" : "Unknown")")
             return camera
         }
 
@@ -385,7 +385,7 @@ final class CameraDeviceManager: NSObject, ObservableObject {
             camera = wideAngleCamera ?? discoverDevice(deviceTypes: [.builtInWideAngleCamera], position: .back) ?? backCamera
         }
 
-        print("[Camera Switch] 🔍 后置相机: \(camera != nil ? "找到" : "未找到"), position: \(camera?.position == .front ? "Front" : camera?.position == .back ? "Back" : "Unknown")")
+        debugLog("[Camera Switch] 🔍 后置相机: \(camera != nil ? "找到" : "未找到"), position: \(camera?.position == .front ? "Front" : camera?.position == .back ? "Back" : "Unknown")")
         return camera
     }
 
@@ -395,13 +395,13 @@ final class CameraDeviceManager: NSObject, ObservableObject {
 
     func setExposureBias(_ bias: Float) {
         guard let camera = currentCamera else {
-            print("❌ [DEBUG] setExposureBias: currentCamera 为 nil")
+            debugLog("❌ [DEBUG] setExposureBias: currentCamera 为 nil")
             return
         }
 
-        print("🎯 [DEBUG] setExposureBias 被调用:")
-        print("   - 目标 bias: \(bias)")
-        print("   - 相机: \(camera.deviceType.rawValue)")
+        debugLog("🎯 [DEBUG] setExposureBias 被调用:")
+        debugLog("   - 目标 bias: \(bias)")
+        debugLog("   - 相机: \(camera.deviceType.rawValue)")
 
         do {
             try camera.lockForConfiguration()
@@ -409,23 +409,23 @@ final class CameraDeviceManager: NSObject, ObservableObject {
             let maxBias = camera.maxExposureTargetBias
             let clampedBias = max(minBias, min(maxBias, bias))
 
-            print("   - 设备支持范围: [\(minBias), \(maxBias)]")
-            print("   - 限制后的值: \(clampedBias)")
-            print("   - 当前曝光模式: \(camera.exposureMode.rawValue)")
+            debugLog("   - 设备支持范围: [\(minBias), \(maxBias)]")
+            debugLog("   - 限制后的值: \(clampedBias)")
+            debugLog("   - 当前曝光模式: \(camera.exposureMode.rawValue)")
 
             camera.setExposureTargetBias(clampedBias) { time in
-                print("   - ✅ setExposureTargetBias 完成回调, time: \(time)")
+                debugLog("   - ✅ setExposureTargetBias 完成回调, time: \(time)")
             }
 
             camera.unlockForConfiguration()
 
             // validatewhethersetsuccessfully
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                print("   - 🔍 验证: 当前设备 exposureTargetBias = \(camera.exposureTargetBias)")
-                print("   - 🔍 验证: 当前设备 exposureTargetOffset = \(camera.exposureTargetOffset)")
+                debugLog("   - 🔍 验证: 当前设备 exposureTargetBias = \(camera.exposureTargetBias)")
+                debugLog("   - 🔍 验证: 当前设备 exposureTargetOffset = \(camera.exposureTargetOffset)")
             }
         } catch {
-            print("❌ Failed to set exposure bias: \(error)")
+            debugLog("❌ Failed to set exposure bias: \(error)")
         }
     }
 
@@ -445,7 +445,7 @@ final class CameraDeviceManager: NSObject, ObservableObject {
             }
             device.unlockForConfiguration()
         } catch {
-            print("Failed to set torch: \(error)")
+            debugLog("Failed to set torch: \(error)")
         }
     }
 
@@ -462,7 +462,7 @@ final class CameraDeviceManager: NSObject, ObservableObject {
             }
             camera.unlockForConfiguration()
         } catch {
-            print("Failed to set focus point: \(error)")
+            debugLog("Failed to set focus point: \(error)")
         }
     }
 
@@ -477,7 +477,7 @@ final class CameraDeviceManager: NSObject, ObservableObject {
             }
             camera.unlockForConfiguration()
         } catch {
-            print("Failed to set exposure point: \(error)")
+            debugLog("Failed to set exposure point: \(error)")
         }
     }
 

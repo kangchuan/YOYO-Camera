@@ -113,7 +113,7 @@ struct StorageDetailView: View {
                         ))
                     }
                 } catch {
-                    print("Error loading items from \(url.path): \(error)")
+                    debugLog("Error loading items from \(url.path): \(error)")
                 }
             }
 
@@ -134,7 +134,7 @@ struct StorageDetailView: View {
             }
             // Refresh is handled locally after deletion.
         } catch {
-            print("Error deleting item: \(error)")
+            debugLog("Error deleting item: \(error)")
         }
     }
 

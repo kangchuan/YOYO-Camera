@@ -69,7 +69,7 @@ final class FocusManager: NSObject, ObservableObject {
     func setCurrentCamera(_ camera: AVCaptureDevice?) {
         // ✅ Avoid repeated initialization: if the camera has not changed, return directly
         if let current = currentCamera, let new = camera, current === new {
-            print("[Focus Debug] ⏭️ Camera unchanged, skipping re-initialization")
+            debugLog("[Focus Debug] ⏭️ Camera unchanged, skipping re-initialization")
             return
         }
 
@@ -82,20 +82,20 @@ final class FocusManager: NSObject, ObservableObject {
         // ✅ Critical fix: Automatically reinitialize focus mode after device switching
         // Ensure your new camera immediately enables optimal focus mode to avoid out-of-focus issues
         if let camera {
-            print("[Focus Debug] 📍 Auto-initializing focus for new camera: \(camera.deviceType.rawValue)")
+            debugLog("[Focus Debug] 📍 Auto-initializing focus for new camera: \(camera.deviceType.rawValue)")
 
             // Choose the best focus mode and apply it instantly
             if camera.isFocusModeSupported(.continuousAutoFocus) {
-                print("[Focus Debug] ✅ Enabling continuous autofocus")
+                debugLog("[Focus Debug] ✅ Enabling continuous autofocus")
                 enableContinuousAutoFocus()
             } else if camera.isFocusModeSupported(.autoFocus) {
-                print("[Focus Debug] ✅ Enabling center focus (fallback)")
+                debugLog("[Focus Debug] ✅ Enabling center focus (fallback)")
                 focusAtCenter()
             } else {
-                print("[Focus Debug] ⚠️ No autofocus modes supported")
+                debugLog("[Focus Debug] ⚠️ No autofocus modes supported")
             }
         } else {
-            print("[Focus Debug] ⚠️ Camera is nil, skipping focus initialization")
+            debugLog("[Focus Debug] ⚠️ Camera is nil, skipping focus initialization")
         }
     }
 
@@ -156,7 +156,7 @@ final class FocusManager: NSObject, ObservableObject {
             }
 
         } catch {
-            print("Focus Lock error: \(error)")
+            debugLog("Focus Lock error: \(error)")
         }
     }
 
@@ -182,7 +182,7 @@ final class FocusManager: NSObject, ObservableObject {
             }
 
         } catch {
-            print("Focus Unlock error: \(error)")
+            debugLog("Focus Unlock error: \(error)")
         }
     }
 
@@ -209,7 +209,7 @@ final class FocusManager: NSObject, ObservableObject {
             }
             camera.unlockForConfiguration()
         } catch {
-            print("Focus error: \(error)")
+            debugLog("Focus error: \(error)")
             DispatchQueue.main.async {
                 self.focusState = .failed
             }
@@ -239,7 +239,7 @@ final class FocusManager: NSObject, ObservableObject {
             }
 
         } catch {
-            print("Center focus error: \(error)")
+            debugLog("Center focus error: \(error)")
             DispatchQueue.main.async {
                 self.focusState = .failed
             }
@@ -285,7 +285,7 @@ final class FocusManager: NSObject, ObservableObject {
             camera.unlockForConfiguration()
 
         } catch {
-            print("Focus error: \(error)")
+            debugLog("Focus error: \(error)")
             DispatchQueue.main.async {
                 self.focusState = .failed
             }
@@ -318,7 +318,7 @@ final class FocusManager: NSObject, ObservableObject {
             }
 
         } catch {
-            print("Continuous focus setup error: \(error)")
+            debugLog("Continuous focus setup error: \(error)")
         }
     }
 
@@ -341,7 +341,7 @@ final class FocusManager: NSObject, ObservableObject {
             }
 
         } catch {
-            print("Disable continuous focus error: \(error)")
+            debugLog("Disable continuous focus error: \(error)")
         }
     }
 
@@ -479,7 +479,7 @@ final class FocusManager: NSObject, ObservableObject {
                 self.focusState = .locked
             }
         } catch {
-            print("Enable manual focus error: \(error)")
+            debugLog("Enable manual focus error: \(error)")
         }
     }
 
@@ -493,7 +493,7 @@ final class FocusManager: NSObject, ObservableObject {
             }
             camera.unlockForConfiguration()
         } catch {
-            print("Adjust focus position error: \(error)")
+            debugLog("Adjust focus position error: \(error)")
         }
     }
 

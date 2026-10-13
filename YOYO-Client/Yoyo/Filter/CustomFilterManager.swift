@@ -131,7 +131,7 @@ final class CustomFilterManager: NSObject, ObservableObject {
 
             return newFilter
         } catch {
-            print("Error importing filter: \(error)")
+            debugLog("Error importing filter: \(error)")
             return nil
         }
     }

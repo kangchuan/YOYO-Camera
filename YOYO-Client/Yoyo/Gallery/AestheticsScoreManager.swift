@@ -144,14 +144,14 @@ final class AestheticsScoreManager: ObservableObject {
                     photo.aestheticsScore = score
                     do {
                         try photo.modelContext?.save()
-                        print("图片美学评分计算完成: \(score)")
+                        debugLog("图片美学评分计算完成: \(score)")
                     } catch {
-                        print("保存美学评分失败: \(error)")
+                        debugLog("保存美学评分失败: \(error)")
                     }
                 }
             }
         } catch {
-            print("计算图片美学评分失败: \(error.localizedDescription)")
+            debugLog("计算图片美学评分失败: \(error.localizedDescription)")
         }
     }
 
@@ -199,9 +199,9 @@ final class AestheticsScoreManager: ObservableObject {
         photo.aestheticsScore = score
         do {
             try photo.modelContext?.save()
-            print("图片美学评分计算完成: \(score)")
+            debugLog("图片美学评分计算完成: \(score)")
         } catch {
-            print("保存美学评分失败: \(error)")
+            debugLog("保存美学评分失败: \(error)")
             throw error
         }
 

@@ -66,10 +66,10 @@ final class AudioSessionManager {
             // configurepolar patternmode
             configureMicrophonePolarPattern(for: audioSession)
 
-            print("✅ [AudioSessionManager] Reconfigured - NoiseReduction: \(noiseReductionEnabled), Pattern: \(pickupPatternRaw)")
+            debugLog("✅ [AudioSessionManager] Reconfigured - NoiseReduction: \(noiseReductionEnabled), Pattern: \(pickupPatternRaw)")
 
         } catch {
-            print("❌ [AudioSessionManager] Failed to reconfigure: \(error.localizedDescription)")
+            debugLog("❌ [AudioSessionManager] Failed to reconfigure: \(error.localizedDescription)")
         }
     }
 
@@ -83,7 +83,7 @@ final class AudioSessionManager {
             configureAndActivateSession()
         }
         activeClients += 1
-        print("🎤 [AudioSessionManager] Activate (Clients: \(activeClients))")
+        debugLog("🎤 [AudioSessionManager] Activate (Clients: \(activeClients))")
     }
 
     /// audiosession
@@ -93,12 +93,12 @@ final class AudioSessionManager {
         defer { lock.unlock() }
 
         guard activeClients > 0 else {
-            print("⚠️ [AudioSessionManager] Deactivate called but no active clients")
+            debugLog("⚠️ [AudioSessionManager] Deactivate called but no active clients")
             return
         }
 
         activeClients -= 1
-        print("🎤 [AudioSessionManager] Deactivate (Clients: \(activeClients))")
+        debugLog("🎤 [AudioSessionManager] Deactivate (Clients: \(activeClients))")
 
         if activeClients == 0 {
             deactivateSession()
@@ -138,10 +138,10 @@ final class AudioSessionManager {
             try audioSession.setActive(true)
 
             let modeDescription = noiseReductionEnabled ? "videoChat (noise reduction enabled)" : "videoRecording"
-            print("✅ [AudioSessionManager] Configured with \(modeDescription), pickup: \(pickupPatternRaw)")
+            debugLog("✅ [AudioSessionManager] Configured with \(modeDescription), pickup: \(pickupPatternRaw)")
 
         } catch {
-            print("❌ [AudioSessionManager] Failed to configure AudioSession: \(error.localizedDescription)")
+            debugLog("❌ [AudioSessionManager] Failed to configure AudioSession: \(error.localizedDescription)")
         }
     }
 
@@ -151,7 +151,7 @@ final class AudioSessionManager {
         guard let availableInputs = audioSession.availableInputs,
               let builtInMic = availableInputs.first(where: { $0.portType == .builtInMic })
         else {
-            print("⚠️ [AudioSessionManager] No built-in microphone found")
+            debugLog("⚠️ [AudioSessionManager] No built-in microphone found")
             return
         }
 
@@ -159,12 +159,12 @@ final class AudioSessionManager {
         do {
             try audioSession.setPreferredInput(builtInMic)
         } catch {
-            print("⚠️ [AudioSessionManager] Failed to set preferred input: \(error.localizedDescription)")
+            debugLog("⚠️ [AudioSessionManager] Failed to set preferred input: \(error.localizedDescription)")
         }
 
         // checkwhethersupportpolar patternmodeconfigure
         guard let dataSources = builtInMic.dataSources, !dataSources.isEmpty else {
-            print("ℹ️ [AudioSessionManager] No data sources available for polar pattern configuration")
+            debugLog("ℹ️ [AudioSessionManager] No data sources available for polar pattern configuration")
             return
         }
 
@@ -176,10 +176,10 @@ final class AudioSessionManager {
                 do {
                     try dataSource.setPreferredPolarPattern(targetPattern)
                     try builtInMic.setPreferredDataSource(dataSource)
-                    print("✅ [AudioSessionManager] Configured \(pickupPatternRaw) polar pattern for: \(dataSource.dataSourceName ?? "unknown")")
+                    debugLog("✅ [AudioSessionManager] Configured \(pickupPatternRaw) polar pattern for: \(dataSource.dataSourceName ?? "unknown")")
                     return
                 } catch {
-                    print("⚠️ [AudioSessionManager] Failed to set polar pattern: \(error.localizedDescription)")
+                    debugLog("⚠️ [AudioSessionManager] Failed to set polar pattern: \(error.localizedDescription)")
                 }
             }
         }
@@ -191,10 +191,10 @@ final class AudioSessionManager {
                     do {
                         try dataSource.setPreferredPolarPattern(.cardioid)
                         try builtInMic.setPreferredDataSource(dataSource)
-                        print("⚠️ [AudioSessionManager] Fallback to cardioid for: \(dataSource.dataSourceName ?? "unknown")")
+                        debugLog("⚠️ [AudioSessionManager] Fallback to cardioid for: \(dataSource.dataSourceName ?? "unknown")")
                         return
                     } catch {
-                        print("⚠️ [AudioSessionManager] Failed to set fallback polar pattern: \(error.localizedDescription)")
+                        debugLog("⚠️ [AudioSessionManager] Failed to set fallback polar pattern: \(error.localizedDescription)")
                     }
                 }
             }
@@ -205,9 +205,9 @@ final class AudioSessionManager {
         do {
             // , andnotify App can restoreaudio
             try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
-            print("✅ [AudioSessionManager] AudioSession deactivated")
+            debugLog("✅ [AudioSessionManager] AudioSession deactivated")
         } catch {
-            print("❌ [AudioSessionManager] Failed to deactivate AudioSession: \(error.localizedDescription)")
+            debugLog("❌ [AudioSessionManager] Failed to deactivate AudioSession: \(error.localizedDescription)")
         }
     }
 }

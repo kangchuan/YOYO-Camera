@@ -67,7 +67,7 @@ final class VideoCameraSession: BaseCameraSession {
     private static let defaultFrameRate: Int32 = 30
 
     override func configureSession() {
-        print("🎥 [VideoCameraSession] 开始配置视频 Session, pendingResolution=\(String(describing: pendingResolution)), pendingFrameRate=\(String(describing: pendingFrameRate))")
+        debugLog("🎥 [VideoCameraSession] 开始配置视频 Session, pendingResolution=\(String(describing: pendingResolution)), pendingFrameRate=\(String(describing: pendingFrameRate))")
 
         session.beginConfiguration()
 
@@ -78,7 +78,7 @@ final class VideoCameraSession: BaseCameraSession {
         // configurecamerainput
         guard let device = CameraDeviceManager.shared.currentCamera else {
             session.commitConfiguration()
-            print("❌ [VideoCameraSession] 没有可用相机")
+            debugLog("❌ [VideoCameraSession] 没有可用相机")
             return
         }
         CameraInputConfigurator.shared.configureCameraInput(for: session, device: device)
@@ -104,7 +104,7 @@ final class VideoCameraSession: BaseCameraSession {
         // setoutput delegates
         setupOutputDelegates()
 
-        print("✅ [VideoCameraSession] 视频 Session 配置完成")
+        debugLog("✅ [VideoCameraSession] 视频 Session 配置完成")
     }
 
     /// session configurevideoformat(not beginConfiguration/commitConfiguration)
@@ -114,14 +114,14 @@ final class VideoCameraSession: BaseCameraSession {
             desiredResolution: resolution,
             desiredFrameRate: frameRate
         ) else {
-            print("⚠️ [VideoCameraSession] 未找到匹配的视频格式")
+            debugLog("⚠️ [VideoCameraSession] 未找到匹配的视频格式")
             return
         }
 
         do {
             try device.lockForConfiguration()
         } catch {
-            print("❌ [VideoCameraSession] 锁定设备配置失败: \(error)")
+            debugLog("❌ [VideoCameraSession] 锁定设备配置失败: \(error)")
             return
         }
         defer { device.unlockForConfiguration() }
@@ -147,7 +147,7 @@ final class VideoCameraSession: BaseCameraSession {
         device.activeVideoMaxFrameDuration = duration
 
         let dimensions = CMVideoFormatDescriptionGetDimensions(selectionResult.format.formatDescription)
-        print("📹 [VideoCameraSession] 初始格式: \(dimensions.width)x\(dimensions.height)@\(resolvedFrameRate)fps")
+        debugLog("📹 [VideoCameraSession] 初始格式: \(dimensions.width)x\(dimensions.height)@\(resolvedFrameRate)fps")
     }
 
     override func setupOutputDelegates() {
@@ -176,20 +176,20 @@ final class VideoCameraSession: BaseCameraSession {
         let desiredResolution = CMVideoDimensions(width: Int32(videoResolution.width), height: Int32(videoResolution.height))
         let desiredFrameRate = Int32(videoFrameRate)
 
-        print("🎥 [VideoCameraSession] 收到视频配置更新: \(desiredResolution.width)x\(desiredResolution.height)@\(desiredFrameRate)fps")
+        debugLog("🎥 [VideoCameraSession] 收到视频配置更新: \(desiredResolution.width)x\(desiredResolution.height)@\(desiredFrameRate)fps")
 
         sessionQueue.async { [weak self] in
             guard let self else { return }
 
             self.pendingResolution = desiredResolution
             self.pendingFrameRate = desiredFrameRate
-            print("🎥 [VideoCameraSession] 已缓存配置, session.isRunning=\(self.session.isRunning)")
+            debugLog("🎥 [VideoCameraSession] 已缓存配置, session.isRunning=\(self.session.isRunning)")
 
             // if session in progress,
             if self.session.isRunning {
                 self.applyPendingConfigurationIfNeeded()
             } else {
-                print("🎥 [VideoCameraSession] Session 未运行，配置将在启动时应用")
+                debugLog("🎥 [VideoCameraSession] Session 未运行，配置将在启动时应用")
             }
         }
     }
@@ -200,7 +200,7 @@ final class VideoCameraSession: BaseCameraSession {
         let desiredFrameRate = Int32(videoFrameRate)
         pendingResolution = desiredResolution
         pendingFrameRate = desiredFrameRate
-        print("🎥 [VideoCameraSession] 已缓存配置(同步): \(desiredResolution.width)x\(desiredResolution.height)@\(desiredFrameRate)fps")
+        debugLog("🎥 [VideoCameraSession] 已缓存配置(同步): \(desiredResolution.width)x\(desiredResolution.height)@\(desiredFrameRate)fps")
     }
 
     private func applyPendingConfigurationIfNeeded() {
@@ -208,11 +208,11 @@ final class VideoCameraSession: BaseCameraSession {
               let frameRate = pendingFrameRate,
               let device = CameraDeviceManager.shared.getCurrentCamera()
         else {
-            print("⚠️ [VideoCameraSession] applyPendingConfigurationIfNeeded 跳过: resolution=\(String(describing: pendingResolution)), frameRate=\(String(describing: pendingFrameRate)), device=\(CameraDeviceManager.shared.getCurrentCamera() != nil)")
+            debugLog("⚠️ [VideoCameraSession] applyPendingConfigurationIfNeeded 跳过: resolution=\(String(describing: pendingResolution)), frameRate=\(String(describing: pendingFrameRate)), device=\(CameraDeviceManager.shared.getCurrentCamera() != nil)")
             return
         }
 
-        print("🎥 [VideoCameraSession] 开始应用视频配置: \(resolution.width)x\(resolution.height)@\(frameRate)fps")
+        debugLog("🎥 [VideoCameraSession] 开始应用视频配置: \(resolution.width)x\(resolution.height)@\(frameRate)fps")
 
         // format
         if let selectionResult = CameraFormatSelector.shared.selectBestFormat(
@@ -245,9 +245,9 @@ final class VideoCameraSession: BaseCameraSession {
                   fallbackRange.maxFrameRate > 0
         {
             resolvedFrameRate = max(1, Int32(fallbackRange.maxFrameRate))
-            print("⚠️ [VideoCameraSession] 目标帧率 \(result.actualFrameRate)fps 超出范围 [\(rangesDescription)]，回退至 \(fallbackRange.maxFrameRate)fps")
+            debugLog("⚠️ [VideoCameraSession] 目标帧率 \(result.actualFrameRate)fps 超出范围 [\(rangesDescription)]，回退至 \(fallbackRange.maxFrameRate)fps")
         } else {
-            print("❌ [VideoCameraSession] 目标帧率 \(result.actualFrameRate)fps 无可用范围 [\(rangesDescription)]，跳过配置")
+            debugLog("❌ [VideoCameraSession] 目标帧率 \(result.actualFrameRate)fps 无可用范围 [\(rangesDescription)]，跳过配置")
             return
         }
 
@@ -262,7 +262,7 @@ final class VideoCameraSession: BaseCameraSession {
         do {
             try device.lockForConfiguration()
         } catch {
-            print("❌ [VideoCameraSession] 设置格式失败: \(error)")
+            debugLog("❌ [VideoCameraSession] 设置格式失败: \(error)")
             return
         }
         defer { device.unlockForConfiguration() }
@@ -278,11 +278,11 @@ final class VideoCameraSession: BaseCameraSession {
         let restoredZoom = max(minZoom, min(maxZoom, currentZoomFactor))
         if restoredZoom != device.videoZoomFactor {
             device.videoZoomFactor = restoredZoom
-            print("🔍 [VideoCameraSession] 恢复缩放因子: \(String(format: "%.2f", restoredZoom))x")
+            debugLog("🔍 [VideoCameraSession] 恢复缩放因子: \(String(format: "%.2f", restoredZoom))x")
         }
 
         let dimensions = CMVideoFormatDescriptionGetDimensions(result.format.formatDescription)
-        print("✅ [VideoCameraSession] 格式配置成功: \(dimensions.width)x\(dimensions.height)@\(resolvedFrameRate)fps")
+        debugLog("✅ [VideoCameraSession] 格式配置成功: \(dimensions.width)x\(dimensions.height)@\(resolvedFrameRate)fps")
     }
 
     /// set delegates
