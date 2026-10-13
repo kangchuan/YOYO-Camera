@@ -1,6 +1,7 @@
 
 import Accelerate
 import AVFoundation
+import Combine
 import CoreImage
 import CoreLocation
 import CoreML
@@ -101,9 +102,19 @@ final class CameraAutomationManager: ObservableObject {
     let locationManager = LocationManager.shared
 
     private var realTimeAnalysisTask: Task<Void, Never>?
+    private var cancellables = Set<AnyCancellable>()
+
+    /// Whether at least one enabled rule exists. With no enabled rule the analysis
+    /// result is never consumed, so the loop can be skipped entirely.
+    private var hasEnabledRules: Bool {
+        automationEngine.rules.contains(where: \.isEnabled)
+    }
 
     /// Real-time analysis configuration
-    private let realTimeAnalysisInterval: TimeInterval = 2.0
+    /// Active interval: used while at least one enabled rule needs image analysis.
+    private let realTimeAnalysisInterval: TimeInterval = 6.0
+    /// Idle interval: used when no rule needs analysis, keeping the loop almost free.
+    private let idleAnalysisInterval: TimeInterval = 20.0
 
     /// Settings manager
     var cameraSettings: CameraSettingsState { CameraSettingsState.shared }
@@ -118,7 +129,31 @@ final class CameraAutomationManager: ObservableObject {
     var exposureManager: ExposureManager { .shared }
     weak var sampleBufferProvider: SampleBufferProvider?
 
-    private init() {}
+    private init() {
+        observeEnabledRules()
+    }
+
+    /// Start or stop the analysis loop as soon as the set of enabled rules changes,
+    /// so the loop never keeps idling when there is nothing to evaluate.
+    private func observeEnabledRules() {
+        automationEngine.$rules
+            .map { $0.contains(where: \.isEnabled) }
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] hasEnabledRules in
+                guard let self else { return }
+                if hasEnabledRules {
+                    self.activateAutomation()
+                } else {
+                    // Stop the analysis loop only. Location monitoring is deliberately left
+                    // alone here: it may be shared with other features (e.g. saving GPS
+                    // data) while the capture session is still running.
+                    self.realTimeAnalysisTask?.cancel()
+                    self.realTimeAnalysisTask = nil
+                }
+            }
+            .store(in: &cancellables)
+    }
 
     // MARK: - Main feature methods
 
@@ -126,6 +161,7 @@ final class CameraAutomationManager: ObservableObject {
     private func startRealTimeAnalysis() {
         guard realTimeAnalysisTask == nil else { return }
         guard cameraSettings.isCaptureSessionActive else { return } // start only when capture mode is active
+        guard hasEnabledRules else { return } // nothing to evaluate, keep the loop off
 
         // Check whether any rule requires location information
         if needsLocationForRules() {
@@ -138,14 +174,25 @@ final class CameraAutomationManager: ObservableObject {
         }
 
         realTimeAnalysisTask = Task { @MainActor in
-            while !Task.isCancelled, cameraSettings.automationEnabled, cameraSettings.isCaptureSessionActive {
+            while !Task.isCancelled, cameraSettings.automationEnabled, cameraSettings.isCaptureSessionActive, hasEnabledRules {
                 // get the latest preview frame from SampleBufferProvider
                 if let sampleBuffer = getCurrentSampleBuffer() {
                     await analyzeAndApply(from: sampleBuffer)
                 }
 
                 // control analysis frequency, avoid excessive resource usage
-                try? await Task.sleep(nanoseconds: UInt64(realTimeAnalysisInterval * 1_000_000_000))
+                let interval = automationEngine.analysisRequirements.needsAnyAnalysis
+                    ? realTimeAnalysisInterval
+                    : idleAnalysisInterval
+                try? await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
+            }
+
+            // Reaching this point without cancellation means the loop stopped by itself
+            // (rules disabled or capture session ended). Release the handle so a later
+            // rule change can start it again; a cancelled task is released by
+            // stopRealTimeAnalysis().
+            if !Task.isCancelled {
+                self.realTimeAnalysisTask = nil
             }
         }
     }

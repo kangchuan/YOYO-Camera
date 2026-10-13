@@ -73,6 +73,9 @@ struct FilterScrollGroupsLegacy: View {
 
         var items: [PagerItem] = []
 
+        // 「原相机」固定放在最左侧，一键回到无滤镜状态（默认项）
+        items.append(.filter(.none, hasDivider: true))
+
         // Favorites
         if !visibleFavorites.isEmpty || !favoritedCustomFilters.isEmpty {
             for (index, filter) in visibleFavorites.enumerated() {

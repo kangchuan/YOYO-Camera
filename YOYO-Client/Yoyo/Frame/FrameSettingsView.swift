@@ -319,7 +319,7 @@ struct LocationPreviewContent: View {
 /// Copyright information preview content component.
 struct CopyrightPreviewContent: View {
     var body: some View {
-        Text("© YOYO")
+        Text("© 出片相机")
             .font(.custom("AvenirNext-Medium", size: 10))
             .kerning(0.3)
             .foregroundColor(.primary.opacity(0.8))

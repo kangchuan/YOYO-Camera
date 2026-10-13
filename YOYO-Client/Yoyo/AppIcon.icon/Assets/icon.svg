@@ -1,11 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="820px" height="820px" viewBox="0 0 820 820" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <title>椭圆形 2</title>
-    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="编组" transform="translate(-102, -102)" fill="#FFFFFF">
-            <g id="编组-2" transform="translate(102, 102)">
-                <path d="M409.6,0 C635.815834,0 819.2,183.384166 819.2,409.6 C819.2,635.815834 635.815834,819.2 409.6,819.2 C183.384166,819.2 0,635.815834 0,409.6 C0,183.384166 183.384166,0 409.6,0 Z M409.802939,156.634304 C404.508009,156.634304 399.888021,160.226937 398.583698,165.358704 C384.102715,221.516625 354.870786,272.781753 313.915823,313.843925 C284.495692,343.186116 249.733698,366.628979 211.504286,382.908424 C196.545298,389.352296 181.17206,394.530408 165.430602,398.5118 C160.265531,399.780893 156.634304,404.412343 156.634304,409.731041 C156.634304,415.049739 160.265531,419.681189 165.430602,420.950283 C181.17206,424.908661 196.49927,430.086773 211.504286,436.530645 C249.735875,452.806085 284.498589,476.249434 313.915823,505.595144 C354.894083,546.648659 384.129522,597.927889 398.583698,654.103379 C399.852791,659.268449 404.484241,662.899676 409.802939,662.899676 C415.121637,662.899676 419.753087,659.268449 421.022181,654.103379 C424.980559,638.338907 430.158671,623.011697 436.602543,608.006681 C452.876981,569.774547 476.320452,535.011653 505.667042,505.595144 C546.723943,464.626164 598.002666,435.39896 654.175277,420.950283 C659.307043,419.645959 662.899676,415.025971 662.899676,409.731041 C662.899676,404.436111 659.307043,399.816123 654.175277,398.5118 C638.418411,394.547547 623.003729,389.329796 608.078579,382.908424 C569.84699,366.632984 535.084276,343.189634 505.667042,313.843925 C464.699802,272.794797 435.472547,221.523929 421.022181,165.358704 C419.717857,160.226937 415.097869,156.634304 409.802939,156.634304 Z" id="椭圆形-2"></path>
-            </g>
-        </g>
-    </g>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="glass" cx="0.38" cy="0.34" r="0.9">
+      <stop offset="0" stop-color="#3E5375"/>
+      <stop offset="0.55" stop-color="#1B2739"/>
+      <stop offset="1" stop-color="#0A0E15"/>
+    </radialGradient>
+    <radialGradient id="star" cx="0.5" cy="0.45" r="0.7">
+      <stop offset="0" stop-color="#FFE9A8"/>
+      <stop offset="0.55" stop-color="#FFC46A"/>
+      <stop offset="1" stop-color="#F98F3D"/>
+    </radialGradient>
+  </defs>
+
+  <!-- top plate -->
+  <rect x="222" y="296" width="580" height="112" rx="46" fill="#2A241D"/>
+  <rect x="222" y="296" width="580" height="14" rx="7" fill="#3D362C"/>
+  <circle cx="312" cy="352" r="18" fill="#E8564A"/>
+  <circle cx="312" cy="352" r="18" fill="none" stroke="#F2938A" stroke-opacity="0.55" stroke-width="3"/>
+  <rect x="694" y="332" width="58" height="40" rx="11" fill="#0E0B08"/>
+  <rect x="702" y="340" width="42" height="24" rx="6" fill="#8FB0C4" fill-opacity="0.85"/>
+
+  <!-- body -->
+  <rect x="172" y="382" width="680" height="348" rx="66" fill="#F7F1E5"/>
+  <path d="M 172 648 L 852 648 L 852 664 A 66 66 0 0 1 786 730 L 238 730 A 66 66 0 0 1 172 664 Z" fill="#2A241D"/>
+  <rect x="172" y="642" width="680" height="10" fill="#DACFB6" fill-opacity="0.7"/>
+
+  <!-- lens -->
+  <circle cx="512" cy="556" r="176" fill="#453D32"/>
+  <circle cx="512" cy="556" r="174" fill="none" stroke="#5C5244" stroke-width="4" stroke-opacity="0.8"/>
+  <circle cx="512" cy="556" r="152" fill="#17120D"/>
+  <circle cx="512" cy="556" r="130" fill="none" stroke="#FFB45E" stroke-width="6" stroke-opacity="0.9"/>
+  <circle cx="512" cy="556" r="112" fill="url(#glass)"/>
+  <circle cx="512" cy="556" r="112" fill="none" stroke="#000000" stroke-opacity="0.55" stroke-width="5"/>
+  <path d="M 409 519 A 112 112 0 0 1 476 452" fill="none" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="560" cy="606" r="26" fill="#6C8CB4" fill-opacity="0.35"/>
+
+  <!-- flash star -->
+  <g transform="translate(800,238)">
+    <path d="M 0 -80 Q 14 -14 80 0 Q 14 14 0 80 Q -14 14 -80 0 Q -14 -14 0 -80 Z" fill="url(#star)"/>
+  </g>
+  <g transform="translate(716,142)">
+    <path d="M 0 -26 Q 5 -5 26 0 Q 5 5 0 26 Q -5 5 -26 0 Q -5 -5 0 -26 Z" fill="#FFD98C" fill-opacity="0.9"/>
+  </g>
 </svg>

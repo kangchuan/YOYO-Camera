@@ -129,6 +129,7 @@
 "automation_filter_already_exists" = "滤镜已存在: %@";
 
 // MARK: - Filter Descriptions
+"filter_none_name" = "原相机";
 "filter_none_description" = "无滤镜效果";
 "filter_custom_description" = "自定义滤镜";
 "filter_vivid_description" = "增强影调，提升整体质感";
@@ -164,7 +165,7 @@
 
 // MARK: - Permissions
 "camera_permission_title" = "相机权限";
-"camera_permission_message" = "请在设置中允许 YOYO 访问相机。";
+"camera_permission_message" = "请在设置中允许 出片相机 访问相机。";
 
 // MARK: - Permission Management
 "permission_camera_title" = "相机权限";
@@ -298,7 +299,7 @@
 "settings_delete_account" = "删除账号";
 "settings_delete_account_confirm_title" = "确定要删除账号吗？";
 "settings_delete_account_confirm_message" = "所有与此账号关联的数据（包括分享的任务）将被永久删除。此操作不可撤销。";
-"settings_about_yoyo" = "关于 YOYO";
+"settings_about_yoyo" = "关于 出片相机";
 "settings_contact_us" = "联系我们";
 "settings_rate_app" = "给个好评";
 "settings_system_permissions" = "系统权限设置";
@@ -871,7 +872,7 @@
 "save_error_missing_dependencies" = "保存服务缺少必要的依赖";
 "save_error_failed" = "保存失败: %@";
 
-"album_error_creation_failed" = "创建 YOYO 相册失败";
+"album_error_creation_failed" = "创建 出片相机 相册失败";
 "album_error_photo_save_failed" = "保存照片到相册失败";
 "album_error_photo_delete_failed" = "从相册删除照片失败";
 "album_error_permission_denied" = "无相册访问权限";
@@ -899,7 +900,7 @@
 
 // MARK: - Privacy and Analytics
 "settings_privacy_analytics" = "数据分析与改进";
-"settings_privacy_analytics_description" = "通过分享匿名使用数据帮助改进 YOYO。这包括功能使用情况、应用稳定性和性能指标。我们绝不会收集您的照片或个人信息。";
+"settings_privacy_analytics_description" = "通过分享匿名使用数据帮助改进 出片相机。这包括功能使用情况、应用稳定性和性能指标。我们绝不会收集您的照片或个人信息。";
 "settings_privacy_data_collection" = "分享数据分析";
 
 // MARK: - Feature Tutorial
@@ -956,7 +957,7 @@
 "frame_title" = "相框";
 
 // MARK: - Paywall
-"paywall_title" = "YOYO Pro";
+"paywall_title" = "出片相机 Pro";
 "paywall_subtitle" = "解锁所有 AI 功能";
 "paywall_feature_unlock_ai_inspiration" = "解锁 AI 灵感";
 "paywall_feature_ai_retouch" = "解锁 AI 修图";

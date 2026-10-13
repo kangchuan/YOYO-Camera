@@ -12,8 +12,10 @@ final class FilterManager: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     // Use @AppStorage directly as persistent storage
-    @AppStorage("selectedFilter") var selectedFilterRawValue: String = FilterIdentifier.fChrome.id
-    @Published var selectedFilter: FilterIdentifier = .fChrome {
+    /// 默认滤镜 = 「原相机」（`.none`）：开机即无任何滤镜 / 胶片模拟，
+    /// 既符合「原相机」直觉，也省掉每帧跑完整胶片模拟链的开销。
+    @AppStorage("selectedFilter") var selectedFilterRawValue: String = FilterIdentifier.none.id
+    @Published var selectedFilter: FilterIdentifier = .none {
         didSet {
             selectedFilterRawValue = selectedFilter.id
             updateBaseFilterSnapshot()
@@ -286,8 +288,21 @@ final class FilterManager: ObservableObject {
                 selectedFilterRawValue = selectedFilter.id
             }
         } else {
-            selectedFilter = .fChrome
+            selectedFilter = .none
             selectedFilterRawValue = selectedFilter.id
+        }
+
+        // 一次性迁移：把存量用户的「旧默认滤镜」FC 换成「原相机」。
+        // 带 flag 只做一次，不会覆盖用户之后的手动选择。
+        let didMigrateDefaultFilter = "didMigrateDefaultFilterToOriginalCamera"
+        if !UserDefaults.standard.bool(forKey: didMigrateDefaultFilter) {
+            UserDefaults.standard.set(true, forKey: didMigrateDefaultFilter)
+            if selectedFilter == .fChrome {
+                selectedFilter = .none
+                selectedFilterRawValue = FilterIdentifier.none.id
+                // 显式清零效果参数：用户此前可能已把 FC 的光晕 / 颗粒等存进了 UserDefaults
+                applyFilmEffects(.originalCamera)
+            }
         }
 
         // Initialize selectedCustomFilter
@@ -490,7 +505,9 @@ final class FilterManager: ObservableObject {
             return .fChrome
         }
 
-        let parts = idString.split(separator: ":", maxSplits: 1)
+        // 必须保留空子串：「原相机」的 id 是 "none:"，name 为空串，
+        // 用默认的 split 会把它切成 1 段而解析失败。
+        let parts = idString.split(separator: ":", maxSplits: 1, omittingEmptySubsequences: false)
         guard parts.count == 2,
               let category = FilterCategory(rawValue: String(parts[0]))
         else {

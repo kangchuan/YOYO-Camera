@@ -4,8 +4,8 @@ import SwiftUI
 /// Quick capture intent used by the Control Widget to launch the app
 /// Note: this file must be added to the target membership of both the main app and the widget extension
 struct QuickCaptureIntent: AppIntent {
-    static var title: LocalizedStringResource = .init("yoyo_camera", comment: "YOYO camera intent title")
-    static var description = IntentDescription(LocalizedStringResource("yoyo_camera_description", comment: "YOYO camera intent description"))
+    static var title: LocalizedStringResource = .init("yoyo_camera", comment: "出片相机 intent title")
+    static var description = IntentDescription(LocalizedStringResource("yoyo_camera_description", comment: "出片相机 intent description"))
 
     /// Set to `true` to open the main app when the intent runs
     static var openAppWhenRun: Bool = true

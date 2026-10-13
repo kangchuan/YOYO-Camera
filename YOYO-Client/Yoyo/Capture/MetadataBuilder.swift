@@ -143,7 +143,7 @@ final class MetadataBuilder {
         let softwareItem = AVMutableMetadataItem()
         softwareItem.keySpace = .common
         softwareItem.key = AVMetadataKey.commonKeySoftware.rawValue as any NSCopying & NSObjectProtocol
-        softwareItem.value = "YOYO Camera \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")" as any NSCopying & NSObjectProtocol
+        softwareItem.value = "出片相机 \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")" as any NSCopying & NSObjectProtocol
         items.append(softwareItem)
 
         // 4. Creation Date (create)

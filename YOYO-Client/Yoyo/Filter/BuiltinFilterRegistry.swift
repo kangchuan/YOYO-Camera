@@ -57,7 +57,8 @@ extension FilterIdentifier {
                 intensity: .subtle,
                 descriptionKey: "filter_none_description",
                 processingType: .builtin,
-                chain: []
+                chain: [],
+                filmEffects: .originalCamera
             )
         case .builtin:
             return BuiltinFilterRegistry.shared.info(for: name)
@@ -95,7 +96,7 @@ extension FilterIdentifier {
     var displayName: String {
         switch category {
         case .none:
-            return "None"
+            return String.filterNoneName.localized
         case .builtin:
             return name
         case .custom:

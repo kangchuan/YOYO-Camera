@@ -4,9 +4,9 @@
 "quick_action_photo" = "Photo";
 
 /* Permission Usage Descriptions */
-"CFBundleDisplayName" = "YOYO Camera";
-"NSCameraUsageDescription" = "YOYO needs access to the camera to capture photos and record videos.";
-"NSLocationWhenInUseUsageDescription" = "YOYO needs access to your location to add geographic location tags to your photos (optional feature).";
-"NSMicrophoneUsageDescription" = "YOYO needs access to the microphone to record audio for videos.";
-"NSPhotoLibraryAddUsageDescription" = "YOYO needs access to your photo library to save your captured photos to the YOYO album.";
-"NSPhotoLibraryUsageDescription" = "YOYO needs access to your photo library to save and manage your captured photos. We will create a dedicated YOYO album in your system photos to organize your photos.";
+"CFBundleDisplayName" = "出片相机";
+"NSCameraUsageDescription" = "出片相机 needs access to the camera to capture photos and record videos.";
+"NSLocationWhenInUseUsageDescription" = "出片相机 needs access to your location to add geographic location tags to your photos (optional feature).";
+"NSMicrophoneUsageDescription" = "出片相机 needs access to the microphone to record audio for videos.";
+"NSPhotoLibraryAddUsageDescription" = "出片相机 needs access to your photo library to save your captured photos to the 出片相机 album.";
+"NSPhotoLibraryUsageDescription" = "出片相机 needs access to your photo library to save and manage your captured photos. We will create a dedicated 出片相机 album in your system photos to organize your photos.";

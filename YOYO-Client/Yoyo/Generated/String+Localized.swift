@@ -149,6 +149,7 @@ extension String {
     static let automationFilterAlreadyExists = "automation_filter_already_exists"
 
     // MARK: - Filter Descriptions
+    static let filterNoneName = "filter_none_name"
     static let filterNoneDescription = "filter_none_description"
     static let filterCustomDescription = "filter_custom_description"
     static let filterVividDescription = "filter_vivid_description"

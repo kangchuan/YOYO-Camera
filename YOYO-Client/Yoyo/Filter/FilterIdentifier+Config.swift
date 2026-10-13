@@ -52,7 +52,8 @@ extension FilterIdentifier {
                 primaryText: nil,
                 secondaryText: secondaryText,
                 tertiaryText: tertiaryText,
-                imageName: name + "-bg",
+                // 「原相机」的 name 是空串，不能拼出 "-bg" 这种不存在的资源名
+                imageName: name.isEmpty ? nil : name + "-bg",
                 isFilmSimulation: isFilmSimulation
             )
         )

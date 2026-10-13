@@ -103,6 +103,21 @@ struct FilterDefaultFilmEffects: Codable {
     var lightLeakIntensity: Float = 0
 
     static let none = FilterDefaultFilmEffects()
+
+    /// 「原相机」：显式关闭全部胶片效果。
+    ///
+    /// 不能直接用 `.none` —— 它的默认初始化会把 `filmPresetID` 填成胶片预设列表里的第一个，
+    /// 这里把预设一并清空，确保是真正的「不做任何处理」。
+    static let originalCamera = FilterDefaultFilmEffects(
+        cineToneIntensity: 0,
+        filmPresetID: "",
+        halationIntensity: 0,
+        bloomIntensity: 0,
+        fogIntensity: 0,
+        vignetteIntensity: 0,
+        grainIntensity: 0,
+        lightLeakIntensity: 0
+    )
 }
 
 /// Filter information structure

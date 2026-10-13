@@ -582,7 +582,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Yoyo/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "YOYO Camera";
+				INFOPLIST_KEY_CFBundleDisplayName = "出片相机";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
 				INFOPLIST_KEY_NSCameraUsageDescription = "YOYO needs access to the camera to capture photos and record videos.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "YOYO needs access to your location to add geographic location tags to your photos (optional feature).";
@@ -626,7 +626,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Yoyo/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "YOYO Camera";
+				INFOPLIST_KEY_CFBundleDisplayName = "出片相机";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
 				INFOPLIST_KEY_NSCameraUsageDescription = "YOYO needs access to the camera to capture photos and record videos.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "YOYO needs access to your location to add geographic location tags to your photos (optional feature).";
@@ -739,7 +739,7 @@
 				DEVELOPMENT_TEAM = NX435X8V72;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = YoyoControlWidget/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = YoyoControlWidget;
+				INFOPLIST_KEY_CFBundleDisplayName = "出片相机";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -767,7 +767,7 @@
 				DEVELOPMENT_TEAM = NX435X8V72;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = YoyoControlWidget/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = YoyoControlWidget;
+				INFOPLIST_KEY_CFBundleDisplayName = "出片相机";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
 				LD_RUNPATH_SEARCH_PATHS = (

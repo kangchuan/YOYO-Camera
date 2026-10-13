@@ -11,7 +11,7 @@ import UniformTypeIdentifiers
 final class PhotoAlbumManager {
     static let shared = PhotoAlbumManager()
 
-    private let albumName = "Yoyo"
+    private let albumName = "出片相机"
     private var yoyoAlbum: PHAssetCollection?
     private let jpegQuality: CGFloat = 0.75
     private let heicQuality: CGFloat = 0.75
@@ -695,7 +695,7 @@ final class PhotoAlbumManager {
         } else {
             // Default format.
             let suffix = isOriginal ? "_original" : ""
-            name = "yoyo\(suffix)_\(UUID().uuidString).\(ext)"
+            name = "chupian\(suffix)_\(UUID().uuidString).\(ext)"
         }
 
         return dir.appendingPathComponent(name)

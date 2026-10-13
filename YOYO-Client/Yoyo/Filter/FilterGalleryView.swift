@@ -13,6 +13,8 @@ struct FilterGalleryView: View {
     static let favoriteAnchorName = String.filterGalleryFavorites.localized
     static let filmSimulationAnchorName = String.filterGalleryFilmSimulation.localized
     static let customAnchorName = String.commonCustom.localized
+    /// 「原相机」卡片的滚动锚点（不参与顶部 tab 栏）
+    static let originalCameraAnchorName = "originalCameraAnchor"
 
     @ObservedObject var filterManager: FilterManager = .shared
     @ObservedObject private var tutorialManager = TutorialManager.shared
@@ -629,6 +631,14 @@ struct FilterScrollGroupsModern: View {
 
         let filmSimulationFilters = FilterIdentifier.filmSimulationFilters.filter { filterManager.isFilterVisible($0) }
 
+        // 「原相机」固定放在最左侧，一键回到无滤镜状态（默认项）
+        FilterGroup(
+            id: FilterGalleryView.originalCameraAnchorName,
+            filters: [.none],
+            filterManager: filterManager,
+            onFavoriteToggle: onFavoriteToggle
+        )
+
         FavoritesFilterGroup(
             id: FilterGalleryView.favoriteAnchorName,
             filters: visibleFavorites,
@@ -837,7 +847,9 @@ struct FilterCardWithFavorite: View, Equatable {
 
     @ViewBuilder
     private var filterCardView: some View {
-        if let displayConfig = filterManager.getDisplayConfig(for: filter) {
+        if filter == .none {
+            originalCameraCard
+        } else if let displayConfig = filterManager.getDisplayConfig(for: filter) {
             FilterCard(displayConfig: displayConfig)
                 .scaleEffect(cardWidth / 300)
                 .frame(width: cardWidth, height: cardHeight)
@@ -882,6 +894,28 @@ struct FilterCardWithFavorite: View, Equatable {
                 .overlay(SelectionBorder(isSelected: isSelected && !isFilmSimulation))
                 .shadow(color: .black.opacity(isSelected ? 0.3 : 0.1), radius: isSelected ? 4 : 2, x: 0, y: isSelected ? 2 : 1)
         }
+    }
+
+    /// 「原相机」卡片：不走滤镜配置渲染，直接给一张干净的样式卡
+    private var originalCameraCard: some View {
+        RoundedRectangle(cornerRadius: 12, style: .continuous)
+            .fill(.ultraThinMaterial)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color.white.opacity(0.05))
+            )
+            .frame(width: cardWidth, height: cardHeight)
+            .overlay(
+                VStack(spacing: 4) {
+                    Image(systemName: "camera")
+                        .font(.system(size: 18, weight: .medium))
+                    Text(String.filterNoneName.localized)
+                        .font(.system(size: 11, weight: .medium))
+                }
+                .foregroundColor(.white)
+            )
+            .overlay(SelectionBorder(isSelected: isSelected))
+            .shadow(color: .black.opacity(isSelected ? 0.3 : 0.1), radius: isSelected ? 4 : 2, x: 0, y: isSelected ? 2 : 1)
     }
 
     static func == (lhs: FilterCardWithFavorite, rhs: FilterCardWithFavorite) -> Bool {

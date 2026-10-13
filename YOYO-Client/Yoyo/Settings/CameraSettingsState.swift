@@ -171,7 +171,7 @@ final class CameraSettingsState: ObservableObject {
         }
     }
 
-    @AppStorage("fileNamingPrefix") var fileNamingPrefix: String = "YOYO" {
+    @AppStorage("fileNamingPrefix") var fileNamingPrefix: String = "出片相机" {
         didSet {
             objectWillChange.send()
         }
@@ -446,7 +446,7 @@ final class CameraSettingsState: ObservableObject {
     // MARK: - File naming format enum
     enum FileNamingFormat: String, CaseIterable {
         case standard // 20241029_143022
-        case classic // YOYO_0001
+        case classic // 出片相机_0001
         case daily // 20241029_0001
         case pro // Photo_20241029_143022
         case custom // Custom format

@@ -308,7 +308,7 @@ final class MovieRecorder {
             // userecordingconfigureformat
             var fileName = FileNameGenerator.shared.generateFullFileName(
                 template: currentRecordingConfig?.fileNamingTemplate ?? "{prefix}_{timestamp}_{type}",
-                prefix: currentRecordingConfig?.fileNamingPrefix ?? "YOYO",
+                prefix: currentRecordingConfig?.fileNamingPrefix ?? "出片相机",
                 fileType: .video,
                 fileFormat: .mov
             )

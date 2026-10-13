@@ -129,6 +129,7 @@
 "automation_filter_already_exists" = "Filter already exists: %@";
 
 // MARK: - Filter Descriptions
+"filter_none_name" = "Original";
 "filter_none_description" = "No filter effect";
 "filter_custom_description" = "Custom filter";
 "filter_vivid_description" = "Enhanced tones for overall texture";
@@ -164,7 +165,7 @@
 
 // MARK: - Permissions
 "camera_permission_title" = "Camera Permission";
-"camera_permission_message" = "Please allow YOYO to access the camera in Settings.";
+"camera_permission_message" = "Please allow 出片相机 to access the camera in Settings.";
 
 // MARK: - Permission Management
 "permission_camera_title" = "Camera";
@@ -298,7 +299,7 @@
 "settings_delete_account" = "Delete Account";
 "settings_delete_account_confirm_title" = "Delete Account?";
 "settings_delete_account_confirm_message" = "All data associated with this account (including shared tasks) will be permanently deleted. This action cannot be undone.";
-"settings_about_yoyo" = "About YOYO";
+"settings_about_yoyo" = "About 出片相机";
 "settings_contact_us" = "Contact Us";
 "settings_rate_app" = "Rate Us";
 "settings_system_permissions" = "System Permissions";
@@ -868,7 +869,7 @@
 "save_error_missing_dependencies" = "Save service is missing required dependencies";
 "save_error_failed" = "Save failed: %@";
 
-"album_error_creation_failed" = "Failed to create YOYO album";
+"album_error_creation_failed" = "Failed to create 出片相机 album";
 "album_error_photo_save_failed" = "Failed to save photo to album";
 "album_error_photo_delete_failed" = "Failed to delete photo from album";
 "album_error_permission_denied" = "Photo library permission denied";
@@ -896,7 +897,7 @@
 
 // MARK: - Privacy & Analytics
 "settings_privacy_analytics" = "Analytics & Improvement";
-"settings_privacy_analytics_description" = "Help improve YOYO by sharing anonymous usage data. This includes feature usage, app stability, and performance metrics. No photos or personal information are ever collected.";
+"settings_privacy_analytics_description" = "Help improve 出片相机 by sharing anonymous usage data. This includes feature usage, app stability, and performance metrics. No photos or personal information are ever collected.";
 "settings_privacy_data_collection" = "Share Analytics Data";
 
 // MARK: - Feature Tutorial
@@ -953,7 +954,7 @@
 "frame_title" = "Frame";
 
 // MARK: - Paywall
-"paywall_title" = "YOYO Pro";
+"paywall_title" = "出片相机 Pro";
 "paywall_subtitle" = "Unlock All AI Features";
 "paywall_feature_unlock_ai_inspiration" = "Unlock AI Inspiration";
 "paywall_feature_ai_retouch" = "Unlock AI Retouch";
