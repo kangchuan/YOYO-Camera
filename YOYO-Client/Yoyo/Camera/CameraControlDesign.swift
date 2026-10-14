@@ -22,6 +22,40 @@ enum CameraControlDesign {
         sideButtonSize * 1.25
     }
 
+    // MARK: - Two-row bottom bar (2026-10 redesign)
+
+    /// Filter thumbnail size in the upper row (square)
+    static var filterThumbnailSize: CGFloat {
+        isSmallScreen ? 48 : 56
+    }
+
+    /// AI composition button size in the upper row (circular)
+    static var aiButtonSize: CGFloat {
+        isSmallScreen ? 48 : 56
+    }
+
+    /// Vertical spacing between the upper and lower rows
+    static var rowSpacing: CGFloat {
+        isSmallScreen ? 18 : 22
+    }
+
+    /// Capture mode pill: container height / segment height / font size / segment horizontal padding
+    static var modePillHeight: CGFloat {
+        isSmallScreen ? 34 : 38
+    }
+
+    static var modePillSegmentHeight: CGFloat {
+        isSmallScreen ? 26 : 30
+    }
+
+    static var modePillFontSize: CGFloat {
+        isSmallScreen ? 14 : 15
+    }
+
+    static var modePillSegmentHPadding: CGFloat {
+        isSmallScreen ? 14 : 18
+    }
+
     /// Bottom control bar padding
     static var bottomPadding: CGFloat {
         isSmallScreen ? 40 : 50

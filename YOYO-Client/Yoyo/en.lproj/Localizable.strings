@@ -979,3 +979,9 @@
 "onboarding_agree_and" = " and ";
 
 "camera_settings_capture_mode" = "Shooting Mode";
+
+// MARK: - Bottom control bar (2026-10 redesign)
+"camera_capture_mode_video" = "Video";
+"camera_capture_mode_photo" = "Photo";
+"camera_ai_composition" = "AI Composition";
+"camera_flip_camera" = "Flip Camera";

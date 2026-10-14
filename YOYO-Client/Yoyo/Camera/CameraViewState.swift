@@ -34,6 +34,9 @@ final class CameraViewState: ObservableObject {
         case stopRecording
         case reset
         case requestAIInspiration
+        /// Bottom-bar AI composition entry: capture the current preview frame
+        /// and show the two-step confirmation overlay (does not upload yet).
+        case prepareAIInspiration
     }
 
     /// Broadcast an action

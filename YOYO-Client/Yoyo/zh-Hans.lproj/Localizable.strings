@@ -982,3 +982,9 @@
 "onboarding_agree_and" = "与";
 
 "camera_settings_capture_mode" = "拍摄模式";
+
+// MARK: - Bottom control bar (2026-10 redesign)
+"camera_capture_mode_video" = "视频";
+"camera_capture_mode_photo" = "照片";
+"camera_ai_composition" = "AI 构图";
+"camera_flip_camera" = "翻转相机";

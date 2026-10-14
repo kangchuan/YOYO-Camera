@@ -998,4 +998,10 @@ extension String {
     static let onboardingAgreeAnd = "onboarding_agree_and"
 
     static let cameraSettingsCaptureMode = "camera_settings_capture_mode"
+
+    // MARK: - Bottom control bar (2026-10 redesign)
+    static let cameraCaptureModeVideo = "camera_capture_mode_video"
+    static let cameraCaptureModePhoto = "camera_capture_mode_photo"
+    static let cameraAiComposition = "camera_ai_composition"
+    static let cameraFlipCamera = "camera_flip_camera"
 }

@@ -64,6 +64,17 @@ final class CameraPreviewViewModel: ObservableObject {
                 self?.triggerAIInspiration()
             }
             .store(in: &cancellables)
+
+        // Bottom-bar AI composition entry: freeze the current frame and show
+        // the confirmation overlay (the actual upload happens after the user
+        // taps the frozen frame).
+        NotificationCenter.default.publisher(for: .cameraUserAction)
+            .compactMap { $0.userInfo?[CameraNotificationKeys.action] as? CameraViewState.UserAction }
+            .filter { $0 == .prepareAIInspiration }
+            .sink { [weak self] _ in
+                self?.prepareAIInspiration()
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Layout Calculations

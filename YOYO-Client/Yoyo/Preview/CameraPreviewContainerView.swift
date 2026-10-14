@@ -206,24 +206,6 @@ struct CameraPreviewContainerView: View {
                 .transition(.opacity.combined(with: .scale))
             }
         }
-        .overlay(alignment: .bottomTrailing) {
-            if viewModel.pendingInspirationImage == nil, !viewState.isInspirationMaximized {
-                InspirationEntryButton(
-                    isShowingInspiration: inspirationManager.isShowingInspirations,
-                    rotation: viewModel.viewState.rotation,
-                    onTap: {
-                        if inspirationManager.isShowingInspirations {
-                            viewModel.hideInspiration()
-                        } else {
-                            viewModel.prepareAIInspiration()
-                        }
-                    }
-                )
-                .padding(.trailing, 12)
-                .padding(.bottom, 12)
-                .transition(.opacity.combined(with: .scale))
-            }
-        }
         .overlay { pendingInspirationPreviewOverlay }
         .onChange(of: viewModel.viewState.rotation) { _, _ in
             // no-op to keep view updated; rotation already drives overlay

@@ -125,13 +125,11 @@ private struct CameraControlPanelContent: View {
     var body: some View {
         VStack(alignment: .trailing, spacing: 12) {
             VStack(spacing: CameraControlPanelDesign.spacing) {
-                // First row: capture mode and front/back camera
-                HStack(spacing: CameraControlPanelDesign.spacing) {
-                    CaptureModeButton(settingsState: settingsState)
-                    CameraRotateButton(sessionManager: sessionManager, settingsState: settingsState)
-                }
+                // Capture-mode switch and front/back flip moved to the bottom
+                // control bar (2026-10 redesign); this panel keeps the
+                // secondary toggles only.
 
-                // Second row: flash, timer, and Live Photo/stabilization
+                // First row: flash, timer, and Live Photo/stabilization
                 HStack(spacing: CameraControlPanelDesign.spacing) {
                     FlashTorchButton(settingsState: settingsState)
                     TimerCycleButton(settingsState: settingsState)
@@ -205,67 +203,6 @@ private struct FlashTorchButton: View {
                 settingsState.flashMode = (settingsState.flashMode == .on) ? .off : .on
             }
             AnalyticsManager.shared.log(.settingsAction(action: "toggle_flash_torch_\(isActive)"))
-        }
-    }
-}
-
-// MARK: - Capture Mode Button
-
-private struct CaptureModeButton: View {
-    @ObservedObject var settingsState: CameraSettingsState
-
-    private var icon: String {
-        settingsState.currentCaptureMode == .movie ? "video.fill" : "camera.fill"
-    }
-
-    private var modeValue: String {
-        settingsState.currentCaptureMode.rawValue
-    }
-
-    var body: some View {
-        Button {
-            settingsState.generateHapticFeedback()
-            settingsState.currentCaptureMode = (settingsState.currentCaptureMode == .movie) ? .photo : .movie
-            AnalyticsManager.shared.log(.settingsAction(action: "switch_mode_\(settingsState.currentCaptureMode)"))
-        } label: {
-            HStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.system(size: CameraControlPanelDesign.iconSize, weight: .medium))
-                    .foregroundColor(.white)
-                    .frame(width: 40, height: 40)
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(NSLocalizedString("camera_settings_capture_mode", comment: "Shooting Mode"))
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.white)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.5)
-                    Text(modeValue)
-                        .font(.system(size: 12))
-                        .foregroundColor(.white.opacity(0.6))
-                }
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
-            .frame(width: CameraControlPanelDesign.expandedButtonWidth, height: CameraControlPanelDesign.buttonSize, alignment: .leading)
-            .background(CameraControlPanelDesign.buttonColor)
-            .clipShape(RoundedRectangle(cornerRadius: CameraControlPanelDesign.buttonSize / 2, style: .continuous))
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-// MARK: - Camera Rotate Button
-
-private struct CameraRotateButton: View {
-    let sessionManager: CameraSessionManager
-    @ObservedObject var settingsState: CameraSettingsState
-
-    var body: some View {
-        CameraControlPanelButton(icon: "camera.rotate", isActive: false) {
-            settingsState.generateHapticFeedback()
-            sessionManager.switchCameraPosition()
-            AnalyticsManager.shared.log(.settingsAction(action: "switch_camera"))
         }
     }
 }

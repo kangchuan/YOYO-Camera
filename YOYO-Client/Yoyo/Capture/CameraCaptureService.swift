@@ -150,6 +150,8 @@ final class CameraCaptureService: NSObject, ObservableObject {
             reset()
         case .requestAIInspiration:
             break
+        case .prepareAIInspiration:
+            break
         }
     }
 

@@ -30,8 +30,8 @@ struct CameraControlView: View {
                 latestPhoto: latestPhoto,
                 managers: managers
             )
-            .overlay(alignment: .bottomTrailing) {
-                // Bottom-right entry button
+            .overlay(alignment: .bottom) {
+                // Drawer handle — centred below the two control rows
                 Button {
                     triggerLightImpact()
                     var transaction = Transaction(animation: .none)
@@ -51,11 +51,7 @@ struct CameraControlView: View {
                             .frame(width: 20, height: 1.5)
                     }
                 }
-                .padding(
-                    .trailing,
-                    CameraControlDesign.horizontalPadding + (CameraControlDesign.filterButtonWidth - 44) / 2
-                )
-                .offset(y: 40) // Move the button downward only, so it sits closer to the bottom of the screen
+                .offset(y: 0) // Sits in the 32pt gap below the two control rows
             }
             .frame(height: CameraLayoutConfig.bottomControlHeight)
         }
