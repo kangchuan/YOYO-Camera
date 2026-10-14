@@ -1004,4 +1004,13 @@ extension String {
     static let cameraCaptureModePhoto = "camera_capture_mode_photo"
     static let cameraAiComposition = "camera_ai_composition"
     static let cameraFlipCamera = "camera_flip_camera"
+
+    // MARK: - Control panel labels (2026-10 redesign)
+    static let cameraPanelFlash = "camera_panel_flash"
+    static let cameraPanelTimer = "camera_panel_timer"
+    static let cameraPanelLive = "camera_panel_live"
+    static let cameraPanelStabilization = "camera_panel_stabilization"
+    static let cameraPanelLocation = "camera_panel_location"
+    static let cameraPanelOriginal = "camera_panel_original"
+    static let cameraPanelSettings = "camera_panel_settings"
 }

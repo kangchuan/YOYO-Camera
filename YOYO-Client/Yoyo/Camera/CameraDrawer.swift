@@ -103,21 +103,15 @@ struct CameraDrawer: View {
 
                         CameraFrameRateSelectionView(settingsState: settingsState)
                     }
-                } else {
-                    // Aspect ratio section
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text(String.cameraSettingsAspectRatio.localized)
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.5))
-                            .padding(.horizontal, 24)
 
-                        CameraAspectRatioSelectionView(settingsState: settingsState)
-                    }
+                    Divider()
+                        .background(Color.white.opacity(0.05))
+                        .padding(.horizontal, 24)
                 }
 
-                Divider()
-                    .background(Color.white.opacity(0.05))
-                    .padding(.horizontal, 24)
+                // Aspect ratio is handled by the control panel now (the ratio
+                // button cycles through the presets) — one entry point per
+                // action, so the drawer no longer offers a second one.
 
                 // Guidelines section
                 VStack(alignment: .leading, spacing: 12) {
@@ -343,36 +337,6 @@ private struct CameraFrameRateSelectionView: View {
                             .frame(height: 56)
                     }
                     .buttonStyle(ParameterOptionButtonStyle(isSelected: settingsState.videoFrameRate == fps))
-                }
-            }
-            .padding(.leading, 24)
-        }
-    }
-}
-
-private struct CameraAspectRatioSelectionView: View {
-    @ObservedObject var settingsState: CameraSettingsState
-
-    private let optionHeight: CGFloat = 56
-
-    private func optionWidth(for preset: CameraSettingsState.AspectRatioPreset) -> CGFloat {
-        optionHeight / CGFloat(preset.rawValue)
-    }
-
-    var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                ForEach(CameraSettingsState.AspectRatioPreset.allCases, id: \.self) { preset in
-                    Button {
-                        settingsState.generateHapticFeedback()
-                        settingsState.setAspectRatio(preset)
-                    } label: {
-                        Text(preset.displayName)
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundColor(settingsState.currentAspectRatioPreset == preset ? .black : .white)
-                            .frame(width: optionWidth(for: preset), height: optionHeight)
-                    }
-                    .buttonStyle(ParameterOptionButtonStyle(isSelected: settingsState.currentAspectRatioPreset == preset))
                 }
             }
             .padding(.leading, 24)

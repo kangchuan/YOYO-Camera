@@ -985,3 +985,12 @@
 "camera_capture_mode_photo" = "Photo";
 "camera_ai_composition" = "AI Composition";
 "camera_flip_camera" = "Flip Camera";
+
+// MARK: - Control panel labels (2026-10 redesign)
+"camera_panel_flash" = "Flash";
+"camera_panel_timer" = "Timer";
+"camera_panel_live" = "Live";
+"camera_panel_stabilization" = "Stabilize";
+"camera_panel_location" = "Location";
+"camera_panel_original" = "Original";
+"camera_panel_settings" = "Settings";
