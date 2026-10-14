@@ -76,6 +76,23 @@ struct AudioStatusView: View {
         .animation(.easeInOut, value: audioManager.isReceivingInput)
         .onTapGesture {
             audioManager.toggleMute()
+            // Without microphone permission the control cannot do anything, so
+            // there is no state worth confirming.
+            guard hasMicrophonePermission else { return }
+            if audioManager.isMuted {
+                CameraViewState.shared.showStateToast(
+                    String.stateToastMicMuted.localized,
+                    icon: "mic.slash.fill",
+                    isOn: false,
+                    accentColor: StateToastStyle.muted
+                )
+            } else {
+                CameraViewState.shared.showStateToast(
+                    String.stateToastMicOn.localized,
+                    icon: "mic.fill",
+                    isOn: true
+                )
+            }
         }
     }
 }

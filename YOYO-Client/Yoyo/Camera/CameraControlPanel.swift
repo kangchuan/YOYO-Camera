@@ -200,6 +200,11 @@ private struct CameraControlPanelContent: View {
                     isActive: settingsState.saveGPSEnabled
                 ) {
                     settingsState.toggleGPSSetting()
+                    CameraViewState.shared.showToggleToast(
+                        feature: String.cameraPanelLocation.localized,
+                        icon: settingsState.saveGPSEnabled ? "location.fill" : "location.slash.fill",
+                        isOn: settingsState.saveGPSEnabled
+                    )
                     AnalyticsManager.shared.log(.settingsAction(action: "toggle_gps_\(settingsState.saveGPSEnabled)"))
                 }
                 .frame(width: CameraControlPanelDesign.columnWidth)
@@ -211,6 +216,11 @@ private struct CameraControlPanelContent: View {
                     isActive: settingsState.saveOriginalEnabled
                 ) {
                     settingsState.toggleSetting(\.saveOriginalEnabled)
+                    CameraViewState.shared.showToggleToast(
+                        feature: String.cameraPanelOriginal.localized,
+                        icon: "rectangle.on.rectangle.fill",
+                        isOn: settingsState.saveOriginalEnabled
+                    )
                     AnalyticsManager.shared.log(.settingsAction(action: "toggle_save_original_\(settingsState.saveOriginalEnabled)"))
                 }
                 .frame(width: CameraControlPanelDesign.columnWidth)
@@ -275,6 +285,17 @@ private struct FlashTorchButton: View {
             } else {
                 settingsState.flashMode = (settingsState.flashMode == .on) ? .off : .on
             }
+            // Read the resolved state after the toggle so the confirmation can
+            // never disagree with the control.
+            let torchMode = settingsState.currentCaptureMode == .movie
+            let nowOn = isActive
+            CameraViewState.shared.showToggleToast(
+                feature: String.cameraPanelFlash.localized,
+                icon: torchMode
+                    ? (nowOn ? "flashlight.on.fill" : "flashlight.off.fill")
+                    : (nowOn ? "bolt.fill" : "bolt.slash.fill"),
+                isOn: nowOn
+            )
             AnalyticsManager.shared.log(.settingsAction(action: "toggle_flash_torch_\(isActive)"))
         }
     }
@@ -319,6 +340,13 @@ private struct LivePhotoStabButton: View {
                     settingsState.currentCaptureMode = .livePhoto
                 }
             }
+            // Same slot, two meanings — `label`/`icon` already follow the mode,
+            // so read them after the toggle and reuse them for the toast.
+            CameraViewState.shared.showToggleToast(
+                feature: label,
+                icon: settingsState.currentCaptureMode == .movie ? "water.waves" : "livephoto",
+                isOn: isActive
+            )
             AnalyticsManager.shared.log(.settingsAction(action: "toggle_live_stab_\(isActive)"))
         }
     }
@@ -433,6 +461,11 @@ private struct AspectRatioButton: View {
         let next = allPresets[(currentIndex + 1) % allPresets.count]
         // setAspectRatio(_:) already fires the haptic feedback
         settingsState.setAspectRatio(next)
+        // Neutral tint: a ratio is a choice, not an on/off state.
+        CameraViewState.shared.showNeutralToast(
+            String.stateToastRatio.localized(next.displayName),
+            icon: "aspectratio"
+        )
         AnalyticsManager.shared.log(.settingsAction(action: "cycle_aspect_ratio_\(next.displayName)"))
     }
 }
@@ -532,6 +565,21 @@ private struct TimerCycleButton: View {
         }
 
         let timerValue = settingsState.timerCaptureEnabled ? settingsState.timerCaptureSeconds : 0
+        if settingsState.timerCaptureEnabled {
+            // "Timer 10s" — `timerIcon` is already the countdown glyph for the
+            // value we just landed on.
+            CameraViewState.shared.showStateToast(
+                String.stateToastTimer.localized(String(timerValue)),
+                icon: timerIcon,
+                isOn: true
+            )
+        } else {
+            CameraViewState.shared.showToggleToast(
+                feature: String.cameraPanelTimer.localized,
+                icon: timerIcon,
+                isOn: false
+            )
+        }
         AnalyticsManager.shared.log(.settingsAction(action: "cycle_timer_\(timerValue)"))
     }
 }

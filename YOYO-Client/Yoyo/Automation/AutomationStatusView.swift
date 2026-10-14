@@ -41,6 +41,13 @@ struct AutomationStatusView: View {
         .onLongPressGesture(minimumDuration: 0.5) {
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
             settingsState.automationEnabled.toggle()
+            // Reuse the settings label ("Task Master") rather than inventing a
+            // second name for the same feature.
+            CameraViewState.shared.showToggleToast(
+                feature: String.cameraSettingsAutomation.localized,
+                icon: iconName,
+                isOn: isAutomationEnabled
+            )
         }
     }
 

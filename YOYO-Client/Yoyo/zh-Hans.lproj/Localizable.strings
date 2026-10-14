@@ -997,3 +997,13 @@
 "camera_panel_location" = "位置";
 "camera_panel_original" = "原片";
 "camera_panel_settings" = "设置";
+
+// MARK: - Feature state toasts (2026-10)
+"state_toast_on" = "%@已打开";
+"state_toast_off" = "%@已关闭";
+"state_toast_timer" = "定时 %@ 秒";
+"state_toast_ratio" = "比例 %@";
+"state_toast_photo_mode" = "照片模式";
+"state_toast_video_mode" = "视频模式";
+"state_toast_mic_on" = "麦克风已打开";
+"state_toast_mic_muted" = "麦克风已静音";

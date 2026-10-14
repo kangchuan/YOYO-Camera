@@ -1013,4 +1013,14 @@ extension String {
     static let cameraPanelLocation = "camera_panel_location"
     static let cameraPanelOriginal = "camera_panel_original"
     static let cameraPanelSettings = "camera_panel_settings"
+
+    // MARK: - Feature state toasts (2026-10)
+    static let stateToastOn = "state_toast_on"
+    static let stateToastOff = "state_toast_off"
+    static let stateToastTimer = "state_toast_timer"
+    static let stateToastRatio = "state_toast_ratio"
+    static let stateToastPhotoMode = "state_toast_photo_mode"
+    static let stateToastVideoMode = "state_toast_video_mode"
+    static let stateToastMicOn = "state_toast_mic_on"
+    static let stateToastMicMuted = "state_toast_mic_muted"
 }

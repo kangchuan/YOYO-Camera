@@ -113,6 +113,12 @@ struct CaptureModePill: View {
     private func select(_ mode: CameraCaptureMode) {
         guard settingsState.currentCaptureMode != mode else { return }
         settingsState.setCaptureMode(mode)
+        // Neutral tint: a mode is a choice, not an on/off state.
+        let isVideo = mode == .movie
+        CameraViewState.shared.showNeutralToast(
+            isVideo ? String.stateToastVideoMode.localized : String.stateToastPhotoMode.localized,
+            icon: isVideo ? "video.fill" : "camera.fill"
+        )
         AnalyticsManager.shared.log(.settingsAction(action: "switch_mode_\(mode)"))
     }
 }

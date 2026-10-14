@@ -994,3 +994,13 @@
 "camera_panel_location" = "Location";
 "camera_panel_original" = "Original";
 "camera_panel_settings" = "Settings";
+
+// MARK: - Feature state toasts (2026-10)
+"state_toast_on" = "%@ On";
+"state_toast_off" = "%@ Off";
+"state_toast_timer" = "Timer %@s";
+"state_toast_ratio" = "Ratio %@";
+"state_toast_photo_mode" = "Photo mode";
+"state_toast_video_mode" = "Video mode";
+"state_toast_mic_on" = "Microphone On";
+"state_toast_mic_muted" = "Microphone Muted";

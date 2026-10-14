@@ -109,8 +109,16 @@ final class CameraViewState: ObservableObject {
     }
 
     /// Show a toast message
-    func showToast(type: ToastType, message: String, duration: TimeInterval = 3.0, customIcon: String? = nil) {
-        let toast = ToastMessage(type: type, message: message, duration: duration, customIcon: customIcon)
+    func showToast(type: ToastType,
+                   message: String,
+                   duration: TimeInterval = 3.0,
+                   customIcon: String? = nil,
+                   accentColor: Color? = nil) {
+        let toast = ToastMessage(type: type,
+                                 message: message,
+                                 duration: duration,
+                                 customIcon: customIcon,
+                                 accentColor: accentColor)
         currentToast = toast
 
         // Auto-hide
@@ -120,6 +128,47 @@ final class CameraViewState: ObservableObject {
                 currentToast = nil
             }
         }
+    }
+
+    // MARK: - Feature state toasts
+
+    /// How long a feature-toggle confirmation stays on screen. Shorter than the
+    /// default because it sits over the viewfinder rather than over a form.
+    static let stateToastDuration: TimeInterval = 1.5
+
+    /// Confirm a feature toggle, e.g. "Flash On" / "Flash Off".
+    ///
+    /// - Parameters:
+    ///   - feature: Localized feature name, taken from the control's own label
+    ///     so the toast and the button never drift apart.
+    ///   - icon: SF Symbol matching the control that was tapped.
+    ///   - isOn: The state *after* the toggle; picks the tint.
+    func showToggleToast(feature: String, icon: String, isOn: Bool) {
+        let format = isOn ? String.stateToastOn : String.stateToastOff
+        showStateToast(format.localized(feature), icon: icon, isOn: isOn)
+    }
+
+    /// Confirm an operation that is not an on/off pair — an aspect-ratio or
+    /// capture-mode readout, for instance.
+    func showNeutralToast(_ message: String, icon: String) {
+        showStateToast(message, icon: icon, isOn: false)
+    }
+
+    /// Shared entry point for the short state confirmations.
+    func showStateToast(_ message: String,
+                        icon: String,
+                        isOn: Bool,
+                        accentColor: Color? = nil) {
+        // Never talk over an error: a toggle confirmation is not worth losing
+        // "out of storage" over.
+        guard currentToast?.type != .error else { return }
+
+        let tint = accentColor ?? (isOn ? StateToastStyle.on : StateToastStyle.neutral)
+        showToast(type: .info,
+                  message: message,
+                  duration: Self.stateToastDuration,
+                  customIcon: icon,
+                  accentColor: tint)
     }
 
     /// Show a success message
