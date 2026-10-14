@@ -794,20 +794,46 @@ final class PhotoAlbumManager {
             return AssetIdentifierCheckResult(existing: [], isReliable: false)
         }
 
-        return await Task.detached(priority: .userInitiated) {
-            let fetchResult = PHAsset.fetchAssets(withLocalIdentifiers: identifiers, options: nil)
-            var existing = Set<String>()
-            fetchResult.enumerateObjects { asset, _, _ in
-                existing.insert(asset.localIdentifier)
+        // An empty result is ambiguous: it can mean "the user really deleted these
+        // photos" or "the Photos library has not finished loading yet", a well-known
+        // quirk right after a cold launch. Previously an empty result was always
+        // treated as transient, so a genuine "deleted everything" state was never
+        // reconciled and the stale SwiftData records stayed in the gallery forever
+        // (every tile then logging "资产不存在" on each render).
+        //
+        // Re-check a few times before trusting an empty result. This only costs time
+        // in the rare all-missing case; the common case returns on the first attempt.
+        let maxAttempts = 3
+        let retryDelay: UInt64 = 700_000_000
+
+        for attempt in 1 ... maxAttempts {
+            let existing = await Task.detached(priority: .userInitiated) {
+                let fetchResult = PHAsset.fetchAssets(withLocalIdentifiers: identifiers, options: nil)
+                var found = Set<String>()
+                fetchResult.enumerateObjects { asset, _, _ in
+                    found.insert(asset.localIdentifier)
+                }
+                return found
+            }.value
+
+            if !existing.isEmpty {
+                return AssetIdentifierCheckResult(existing: existing, isReliable: true)
             }
 
-            let isReliable = !existing.isEmpty
-            if !isReliable {
-                debugLog("⚠️ [PhotoAlbumManager] Photos fetch returned 0 of \(identifiers.count) identifiers; treating as transient.")
-            }
+            guard attempt < maxAttempts else { break }
 
-            return AssetIdentifierCheckResult(existing: existing, isReliable: isReliable)
-        }.value
+            // Never reconcile while the app is backgrounded: Photos results are
+            // unreliable in that state and we could wipe valid records.
+            try? await Task.sleep(nanoseconds: retryDelay)
+            let stillActive = await MainActor.run { UIApplication.shared.applicationState == .active }
+            guard stillActive else {
+                debugLog("⚠️ [PhotoAlbumManager] App left active state during validation; treating as transient.")
+                return AssetIdentifierCheckResult(existing: [], isReliable: false)
+            }
+        }
+
+        debugLog("ℹ️ [PhotoAlbumManager] Confirmed 0 of \(identifiers.count) identifiers exist after \(maxAttempts) checks; treating as genuine deletion.")
+        return AssetIdentifierCheckResult(existing: [], isReliable: true)
     }
 
     private func createPhotoAsset(fileURL: URL, uti: String, location: CLLocation?) -> PHObjectPlaceholder? {

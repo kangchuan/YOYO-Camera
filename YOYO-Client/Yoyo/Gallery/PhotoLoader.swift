@@ -160,10 +160,6 @@ final class PhotoLoader: ObservableObject {
         debugLog("🗑️ PhotoLoader.removeCache: key: \(key)，删除图片缓存: \(hadImage)，删除LivePhoto缓存: \(hadLivePhoto)")
     }
 
-    func assetExists(_ assetIdentifier: String) -> Bool {
-        fetchAsset(for: assetIdentifier) != nil
-    }
-
     /// Avoid doing synchronous Photos fetches on the main thread.
     func assetExistsAsync(_ assetIdentifier: String) async -> Bool {
         await Task.detached(priority: .userInitiated) {
@@ -390,26 +386,31 @@ struct AsyncThumbnailImage: View {
 
         if Task.isCancelled { return }
 
-        let shouldAutoRetry = await MainActor.run { () -> Bool in
-            if let image {
+        if let image {
+            await MainActor.run {
                 loadedImage = image
                 loadState = .success
-                return false
             }
-            // If loading fails, check whether the resource exists to distinguish the error type.
-            let exists = imageCache.assetExists(assetIdentifier)
-            loadState = exists ? .failed : .notFound
-            // Photos can transiently fail (or report the asset missing) right after cold launch,
-            // so retry automatically instead of waiting for a manual tap
-            guard retryCount < maxRetries else { return false }
-            retryCount += 1
-            return true
+            return
         }
 
-        if shouldAutoRetry {
-            try? await Task.sleep(nanoseconds: UInt64(retryCount) * 800_000_000)
-            if Task.isCancelled { return }
-            await loadImage()
+        // Distinguish "the asset is gone" from "the request failed transiently".
+        // Use the async variant: a synchronous Photos fetch here would block the main thread.
+        let exists = await imageCache.assetExistsAsync(assetIdentifier)
+        await MainActor.run {
+            loadState = exists ? .failed : .notFound
         }
+
+        // Photos can transiently report an existing asset as missing right after a cold
+        // launch, so give a "not found" one grace retry. A genuinely deleted asset never
+        // comes back, so there is no point retrying it further (that only repeats the same
+        // failure and the same log lines).
+        let allowedRetries = exists ? maxRetries : 1
+        guard retryCount < allowedRetries else { return }
+
+        retryCount += 1
+        try? await Task.sleep(nanoseconds: UInt64(retryCount) * 800_000_000)
+        if Task.isCancelled { return }
+        await loadImage()
     }
 }
