@@ -4,8 +4,12 @@ import SwiftUI
 enum CameraLayoutConfig {
     // MARK: - Layout Constants
 
+    /// Height of the top system-bar band. On notch / Dynamic Island devices
+    /// the camera controls row sits *below* the island (island bottom ≈ 48pt,
+    /// row bottom at 88pt), so the band reserves 96pt. Without a notch there
+    /// is nothing to clear and the row hugs the top as before.
     static var topMenuHeight: CGFloat {
-        hasNotch ? 64 : 52
+        hasNotch ? 96 : 52
     }
 
     static let bottomControlHeight: CGFloat = 210

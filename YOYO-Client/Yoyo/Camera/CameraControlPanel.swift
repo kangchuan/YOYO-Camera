@@ -76,12 +76,15 @@ struct CameraControlPanel: View {
         Button {
             showingControlPanel = true
         } label: {
-            Image(systemName: "ellipsis")
-                .font(.system(size: 16, weight: .medium))
-                .foregroundColor(.white.opacity(0.9))
-                .frame(width: 40, height: 32)
+            SixDotsMenuGlyph()
+                .frame(width: 44, height: 44)
                 .contentShape(Rectangle())
         }
+        // The 44pt hit area sits flush against the right screen edge so the
+        // glyph center lands 22pt from the edge (iOS camera convention). The
+        // row itself carries 16pt horizontal padding — this cancels it for
+        // this button only.
+        .padding(.trailing, -16)
         .fullScreenCover(isPresented: $showingControlPanel) {
             CameraControlPanelOverlay(
                 settingsState: settingsState,
@@ -562,4 +565,35 @@ private struct TimerCycleButton: View {
         }
     }
     .preferredColorScheme(.dark)
+}
+
+// MARK: - Six-Dots Menu Glyph
+
+/// Six-dot grid menu glyph (2 rows x 3 columns) for the camera panel trigger.
+/// Drawn by hand: no SF Symbol matches this look (`ellipsis` is only 3 dots),
+/// following the same approach as `ViewfinderCorners`.
+private struct SixDotsMenuGlyph: View {
+    var body: some View {
+        Canvas { context, size in
+            let center = CGPoint(x: size.width / 2, y: size.height / 2)
+            let radius: CGFloat = 1.6
+            let pitch: CGFloat = 6.4
+            for dy in [-pitch / 2, pitch / 2] {
+                for dx in [-pitch, 0, pitch] {
+                    let rect = CGRect(
+                        x: center.x + dx - radius,
+                        y: center.y + dy - radius,
+                        width: radius * 2,
+                        height: radius * 2
+                    )
+                    context.fill(
+                        Path(ellipseIn: rect),
+                        with: .color(.white.opacity(0.9))
+                    )
+                }
+            }
+        }
+        .frame(width: 20, height: 12)
+        .accessibilityHidden(true)
+    }
 }

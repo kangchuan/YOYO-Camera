@@ -254,8 +254,11 @@ struct CameraView: View {
             )
         }
         .padding(.horizontal, 16)
-        .padding(.top, 8)
-        .frame(maxWidth: .infinity, alignment: .top)
+        // Bottom-align the row inside the reserved band so it lands just
+        // below the Dynamic Island (island bottom ≈ 48pt → row bottom 88pt).
+        .padding(.bottom, 8)
+        .frame(maxWidth: .infinity)
+        .frame(height: CameraLayoutConfig.topMenuHeight, alignment: .bottom)
         .position(
             x: geometry.size.width / 2,
             y: CameraLayoutConfig.topMenuHeight / 2
