@@ -374,6 +374,11 @@ struct PhotoGalleryView: View {
                 PhotoDetailView(
                     photos: viewModel.photos,
                     currentIndex: index,
+                    onPhotoDeleted: { photo in
+                        // The detail view keeps its own copy of the list, so the
+                        // grid behind it has to be told which tile just went away.
+                        viewModel.removePhoto(photo)
+                    },
                     onBackToCamera: {
                         selectedPhotoId = nil
                     },

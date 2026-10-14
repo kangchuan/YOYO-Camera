@@ -120,6 +120,12 @@ struct CameraView: View {
                 requestLatestPhotoRefresh()
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .photoLibraryDidChange)) { _ in
+            // Covers deletions from the in-app gallery and from the system Photos
+            // app alike. `requestLatestPhotoRefresh` cancels any in-flight refresh,
+            // which is all the debouncing a burst of library changes needs.
+            requestLatestPhotoRefresh()
+        }
         .onReceive(FilterManager.shared.$selectedFilter.dropFirst()) { newFilter in
             let toastContent = FilterManager.shared.makeFilterSwitchToastContent(for: newFilter)
             cameraManagers.viewState.showInfo(toastContent.message, customIcon: toastContent.icon)
@@ -388,8 +394,19 @@ struct CameraView: View {
             }
         }
 
-        // Assets may be temporarily unavailable during launch/save windows, so avoid overwriting an existing thumbnail with `nil`
+        // Every retry failed. That is usually transient — assets are briefly
+        // unavailable during launch or right after a save — so an existing
+        // thumbnail is deliberately left alone. But when what we are showing has
+        // itself been deleted, keeping it on screen is simply wrong: clear it so
+        // the empty state appears instead of a photo the user just removed.
+        let shown = await MainActor.run { latestPhoto }
         await MainActor.run { latestPhotoRefreshTask = nil }
+        if let shown {
+            let stillExists = await PhotoLoader.shared.assetExistsAsync(shown.assetIdentifier)
+            if !stillExists {
+                await MainActor.run { latestPhoto = nil }
+            }
+        }
     }
 
     private func loadLatestPhotoFromLibrary() async -> PhotoAsset? {

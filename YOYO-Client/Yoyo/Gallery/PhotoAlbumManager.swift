@@ -8,7 +8,7 @@ import Photos
 import UIKit
 import UniformTypeIdentifiers
 
-final class PhotoAlbumManager {
+final class PhotoAlbumManager: NSObject, PHPhotoLibraryChangeObserver {
     static let shared = PhotoAlbumManager()
 
     private let albumName = "出片相机"
@@ -16,7 +16,14 @@ final class PhotoAlbumManager {
     private let jpegQuality: CGFloat = 0.75
     private let heicQuality: CGFloat = 0.75
 
-    private init() {}
+    private override init() {
+        super.init()
+        // Nothing else in the app watches the system photo library, so deleting a
+        // photo — from the in-app gallery or from the system Photos app — left a
+        // stale thumbnail on screen until the next cold launch. `shared` never
+        // deallocates, so registering here keeps the observer alive for good.
+        PHPhotoLibrary.shared().register(self)
+    }
 
     /// Get current memory usage in MB.
     private func getMemoryUsage() -> Double {
@@ -910,6 +917,20 @@ final class PhotoAlbumManager {
         }
     }
 
+    // MARK: - Photo Library Observation
+
+    /// Called on an arbitrary queue whenever the system library changes,
+    /// including while the app is in the background.
+    ///
+    /// Only forwards the fact that *something* changed. The camera view owns the
+    /// "latest photo" state and already debounces overlapping refreshes, so
+    /// resolving the change details here would just duplicate that work.
+    func photoLibraryDidChange(_: PHChange) {
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(name: .photoLibraryDidChange, object: nil)
+        }
+    }
+
     // MARK: - Favorite Methods
 
     func toggleFavorite(for assetIdentifier: String, isFavorite: Bool) async throws {
@@ -931,6 +952,12 @@ final class PhotoAlbumManager {
             }
         }
     }
+}
+
+extension Notification.Name {
+    /// Posted when the system photo library reports a change, so the views that
+    /// mirror it (the camera's latest-photo thumbnail, the gallery grid) reload.
+    static let photoLibraryDidChange = Notification.Name("photoLibraryDidChange")
 }
 
 struct AssetIdentifierCheckResult {

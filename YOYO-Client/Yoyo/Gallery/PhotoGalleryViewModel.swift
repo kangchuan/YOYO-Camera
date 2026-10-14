@@ -139,6 +139,14 @@ final class PhotoGalleryViewModel: ObservableObject {
         }
     }
 
+    /// Drop a photo deleted from the detail view so the grid keeps the same
+    /// contents. The detail view owns a copy of the list, so without this the
+    /// deleted tile stayed on screen showing its now-stale thumbnail until the
+    /// gallery was reopened.
+    func removePhoto(_ photo: PhotoAsset) {
+        photos.removeAll { $0.id == photo.id }
+    }
+
     private struct ValidationResult {
         let photos: [PhotoAsset]
         let isReliable: Bool

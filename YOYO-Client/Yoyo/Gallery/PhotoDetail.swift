@@ -55,7 +55,7 @@ final class LivePhotoControls: ObservableObject {
 struct PhotoDetailView: View {
     var photos: [PhotoAsset]
     @State var currentIndex: Int
-    var onPhotoDeleted: (() -> Void)? // Photo delete callback
+    var onPhotoDeleted: ((PhotoAsset) -> Void)? // Photo delete callback, carries the removed photo
     var onBackToCamera: (() -> Void)? // Return to camera callback
     var onDismissOverride: (() -> Void)?
     @State private var localPhotos: [PhotoAsset] = [] // Local photo array for update after deletion
@@ -731,7 +731,7 @@ struct PhotoDetailView: View {
 
                     debugLog("🗑️ PhotoDetailView.deletePhoto: 数据库删除完成")
 
-                    onPhotoDeleted?()
+                    onPhotoDeleted?(photoToDelete)
 
                     let oldIndex = currentIndex
                     let willBeEmpty = localPhotos.count == 1
