@@ -77,6 +77,12 @@ enum PermissionStatus {
     }
 }
 
+// MARK: - capability conformance (A-10)
+
+// The permission layer is the implementation of this capability; the Settings
+// layer only knows the protocol. Wiring happens in `CameraManagersContainer`.
+extension PermissionManager: LocationPermissionProviding {}
+
 // MARK: - permission manager
 
 final class PermissionManager: NSObject, ObservableObject {

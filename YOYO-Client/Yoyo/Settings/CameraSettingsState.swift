@@ -181,23 +181,17 @@ final class CameraSettingsState: ObservableObject {
         }
     }
 
-    // MARK: - Default settings related to device capabilities
-    func initializeVideoSettingsWithDeviceCapabilities() {
-        let deviceManager = CameraDeviceManager.shared
-        // Only adjust on first startup or if current settings are not supported.
-        let maxResolution = deviceManager.getMaxSupportedVideoResolution()
-        let maxFrameRate = deviceManager.getMaxSupportedVideoFrameRate()
+    // MARK: - Injected capabilities (A-10)
 
-        // If the currently set resolution is not supported, set it to the highest supported resolution.
-        if !deviceManager.isVideoResolutionSupported(videoResolution) {
-            videoResolution = maxResolution
-        }
-
-        // If the currently set frame rate is not supported, set it to the highest supported frame rate.
-        if !deviceManager.isVideoFrameRateSupported(videoFrameRate) {
-            videoFrameRate = maxFrameRate
-        }
-    }
+    /// Location access, handed over by the composition root
+    /// (`CameraManagersContainer`).
+    ///
+    /// A-10: this used to be `PermissionManager.shared`, called inline. That
+    /// made Settings depend on the Permission layer while the permission
+    /// flow depends on Settings, i.e. a cycle. Settings now states what it
+    /// needs; the root decides who provides it. Injecting a stub here is also
+    /// what makes the GPS toggle testable without a real permission prompt.
+    var locationPermissions: LocationPermissionProviding?
 
     // MARK: - Runtime state (non-persistent)
     @Published var isCaptureSessionActive = false // Whether the camera capture session is active (replaces the original isPhotoCaptureActive)
@@ -257,293 +251,27 @@ final class CameraSettingsState: ObservableObject {
     @AppStorage("AutomationSettings.autoAdjustWhiteBalance")
     var autoAdjustWhiteBalance: Bool = true
 
-    // MARK: - Composition guide line type
-    enum GuidelinesType: String, CaseIterable {
-        case off // Turn off auxiliary lines
-        case ruleOfThirds // Rule of thirds
-        case ruleOfThirdsWithDiagonal // 3x3 + diagonal
-        case goldenRatio // Golden ratio
-        case grid6x4 // 6x4 grid
+    // MARK: - Domain types (A-09)
+    //
+    // 这些枚举原本嵌套在 CameraSettingsState 里，让一个「状态管理器」顺带成了
+    // 基础类型的宿主：任何模块想用 ISO / 快门 / 宽高比这类相机类型，都得反向依赖
+    // Settings（见 CameraDeviceManager、PhotoAlbumManager 对本类的反向引用）。
+    //
+    // 定义已搬到 CameraDomainTypes（无任何依赖的纯类型文件）；这里的 typealias
+    // 保证全项目已有的 `CameraSettingsState.XXX` 引用一行都不用改。
+    typealias GuidelinesType = CameraDomainTypes.GuidelinesType
+    typealias ISOPreset = CameraDomainTypes.ISOPreset
+    typealias ShutterSpeedPreset = CameraDomainTypes.ShutterSpeedPreset
+    typealias TimerSeconds = CameraDomainTypes.TimerSeconds
+    typealias AspectRatioPreset = CameraDomainTypes.AspectRatioPreset
+    typealias CaptureQuality = CameraDomainTypes.CaptureQuality
+    typealias ImageFileFormat = CameraDomainTypes.ImageFileFormat
+    typealias VideoResolution = CameraDomainTypes.VideoResolution
+    typealias VideoFrameRate = CameraDomainTypes.VideoFrameRate
+    typealias FileNamingFormat = CameraDomainTypes.FileNamingFormat
+    typealias VideoSaveFormat = CameraDomainTypes.VideoSaveFormat
+    typealias AudioPickupPattern = CameraDomainTypes.AudioPickupPattern
 
-        var systemIcon: String {
-            switch self {
-            case .off: return "nosign"
-            case .ruleOfThirds: return "rectangle.split.3x3"
-            case .ruleOfThirdsWithDiagonal: return "grid.circle"
-            case .goldenRatio: return "rectangle.split.3x1"
-            case .grid6x4: return "grid"
-            }
-        }
-    }
-
-    // MARK: - ISO/Shutter presets
-    enum ISOPreset: String, CaseIterable {
-        case lowNoise // Low noise priority (ISO <= 800)
-        case balanced // Balanced (ISO <= 1600)
-        case highISO // High ISO (ISO <= 3200)
-        case extreme // Limit (ISO <= 6400)
-
-        var displayName: String {
-            switch self {
-            case .lowNoise: return String.isoPresetLowNoise.localized
-            case .balanced: return String.isoPresetBalanced.localized
-            case .highISO: return String.isoPresetHigh.localized
-            case .extreme: return String.isoPresetExtreme.localized
-            }
-        }
-
-        var description: String {
-            switch self {
-            case .lowNoise: return String.isoPresetLowNoiseDesc.localized
-            case .balanced: return String.isoPresetBalancedDesc.localized
-            case .highISO: return String.isoPresetHighDesc.localized
-            case .extreme: return String.isoPresetExtremeDesc.localized
-            }
-        }
-
-        var maxISO: Double {
-            switch self {
-            case .lowNoise: return 800.0
-            case .balanced: return 1600.0
-            case .highISO: return 3200.0
-            case .extreme: return 6400.0
-            }
-        }
-    }
-
-    enum ShutterSpeedPreset: String, CaseIterable {
-        case handheld // Handheld shooting (>= 1/60s)
-        case stable // Stable support (>= 1/30s)
-        case tripod // Tripod (>= 1/15s)
-        case longExposure // Long exposure (>= 1/4s)
-
-        var displayName: String {
-            switch self {
-            case .handheld: return String.shutterPresetHandheld.localized
-            case .stable: return String.shutterPresetStable.localized
-            case .tripod: return String.shutterPresetTripod.localized
-            case .longExposure: return String.shutterPresetLongExposure.localized
-            }
-        }
-
-        var description: String {
-            switch self {
-            case .handheld: return String.shutterPresetHandheldDesc.localized
-            case .stable: return String.shutterPresetStableDesc.localized
-            case .tripod: return String.shutterPresetTripodDesc.localized
-            case .longExposure: return String.shutterPresetLongExposureDesc.localized
-            }
-        }
-
-        var minShutterSpeed: Double {
-            switch self {
-            case .handheld: return 1.0 / 60.0
-            case .stable: return 1.0 / 30.0
-            case .tripod: return 1.0 / 15.0
-            case .longExposure: return 1.0 / 4.0
-            }
-        }
-    }
-
-    // MARK: - Countdown options
-    enum TimerSeconds: Int, CaseIterable {
-        case five = 5
-        case ten = 10
-        case thirty = 30
-
-        var displayName: String {
-            switch self {
-            case .five: return "5s"
-            case .ten: return "10s"
-            case .thirty: return "30s"
-            }
-        }
-    }
-
-    // MARK: - Aspect Ratio Preset
-    enum AspectRatioPreset: Double, CaseIterable {
-        case square = 1.0
-        case portrait = 0.8 // 4:5
-        case traditional = 0.75 // 3:4
-        case photo = 0.6667 // 2:3
-        case story = 0.5625 // 9:16
-
-        var displayName: String {
-            switch self {
-            case .square: return "1:1"
-            case .portrait: return "4:5"
-            case .traditional: return "3:4"
-            case .photo: return "2:3"
-            case .story: return "9:16"
-            }
-        }
-    }
-
-    // MARK: - Shooting format options
-    enum CaptureQuality: String, CaseIterable {
-        case standard // Processed
-        case proRaw // Apple ProRaw
-
-        var isRaw: Bool {
-            self == .proRaw
-        }
-    }
-
-    enum ImageFileFormat: String, CaseIterable {
-        case jpeg // Standard JPEG format
-        case heic // HEIC format
-    }
-
-    // MARK: - Video resolution enumeration
-    enum VideoResolution: String, CaseIterable {
-        case hd720 = "720p" // 720p HD (1280x720)
-        case hd1080 = "HD" // 1080p Full HD (1920x1080)
-        case hd4k = "4K" // 4K UHD (3840x2160)
-
-        var displayName: String {
-            switch self {
-            case .hd720: return "720p"
-            case .hd1080: return "HD"
-            case .hd4k: return "4K"
-            }
-        }
-
-        var dimensions: CGSize {
-            switch self {
-            case .hd720: return CGSize(width: 1280, height: 720)
-            case .hd1080: return CGSize(width: 1920, height: 1080)
-            case .hd4k: return CGSize(width: 3840, height: 2160)
-            }
-        }
-
-        var pixelCount: Int {
-            Int(dimensions.width * dimensions.height)
-        }
-    }
-
-    // MARK: - Video frame rate enumeration
-    enum VideoFrameRate: String, CaseIterable {
-        case fps24 = "24" // 24 fps
-        case fps30 = "30" // 30 fps
-        case fps60 = "60" // 60 fps
-        case fps120 = "120" // 120 fps
-
-        var displayName: String {
-            switch self {
-            case .fps24: return "24"
-            case .fps30: return "30"
-            case .fps60: return "60"
-            case .fps120: return "120"
-            }
-        }
-
-        var value: Double {
-            switch self {
-            case .fps24: return 24.0
-            case .fps30: return 30.0
-            case .fps60: return 60.0
-            case .fps120: return 120.0
-            }
-        }
-    }
-
-    // MARK: - File naming format enum
-    enum FileNamingFormat: String, CaseIterable {
-        case standard // 20241029_143022
-        case classic // 出片相机_0001
-        case daily // 20241029_0001
-        case pro // Photo_20241029_143022
-        case custom // Custom format
-
-        var displayName: String {
-            switch self {
-            case .standard: return .fileNamingStandard.localized
-            case .classic: return .fileNamingClassic.localized
-            case .daily: return .fileNamingDaily.localized
-            case .pro: return .fileNamingPro.localized
-            case .custom: return .fileNamingCustom.localized
-            }
-        }
-
-        var description: String {
-            switch self {
-            case .standard: return "20241029_143022"
-            case .classic: return "Photo_0001"
-            case .daily: return "20241029_0001"
-            case .pro: return "Photo_20241029_143022"
-            case .custom: return .fileNamingCustomDesc.localized
-            }
-        }
-
-        var template: String {
-            switch self {
-            case .standard: return "{year}{month}{day}_{hour}{minute}{second}"
-            case .classic: return "{type}_{index}"
-            case .daily: return "{year}{month}{day}_{index}"
-            case .pro: return "{type}_{year}{month}{day}_{hour}{minute}{second}"
-            case .custom: return "" // Use custom format
-            }
-        }
-    }
-
-    // MARK: - Video save format enumeration
-    enum VideoSaveFormat: String, CaseIterable {
-        case mov // MOV format
-        case mp4 // MP4 format
-
-        var displayName: String {
-            switch self {
-            case .mov: return "MOV"
-            case .mp4: return "MP4"
-            }
-        }
-
-        var fileType: AVFileType {
-            switch self {
-            case .mov: return .mov
-            case .mp4: return .mp4
-            }
-        }
-    }
-
-    // MARK: - Audio radio mode enumeration
-    enum AudioPickupPattern: String, CaseIterable {
-        case ambient // Environment (omnidirectional)
-        case voice // Vocal (cardioid pointing)
-        case voiceEnhanced // Vocal enhancement (subcardioid pattern)
-
-        var displayName: String {
-            switch self {
-            case .ambient: return .audioPickupAmbient.localized
-            case .voice: return .audioPickupVoice.localized
-            case .voiceEnhanced: return .audioPickupVoiceEnhanced.localized
-            }
-        }
-
-        var description: String {
-            switch self {
-            case .ambient: return .audioPickupAmbientDesc.localized
-            case .voice: return .audioPickupVoiceDesc.localized
-            case .voiceEnhanced: return .audioPickupVoiceEnhancedDesc.localized
-            }
-        }
-
-        var polarPattern: AVAudioSession.PolarPattern {
-            switch self {
-            case .ambient: return .omnidirectional
-            case .voice: return .cardioid
-            case .voiceEnhanced: return .subcardioid
-            }
-        }
-
-        var systemIcon: String {
-            switch self {
-            case .ambient: return "dot.radiowaves.left.and.right"
-            case .voice: return "person.wave.2"
-            case .voiceEnhanced: return "waveform.and.person.filled"
-            }
-        }
-    }
 
     // MARK: - Computed properties
     /// Actual effective aspect ratio: video mode is fixed at 9:16, other modes use user settings.
@@ -566,6 +294,13 @@ final class CameraSettingsState: ObservableObject {
 
     var captureQuality: CaptureQuality {
         // RAW capture is temporarily disabled until the related flow is stabilized.
+        //
+        // A-10: if you are un-commenting this, do NOT call
+        // FilterManager / CameraSessionManager / CameraDeviceManager from
+        // here. Those calls are exactly the Settings → Device edges that used
+        // to form a dependency cycle with the Device layer. Introduce a
+        // capability protocol in CameraCapabilities.swift, implement it on the
+        // device side, and inject it from CameraManagersContainer instead.
         /*
          if FilterManager.shared.selectedFilter.isFilmSimulation {
              let output = CameraSessionManager.shared.getStillImageOutput()
@@ -722,22 +457,30 @@ final class CameraSettingsState: ObservableObject {
 
     /// Special handling for GPS settings.
     func toggleGPSSetting() {
-        let permissionManager = PermissionManager.shared
         if saveGPSEnabled {
             // If it is currently on, close it directly.
             saveGPSEnabled = false
             generateHapticFeedback()
+            return
+        }
+
+        // Turning it on needs location access. A-10: the provider is injected
+        // by the composition root; if nothing wired it up (a unit test, a
+        // preview, a future second entry point) we leave the switch off rather
+        // than silently tagging photos without permission.
+        guard let permissions = locationPermissions else {
+            debugLog("📍 未注入位置权限提供者，GPS 开关保持关闭")
+            return
+        }
+
+        if permissions.hasLocationPermission {
+            // Already have permission, enable it directly.
+            saveGPSEnabled = true
+            generateHapticFeedback()
         } else {
-            // If it is currently closed, check location permission first.
-            if permissionManager.hasLocationPermission {
-                // Already have permission, enable it directly.
-                saveGPSEnabled = true
-                generateHapticFeedback()
-            } else {
-                // No permission yet, request it.
-                permissionManager.requestLocationPermission()
-                _pendingGPSEnable = true
-            }
+            // No permission yet, request it.
+            permissions.requestLocationPermission()
+            _pendingGPSEnable = true
         }
     }
 

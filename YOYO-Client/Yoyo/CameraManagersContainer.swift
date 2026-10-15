@@ -43,7 +43,18 @@ final class CameraManagersContainer: ObservableObject {
 
     private var cancellables = Set<AnyCancellable>()
 
-    init() {
+    /// A-08: the first seam where this container stops hard-wiring its
+    /// dependencies. Production keeps the exact same behaviour (the argument
+    /// defaults to `.shared`); a test or preview can hand over a stub without
+    /// touching a singleton. More seams should follow this shape — one at a
+    /// time, each one earning its keep by making something testable.
+    ///
+    /// A-10: because the Settings layer asks for a capability rather than a
+    /// manager, injecting it here is enough to keep the Settings → Device /
+    /// Permission edges out of the type graph, and the cycle with the Device
+    /// layer is gone.
+    init(locationPermissions: LocationPermissionProviding? = PermissionManager.shared) {
+        settingsState.locationPermissions = locationPermissions
         setupStatePropagation()
     }
 
