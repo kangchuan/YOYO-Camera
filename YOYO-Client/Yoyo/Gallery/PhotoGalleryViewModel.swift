@@ -140,11 +140,16 @@ final class PhotoGalleryViewModel: ObservableObject {
     }
 
     /// Drop a photo deleted from the detail view so the grid keeps the same
-    /// contents. The detail view owns a copy of the list, so without this the
-    /// deleted tile stayed on screen showing its now-stale thumbnail until the
-    /// gallery was reopened.
-    func removePhoto(_ photo: PhotoAsset) {
-        photos.removeAll { $0.id == photo.id }
+    /// contents, and report which tile the detail overlay should show next. The
+    /// detail view owns a copy of the list and slides to the following photo; if
+    /// the grid's selection did not follow it, the overlay would disappear from
+    /// under the user the moment a photo was removed.
+    @discardableResult
+    func removePhoto(_ photo: PhotoAsset) -> PhotoAsset.ID? {
+        guard let index = photos.firstIndex(where: { $0.id == photo.id }) else { return nil }
+        photos.remove(at: index)
+        guard !photos.isEmpty else { return nil }
+        return photos[min(index, photos.count - 1)].id
     }
 
     private struct ValidationResult {
@@ -212,6 +217,10 @@ final class PhotoGalleryViewModel: ObservableObject {
 
                 try await PhotoAlbumManager.shared.deletePhotosFromAlbum(assetIdentifiers: assetIdentifiersToDelete)
 
+                // Snapshot the list before hopping back to the main actor, so the
+                // closure captures a value rather than the mutable array.
+                let deletedAssetIdentifiers = assetIdentifiersToDelete
+
                 await MainActor.run {
                     withAnimation(.easeOut(duration: 0.2)) {
                         self.photos.removeAll { self.selectedPhotos.contains($0.id) }
@@ -236,6 +245,15 @@ final class PhotoGalleryViewModel: ObservableObject {
                     } catch {
                         debugLog("保存 SwiftData 更改失败: \(error)")
                     }
+
+                    // Tell the camera which assets went away instead of leaving it
+                    // to the photo library's own change notification, which can
+                    // still report them as existing.
+                    NotificationCenter.default.post(
+                        name: .cameraDidDeleteAssets,
+                        object: nil,
+                        userInfo: [CameraNotificationKeys.assetIdentifiers: deletedAssetIdentifiers]
+                    )
 
                     self.startPrefetchWork(for: self.photos)
                 }

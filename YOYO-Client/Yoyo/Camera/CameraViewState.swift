@@ -15,6 +15,8 @@ enum CameraNotificationKeys {
     static let captureState = "captureState"
     static let saveSuccess = "saveSuccess"
     static let saveError = "saveError"
+    /// Local identifiers of the assets carried by `.cameraDidDeleteAssets`.
+    static let assetIdentifiers = "assetIdentifiers"
 }
 
 // MARK: - Camera View State Manager

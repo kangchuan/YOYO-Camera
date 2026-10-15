@@ -21,6 +21,10 @@ struct CameraView: View {
     @State private var isDrawerExpanded = false
     @State private var latestPhoto: PhotoAsset?
     @State private var latestPhotoRefreshTask: Task<Void, Never>?
+    /// Asset identifiers the app deleted during this session. A deleted asset keeps
+    /// answering `PHAsset` fetches while it sits in "Recently Deleted", so an
+    /// existence check alone can hand the removed photo straight back.
+    @State private var recentlyDeletedAssetIdentifiers: Set<String> = []
     @State private var isCoordinatorReady = false
     @State private var showCameraGestureTutorial = false
 
@@ -124,6 +128,26 @@ struct CameraView: View {
             // Covers deletions from the in-app gallery and from the system Photos
             // app alike. `requestLatestPhotoRefresh` cancels any in-flight refresh,
             // which is all the debouncing a burst of library changes needs.
+            requestLatestPhotoRefresh()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .cameraDidDeleteAssets)) { notification in
+            let identifiers = Set(
+                notification.userInfo?[CameraNotificationKeys.assetIdentifiers] as? [String] ?? []
+            )
+            guard !identifiers.isEmpty else { return }
+
+            // Remember them for the rest of the session: while a deleted asset is
+            // still in "Recently Deleted" the photo library answers existence
+            // checks with "yes", so a later refresh must not pick it up again.
+            recentlyDeletedAssetIdentifiers.formUnion(identifiers)
+
+            // When the button is showing exactly the photo that just went away, drop
+            // it straight away. Re-resolving usually lands on the previous photo,
+            // and clearing first guarantees the stale frame cannot survive.
+            if let shown = latestPhoto, isDeletedThisSession(shown) {
+                latestPhoto = nil
+            }
+
             requestLatestPhotoRefresh()
         }
         .onReceive(FilterManager.shared.$selectedFilter.dropFirst()) { newFilter in
@@ -422,7 +446,12 @@ struct CameraView: View {
             descriptor.fetchLimit = 50
             return (try? modelContext.fetch(descriptor)) ?? []
         }
-        guard let firstCandidate = candidates.first else { return nil }
+
+        // Photos keeps answering existence checks for an asset the app deleted, as
+        // long as it sits in "Recently Deleted" — which is exactly how the removed
+        // photo stayed on the thumbnail. What the app deleted wins over that.
+        let usableCandidates = candidates.filter { !isDeletedThisSession($0) }
+        guard let firstCandidate = usableCandidates.first else { return nil }
 
         // Validate the latest photo first
         let firstExists = await Task.detached(priority: .userInitiated) {
@@ -432,11 +461,20 @@ struct CameraView: View {
         if firstExists { return firstCandidate }
 
         // If the latest photo is missing, batch-query candidates and return the first existing one
-        let identifiers = candidates.map(\.assetIdentifier)
+        let identifiers = usableCandidates.map(\.assetIdentifier)
         let existing = await PhotoAlbumManager.shared.existingAssetIdentifiers(for: identifiers)
 
         guard existing.isReliable else { return nil }
-        return candidates.first { existing.existing.contains($0.assetIdentifier) }
+        return usableCandidates.first { existing.existing.contains($0.assetIdentifier) }
+    }
+
+    /// Whether the app deleted this photo — or its paired original — during this
+    /// session. Deleted assets remain visible to `PHAsset` fetches while they sit in
+    /// "Recently Deleted", so an existence check is not enough on its own.
+    private func isDeletedThisSession(_ photo: PhotoAsset) -> Bool {
+        if recentlyDeletedAssetIdentifiers.contains(photo.assetIdentifier) { return true }
+        guard let originalIdentifier = photo.originalAssetIdentifier else { return false }
+        return recentlyDeletedAssetIdentifiers.contains(originalIdentifier)
     }
 
     private func handleCoordinatorAvailability(_ isReady: Bool) {

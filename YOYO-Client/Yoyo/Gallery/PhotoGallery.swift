@@ -376,8 +376,13 @@ struct PhotoGalleryView: View {
                     currentIndex: index,
                     onPhotoDeleted: { photo in
                         // The detail view keeps its own copy of the list, so the
-                        // grid behind it has to be told which tile just went away.
-                        viewModel.removePhoto(photo)
+                        // grid behind it has to be told which tile just went away —
+                        // and which photo the overlay is showing now, or it would
+                        // close on the very deletion the user asked for.
+                        let nextId = viewModel.removePhoto(photo)
+                        if selectedPhotoId == photo.id {
+                            selectedPhotoId = nextId
+                        }
                     },
                     onBackToCamera: {
                         selectedPhotoId = nil

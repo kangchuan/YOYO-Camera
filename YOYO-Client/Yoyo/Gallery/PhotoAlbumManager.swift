@@ -958,6 +958,17 @@ extension Notification.Name {
     /// Posted when the system photo library reports a change, so the views that
     /// mirror it (the camera's latest-photo thumbnail, the gallery grid) reload.
     static let photoLibraryDidChange = Notification.Name("photoLibraryDidChange")
+
+    /// Posted by the app itself right after it deleted assets, carrying their
+    /// local identifiers in `userInfo`.
+    ///
+    /// `.photoLibraryDidChange` alone is not enough for this case: a deleted
+    /// asset stays visible to `PHAsset` fetches while it sits in "Recently
+    /// Deleted", and the change notification can arrive before the SwiftData
+    /// delete has even been saved. Whoever refreshes first can therefore read the
+    /// deleted photo back as "still the newest one" and leave it on screen. The
+    /// app knows exactly what it removed, so it says so explicitly.
+    static let cameraDidDeleteAssets = Notification.Name("cameraDidDeleteAssets")
 }
 
 struct AssetIdentifierCheckResult {

@@ -698,10 +698,10 @@ struct PhotoDetailView: View {
 
         Task {
             do {
-                var assetIdentifiersToDelete = [photoToDelete.assetIdentifier]
-                if let originalAssetId = photoToDelete.originalAssetIdentifier {
-                    assetIdentifiersToDelete.append(originalAssetId)
-                }
+                // Includes the paired original of a Live Photo, and is a `let` so the
+                // main-actor hop below captures a value rather than a mutable array.
+                let assetIdentifiersToDelete = [photoToDelete.assetIdentifier]
+                    + (photoToDelete.originalAssetIdentifier.map { [$0] } ?? [])
 
                 debugLog("🗑️ PhotoDetailView.deletePhoto: 准备删除资源标识符: \(assetIdentifiersToDelete)")
 
@@ -728,6 +728,15 @@ struct PhotoDetailView: View {
 
                     modelContext.delete(photoToDelete)
                     try? modelContext.save()
+
+                    // Say explicitly what disappeared: the camera's thumbnail
+                    // cannot rely on the photo library reporting the deletion,
+                    // because a deleted asset stays fetchable for a while.
+                    NotificationCenter.default.post(
+                        name: .cameraDidDeleteAssets,
+                        object: nil,
+                        userInfo: [CameraNotificationKeys.assetIdentifiers: assetIdentifiersToDelete]
+                    )
 
                     debugLog("🗑️ PhotoDetailView.deletePhoto: 数据库删除完成")
 
