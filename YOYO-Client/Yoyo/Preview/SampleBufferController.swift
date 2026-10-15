@@ -16,11 +16,11 @@ final class SampleBufferController: NSObject {
 
     /// queue: video/audio, real-time
     private let videoQueue = DispatchQueue(
-        label: "com.day1-labs.yoyo.sampleBuffer.video",
+        label: "com.anyan.yoyo.sampleBuffer.video",
         qos: .userInitiated
     )
     private let audioQueue = DispatchQueue(
-        label: "com.day1-labs.yoyo.sampleBuffer.audio",
+        label: "com.anyan.yoyo.sampleBuffer.audio",
         qos: .userInitiated
     )
 

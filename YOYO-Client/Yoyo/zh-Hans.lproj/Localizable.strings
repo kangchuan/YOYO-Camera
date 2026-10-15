@@ -1060,3 +1060,131 @@
 // 用于系统相册名、相框水印、EXIF 与文件命名。
 "brand_name" = "出片相机";
 "frame_watermark_credit" = "© 出片相机";
+
+// MARK: - Audit 2026-10-15 wave 4 · film preset editor
+// 胶片预设编辑器（FilmPresetEditorView）：顶栏 / 章节标题 / 参数术语 / 说明文案。
+// 说明文案按语言择一：英文环境只出 _desc，中文环境只出 _desc_zh，
+// 因此 _desc 与 _desc_zh 在 en / zh-Hans 两个文件里内容保持一致。
+"film_preset_editor_title" = "胶片预设";
+
+// 章节标题
+"film_section_exposure" = "曝光";
+"film_section_contrast" = "对比度";
+"film_section_color_density" = "色彩密度";
+"film_section_highlight_shadow" = "高光/暗部";
+"film_section_layer_speeds" = "感光层速度";
+"film_section_crossovers" = "串扰阈值";
+"film_section_halation_power" = "光晕强度";
+"film_section_halation_core" = "光晕核心色";
+"film_section_halation_mid" = "光晕中间色";
+"film_section_halation_edge" = "光晕边缘色";
+"film_section_mixer_red" = "红通道混合";
+"film_section_mixer_green" = "绿通道混合";
+"film_section_mixer_blue" = "蓝通道混合";
+
+// 参数术语与说明：title 恒为英文术语，subtitle 在中文环境给出中文术语。
+"film_param_exposure_title" = "Exposure";
+"film_param_exposure_subtitle" = "曝光";
+"film_param_exposure_desc" = "Adjusts the overall brightness of the image.";
+"film_param_exposure_desc_zh" = "调整画面整体明暗。";
+
+"film_param_gamma_title" = "Gamma";
+"film_param_gamma_subtitle" = "显影伽马";
+"film_param_gamma_desc" = "Controls development gamma. Lower values increase contrast (darker); higher values decrease contrast (brighter).";
+"film_param_gamma_desc_zh" = "控制显影反差系数。值越低反差越大（画面深沉），值越高反差越小（画面明亮）。";
+
+"film_param_contrast_title" = "Contrast";
+"film_param_contrast_subtitle" = "打印对比度";
+"film_param_contrast_desc" = "Adjusts the S-curve contrast during printing. Simulates photo paper grades.";
+"film_param_contrast_desc_zh" = "调节相纸打印阶段的S曲线对比度。模拟相纸硬度号数。";
+
+"film_param_warmth_title" = "Warmth";
+"film_param_warmth_subtitle" = "暖调";
+"film_param_warmth_desc" = "Adjusts color temperature towards warm (yellow/orange) or cool (blue).";
+"film_param_warmth_desc_zh" = "调节画面色温，偏暖（黄/橙）或偏冷（蓝）。";
+
+"film_param_dye_density_title" = "Dye Density";
+"film_param_dye_density_subtitle" = "染料密度";
+"film_param_dye_density_desc" = "Simulates dye cloud density. Higher values create richer, oily colors (subtractive color); lower values look washed out.";
+"film_param_dye_density_desc_zh" = "模拟胶片染料云的堆积密度。越高色彩越浓郁油润（减色法特性），越低越清淡。";
+
+"film_param_crosstalk_title" = "Crosstalk";
+"film_param_crosstalk_subtitle" = "层间串扰";
+"film_param_crosstalk_desc" = "Simulates chemical crosstalk between emulsion layers. A key source of the 'organic' film look.";
+"film_param_crosstalk_desc_zh" = "模拟乳剂层之间的化学串色。这是胶片所谓“有机感”和“色彩融合”的重要来源。";
+
+"film_param_rolloff_title" = "Rolloff";
+"film_param_rolloff_subtitle" = "高光滚降";
+"film_param_rolloff_desc" = "Softens highlight transitions to prevent harsh clipping.";
+"film_param_rolloff_desc_zh" = "柔化高光过渡，防止亮部死白。";
+
+"film_param_shadow_lift_title" = "Shadow Lift";
+"film_param_shadow_lift_subtitle" = "暗部提升";
+"film_param_shadow_lift_desc" = "Brightens shadows to recover details, simulating film latitude.";
+"film_param_shadow_lift_desc_zh" = "提亮阴影细节，模拟胶片宽容度。";
+
+"film_param_adjacency_title" = "Adjacency";
+"film_param_adjacency_subtitle" = "邻际效应";
+"film_param_adjacency_desc" = "Enhances edge contrast for sharpness.";
+"film_param_adjacency_desc_zh" = "增强边缘对比度，提升锐度。";
+
+"film_param_halation_strength_title" = "Strength";
+"film_param_halation_strength_subtitle" = "光晕强度";
+"film_param_halation_strength_desc" = "Simulates light penetrating the emulsion and reflecting off the base. Visible around highlights.";
+"film_param_halation_strength_desc_zh" = "模拟强光穿透乳剂层并在片基反射形成的光晕。常见于高光边缘。";
+
+"film_param_speeds_rgb_title" = "Speeds (RGB)";
+"film_param_speeds_rgb_subtitle" = "感光层速度";
+"film_param_speeds_rgb_desc" = "Simulates speed differences between RGB emulsion layers. The core reason for characteristic film casts.";
+"film_param_speeds_rgb_desc_zh" = "模拟RGB三层乳剂的感光速度差异。这是导致胶片特征性色偏（如暗部偏青/高光偏暖）的核心原因。";
+
+"film_param_x_over_title" = "X-Over (L/M/H)";
+"film_param_x_over_subtitle" = "串扰阈值";
+"film_param_x_over_desc" = "Defines brightness thresholds for color crosstalk. Determines where color shifts occur (shadows/mids/highlights).";
+"film_param_x_over_desc_zh" = "定义色彩串扰生效的亮度阈值。决定了色彩偏移主要发生在阴影、中间调还是高光。";
+
+"film_param_tint_core_title" = "Tint Core";
+"film_param_tint_core_subtitle" = "核心色调";
+"film_param_tint_core_desc" = "Color of the halation core.";
+"film_param_tint_core_desc_zh" = "光晕中心区域的颜色。";
+
+"film_param_tint_mid_title" = "Tint Mid";
+"film_param_tint_mid_subtitle" = "中间色调";
+"film_param_tint_mid_desc" = "Color of the halation mid-tones.";
+"film_param_tint_mid_desc_zh" = "光晕过渡区域的颜色。";
+
+"film_param_tint_edge_title" = "Tint Edge";
+"film_param_tint_edge_subtitle" = "边缘色调";
+"film_param_tint_edge_desc" = "Color of the halation edge.";
+"film_param_tint_edge_desc_zh" = "光晕外缘的颜色。";
+
+"film_param_mixer_red_title" = "Red Out (RGB)";
+"film_param_mixer_red_subtitle" = "红通道混合";
+"film_param_mixer_red_desc" = "Adjusts the color composition of the Red channel.";
+"film_param_mixer_red_desc_zh" = "调节红色通道的色彩构成。";
+
+"film_param_mixer_green_title" = "Green Out (RGB)";
+"film_param_mixer_green_subtitle" = "绿通道混合";
+"film_param_mixer_green_desc" = "Adjusts the color composition of the Green channel.";
+"film_param_mixer_green_desc_zh" = "调节绿色通道的色彩构成。";
+
+"film_param_mixer_blue_title" = "Blue Out (RGB)";
+"film_param_mixer_blue_subtitle" = "蓝通道混合";
+"film_param_mixer_blue_desc" = "Adjusts the color composition of the Blue channel.";
+"film_param_mixer_blue_desc_zh" = "调节蓝色通道的色彩构成。";
+
+// SIMD3Sliders 内嵌的 RGB 分量滑杆
+"film_param_channel_r_low_title" = "R / Low";
+"film_param_channel_r_low_subtitle" = "红/低";
+"film_param_channel_r_low_desc" = "Red channel or Low frequency component";
+"film_param_channel_r_low_desc_zh" = "红色通道或低频分量";
+
+"film_param_channel_g_mid_title" = "G / Mid";
+"film_param_channel_g_mid_subtitle" = "绿/中";
+"film_param_channel_g_mid_desc" = "Green channel or Mid frequency component";
+"film_param_channel_g_mid_desc_zh" = "绿色通道或中频分量";
+
+"film_param_channel_b_high_title" = "B / High";
+"film_param_channel_b_high_subtitle" = "蓝/高";
+"film_param_channel_b_high_desc" = "Blue channel or High frequency component";
+"film_param_channel_b_high_desc_zh" = "蓝色通道或高频分量";

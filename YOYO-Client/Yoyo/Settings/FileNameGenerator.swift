@@ -47,7 +47,7 @@ enum FileFormat {
 // MARK: - counter
 final class FileNameCounter {
     private var globalIndex: Int = 0
-    private let queue = DispatchQueue(label: "com.day1-labs.yoyo.filenamecounter", attributes: .concurrent)
+    private let queue = DispatchQueue(label: "com.anyan.yoyo.filenamecounter", attributes: .concurrent)
     private let storageKey = "FileNameCounter.GlobalIndex"
 
     init() {

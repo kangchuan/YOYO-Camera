@@ -32,7 +32,7 @@ final class PreviewRenderController {
         self.filterRenderer = filterRenderer
         self.configuration = configuration
         renderQueue = DispatchQueue(
-            label: "com.day1-labs.yoyo.preview.render.queue",
+            label: "com.anyan.yoyo.preview.render.queue",
             qos: configuration.renderQueueQoS
         )
     }

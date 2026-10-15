@@ -734,9 +734,26 @@ final class AutomationEngine: ObservableObject {
     @Published var activeRules: [AutomationRule] = []
     @Published private(set) var analysisRequirements: AnalysisRequirements = .init()
 
-    private let userDefaultsKey = "com.day1-labs.yoyo.automation.rules"
+    private let userDefaultsKey = "com.anyan.yoyo.automation.rules"
+
+    /// A-17: the pre-rename key. Existing installs stored their automation
+    /// rules here; `migrateLegacyDefaultsKey()` moves that blob over on first
+    /// launch after the rename so nobody silently loses their rules.
+    private static let legacyUserDefaultsKey = "com.day1-labs.yoyo.automation.rules"
+
+    private static func migrateLegacyDefaultsKey() {
+        let defaults = UserDefaults.standard
+        guard defaults.data(forKey: legacyUserDefaultsKey) != nil,
+              defaults.data(forKey: "com.anyan.yoyo.automation.rules") == nil
+        else { return }
+        defaults.set(defaults.data(forKey: legacyUserDefaultsKey),
+                     forKey: "com.anyan.yoyo.automation.rules")
+        defaults.removeObject(forKey: legacyUserDefaultsKey)
+        debugLog("🔀 已把自动化规则从旧 key 迁移到 com.anyan.yoyo.automation.rules")
+    }
 
     init() {
+        Self.migrateLegacyDefaultsKey()
         loadRules()
         updateAnalysisRequirements()
     }

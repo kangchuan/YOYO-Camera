@@ -28,7 +28,7 @@ final class LutLoader {
 
     /// 串行化缓存访问：读走 `sync`，写走 `.barrier`，保证并发读安全。
     private let cacheQueue = DispatchQueue(
-        label: "com.day1-labs.yoyo.filter.cache",
+        label: "com.anyan.yoyo.filter.cache",
         attributes: .concurrent
     )
 

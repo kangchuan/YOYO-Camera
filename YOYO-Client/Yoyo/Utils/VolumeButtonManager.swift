@@ -67,7 +67,7 @@ final class VolumeButtonManager: NSObject, ObservableObject {
     /// `setCategory`/`setActive` can block for hundreds of milliseconds (especially right after
     /// returning to foreground while the capture session is restarting), so never run them on main
     private let audioSessionQueue = DispatchQueue(
-        label: "com.day1-labs.yoyo.volume.audio-session",
+        label: "com.anyan.yoyo.volume.audio-session",
         qos: .userInitiated
     )
 

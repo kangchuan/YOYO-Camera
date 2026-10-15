@@ -3,7 +3,7 @@ import SwiftUI
 import WidgetKit
 
 struct YoyoControlWidgetControl: ControlWidget {
-    static let kind: String = "com.day1-labs.yoyo.control-widget"
+    static let kind: String = "com.anyan.yoyo.control-widget"
 
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(kind: Self.kind) {

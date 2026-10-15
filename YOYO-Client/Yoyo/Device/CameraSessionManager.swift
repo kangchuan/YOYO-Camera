@@ -24,7 +24,7 @@ final class CameraSessionManager {
 
     /// session operation queue
     private let sessionQueue = DispatchQueue(
-        label: "com.day1-labs.yoyo.camera.session",
+        label: "com.anyan.yoyo.camera.session",
         qos: .userInitiated
     )
 

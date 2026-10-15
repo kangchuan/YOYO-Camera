@@ -30,7 +30,7 @@ final class MovieFilterProcessor {
             ])
         }
 
-        processingQueue = DispatchQueue(label: "com.day1-labs.yoyo.movie.filter", qos: .userInitiated)
+        processingQueue = DispatchQueue(label: "com.anyan.yoyo.movie.filter", qos: .userInitiated)
     }
 
     // MARK: - Public Methods
@@ -319,8 +319,8 @@ final class MovieFilterProcessor {
 
         // Concurrency control - use 6 parallel A
         let maxConcurrent = 6
-        let processingQueue = DispatchQueue(label: "com.day1-labs.yoyo.movie.processing", attributes: .concurrent)
-        let producerQueue = DispatchQueue(label: "com.day1-labs.yoyo.movie.producer", qos: .userInitiated)
+        let processingQueue = DispatchQueue(label: "com.anyan.yoyo.movie.processing", attributes: .concurrent)
+        let producerQueue = DispatchQueue(label: "com.anyan.yoyo.movie.producer", qos: .userInitiated)
         let backpressureSemaphore: DispatchSemaphore
 
         // State

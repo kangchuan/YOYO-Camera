@@ -6,7 +6,7 @@
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>com.day1-labs.yoyo</string>
+			<string>com.anyan.yoyo</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>yoyo</string>

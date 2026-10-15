@@ -218,7 +218,7 @@ final class MovieRecorder {
     private var frameCounter: UInt32 = 0
 
     /// serial queue dedicated to recording, andblockingmain thread
-    private let recordingQueue = DispatchQueue(label: "com.day1-labs.yoyo.movieRecorder.queue", qos: .userInteractive)
+    private let recordingQueue = DispatchQueue(label: "com.anyan.yoyo.movieRecorder.queue", qos: .userInteractive)
 
     // MARK: - Initialization
 

@@ -44,7 +44,7 @@ final class PhotoCameraSession: BaseCameraSession {
            let delegate = videoSampleBufferDelegate
         {
             videoOutput.setSampleBufferDelegate(delegate, queue: DispatchQueue(
-                label: "com.day1-labs.yoyo.camera.photo.video",
+                label: "com.anyan.yoyo.camera.photo.video",
                 qos: .userInitiated
             ))
         }

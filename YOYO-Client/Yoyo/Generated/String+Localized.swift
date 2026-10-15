@@ -1077,4 +1077,132 @@ extension String {
     // 用于系统相册名、相框水印、EXIF 与文件命名。
     static let brandName = "brand_name"
     static let frameWatermarkCredit = "frame_watermark_credit"
+
+    // MARK: - Audit 2026-10-15 wave 4 · film preset editor
+    // 胶片预设编辑器（FilmPresetEditorView）：顶栏 / 章节标题 / 参数术语 / 说明文案。
+    // 说明文案按语言择一：英文环境只出 _desc，中文环境只出 _desc_zh，
+    // 因此 _desc 与 _desc_zh 在 en / zh-Hans 两个文件里内容保持一致。
+    static let filmPresetEditorTitle = "film_preset_editor_title"
+
+    // 章节标题
+    static let filmSectionExposure = "film_section_exposure"
+    static let filmSectionContrast = "film_section_contrast"
+    static let filmSectionColorDensity = "film_section_color_density"
+    static let filmSectionHighlightShadow = "film_section_highlight_shadow"
+    static let filmSectionLayerSpeeds = "film_section_layer_speeds"
+    static let filmSectionCrossovers = "film_section_crossovers"
+    static let filmSectionHalationPower = "film_section_halation_power"
+    static let filmSectionHalationCore = "film_section_halation_core"
+    static let filmSectionHalationMid = "film_section_halation_mid"
+    static let filmSectionHalationEdge = "film_section_halation_edge"
+    static let filmSectionMixerRed = "film_section_mixer_red"
+    static let filmSectionMixerGreen = "film_section_mixer_green"
+    static let filmSectionMixerBlue = "film_section_mixer_blue"
+
+    // 参数术语与说明：title 恒为英文术语，subtitle 在中文环境给出中文术语。
+    static let filmParamExposureTitle = "film_param_exposure_title"
+    static let filmParamExposureSubtitle = "film_param_exposure_subtitle"
+    static let filmParamExposureDesc = "film_param_exposure_desc"
+    static let filmParamExposureDescZh = "film_param_exposure_desc_zh"
+
+    static let filmParamGammaTitle = "film_param_gamma_title"
+    static let filmParamGammaSubtitle = "film_param_gamma_subtitle"
+    static let filmParamGammaDesc = "film_param_gamma_desc"
+    static let filmParamGammaDescZh = "film_param_gamma_desc_zh"
+
+    static let filmParamContrastTitle = "film_param_contrast_title"
+    static let filmParamContrastSubtitle = "film_param_contrast_subtitle"
+    static let filmParamContrastDesc = "film_param_contrast_desc"
+    static let filmParamContrastDescZh = "film_param_contrast_desc_zh"
+
+    static let filmParamWarmthTitle = "film_param_warmth_title"
+    static let filmParamWarmthSubtitle = "film_param_warmth_subtitle"
+    static let filmParamWarmthDesc = "film_param_warmth_desc"
+    static let filmParamWarmthDescZh = "film_param_warmth_desc_zh"
+
+    static let filmParamDyeDensityTitle = "film_param_dye_density_title"
+    static let filmParamDyeDensitySubtitle = "film_param_dye_density_subtitle"
+    static let filmParamDyeDensityDesc = "film_param_dye_density_desc"
+    static let filmParamDyeDensityDescZh = "film_param_dye_density_desc_zh"
+
+    static let filmParamCrosstalkTitle = "film_param_crosstalk_title"
+    static let filmParamCrosstalkSubtitle = "film_param_crosstalk_subtitle"
+    static let filmParamCrosstalkDesc = "film_param_crosstalk_desc"
+    static let filmParamCrosstalkDescZh = "film_param_crosstalk_desc_zh"
+
+    static let filmParamRolloffTitle = "film_param_rolloff_title"
+    static let filmParamRolloffSubtitle = "film_param_rolloff_subtitle"
+    static let filmParamRolloffDesc = "film_param_rolloff_desc"
+    static let filmParamRolloffDescZh = "film_param_rolloff_desc_zh"
+
+    static let filmParamShadowLiftTitle = "film_param_shadow_lift_title"
+    static let filmParamShadowLiftSubtitle = "film_param_shadow_lift_subtitle"
+    static let filmParamShadowLiftDesc = "film_param_shadow_lift_desc"
+    static let filmParamShadowLiftDescZh = "film_param_shadow_lift_desc_zh"
+
+    static let filmParamAdjacencyTitle = "film_param_adjacency_title"
+    static let filmParamAdjacencySubtitle = "film_param_adjacency_subtitle"
+    static let filmParamAdjacencyDesc = "film_param_adjacency_desc"
+    static let filmParamAdjacencyDescZh = "film_param_adjacency_desc_zh"
+
+    static let filmParamHalationStrengthTitle = "film_param_halation_strength_title"
+    static let filmParamHalationStrengthSubtitle = "film_param_halation_strength_subtitle"
+    static let filmParamHalationStrengthDesc = "film_param_halation_strength_desc"
+    static let filmParamHalationStrengthDescZh = "film_param_halation_strength_desc_zh"
+
+    static let filmParamSpeedsRgbTitle = "film_param_speeds_rgb_title"
+    static let filmParamSpeedsRgbSubtitle = "film_param_speeds_rgb_subtitle"
+    static let filmParamSpeedsRgbDesc = "film_param_speeds_rgb_desc"
+    static let filmParamSpeedsRgbDescZh = "film_param_speeds_rgb_desc_zh"
+
+    static let filmParamXOverTitle = "film_param_x_over_title"
+    static let filmParamXOverSubtitle = "film_param_x_over_subtitle"
+    static let filmParamXOverDesc = "film_param_x_over_desc"
+    static let filmParamXOverDescZh = "film_param_x_over_desc_zh"
+
+    static let filmParamTintCoreTitle = "film_param_tint_core_title"
+    static let filmParamTintCoreSubtitle = "film_param_tint_core_subtitle"
+    static let filmParamTintCoreDesc = "film_param_tint_core_desc"
+    static let filmParamTintCoreDescZh = "film_param_tint_core_desc_zh"
+
+    static let filmParamTintMidTitle = "film_param_tint_mid_title"
+    static let filmParamTintMidSubtitle = "film_param_tint_mid_subtitle"
+    static let filmParamTintMidDesc = "film_param_tint_mid_desc"
+    static let filmParamTintMidDescZh = "film_param_tint_mid_desc_zh"
+
+    static let filmParamTintEdgeTitle = "film_param_tint_edge_title"
+    static let filmParamTintEdgeSubtitle = "film_param_tint_edge_subtitle"
+    static let filmParamTintEdgeDesc = "film_param_tint_edge_desc"
+    static let filmParamTintEdgeDescZh = "film_param_tint_edge_desc_zh"
+
+    static let filmParamMixerRedTitle = "film_param_mixer_red_title"
+    static let filmParamMixerRedSubtitle = "film_param_mixer_red_subtitle"
+    static let filmParamMixerRedDesc = "film_param_mixer_red_desc"
+    static let filmParamMixerRedDescZh = "film_param_mixer_red_desc_zh"
+
+    static let filmParamMixerGreenTitle = "film_param_mixer_green_title"
+    static let filmParamMixerGreenSubtitle = "film_param_mixer_green_subtitle"
+    static let filmParamMixerGreenDesc = "film_param_mixer_green_desc"
+    static let filmParamMixerGreenDescZh = "film_param_mixer_green_desc_zh"
+
+    static let filmParamMixerBlueTitle = "film_param_mixer_blue_title"
+    static let filmParamMixerBlueSubtitle = "film_param_mixer_blue_subtitle"
+    static let filmParamMixerBlueDesc = "film_param_mixer_blue_desc"
+    static let filmParamMixerBlueDescZh = "film_param_mixer_blue_desc_zh"
+
+    // SIMD3Sliders 内嵌的 RGB 分量滑杆
+    static let filmParamChannelRLowTitle = "film_param_channel_r_low_title"
+    static let filmParamChannelRLowSubtitle = "film_param_channel_r_low_subtitle"
+    static let filmParamChannelRLowDesc = "film_param_channel_r_low_desc"
+    static let filmParamChannelRLowDescZh = "film_param_channel_r_low_desc_zh"
+
+    static let filmParamChannelGMidTitle = "film_param_channel_g_mid_title"
+    static let filmParamChannelGMidSubtitle = "film_param_channel_g_mid_subtitle"
+    static let filmParamChannelGMidDesc = "film_param_channel_g_mid_desc"
+    static let filmParamChannelGMidDescZh = "film_param_channel_g_mid_desc_zh"
+
+    static let filmParamChannelBHighTitle = "film_param_channel_b_high_title"
+    static let filmParamChannelBHighSubtitle = "film_param_channel_b_high_subtitle"
+    static let filmParamChannelBHighDesc = "film_param_channel_b_high_desc"
+    static let filmParamChannelBHighDescZh = "film_param_channel_b_high_desc_zh"
 }

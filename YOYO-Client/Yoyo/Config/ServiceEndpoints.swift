@@ -23,15 +23,16 @@ final class ServiceEndpoints {
 
     /// 业务 API 基地址（登录、AI 修图、灵感、自动化分享）
     ///
-    /// 暂时指向本地回环地址，脱离上游 Day1Labs 线上服务独立开发。
-    /// 恢复上游：改回 `https://yoyo.day1-labs.com`
-    /// 对应本地服务端：`YOYO-Server`（`npm run dev` / `wrangler dev`，默认端口 8787）
+    /// 指向本地回环地址，对应仓库内的自建服务端 `YOYO-Server`
+    /// （`npm run dev` / `wrangler dev`，默认端口 8787）。
+    /// 上线时换成自己的域名即可，没有其他上游可回退。
     static let defaultAPIBaseURL = "http://127.0.0.1:8787"
 
     /// 静态资源基地址（用户协议、隐私政策等法务文档）
     ///
-    /// 同样指向本地。注意本地服务端当前不托管这些法务文档，
-    /// 因此相关页面在本地会打不开——恢复上游：改回 `https://static.day1-labs.com/yoyo`
+    /// 同样指向本地。注意本地服务端当前不托管这些法务文档，因此相关页面在本地
+    /// 会打不开；上线前需要把隐私政策 / 用户协议托管到自己的静态站点，并把地址
+    /// 指过来（设置 → 开发者模式 → 服务地址，或 Info.plist）。
     static let defaultStaticBaseURL = "http://127.0.0.1:8787"
 
     // MARK: - 键名

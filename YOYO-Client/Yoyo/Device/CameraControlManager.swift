@@ -14,7 +14,7 @@ final class CameraControlManager: NSObject, AVCaptureSessionControlsDelegate {
     // MARK: - Private Properties
 
     /// operationqueue
-    private let controlQueue = DispatchQueue(label: "com.day1-labs.yoyo.camera.control", qos: .userInitiated)
+    private let controlQueue = DispatchQueue(label: "com.anyan.yoyo.camera.control", qos: .userInitiated)
 
     /// Combine management
     private var zoomSubscription: AnyCancellable?

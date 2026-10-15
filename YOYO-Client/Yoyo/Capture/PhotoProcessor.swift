@@ -36,7 +36,7 @@ final class PhotoProcessor: NSObject {
     private let metadataBuilder = MetadataBuilder.shared
 
     /// Parallel processing queue that supports handling multiple photos at the same time (Option B)
-    private let processingQueue = DispatchQueue(label: "com.day1-labs.yoyo.photo.processing", qos: .userInitiated, attributes: .concurrent)
+    private let processingQueue = DispatchQueue(label: "com.anyan.yoyo.photo.processing", qos: .userInitiated, attributes: .concurrent)
 
     // MARK: - Initialization
 
@@ -143,12 +143,12 @@ extension PhotoProcessor: AVCapturePhotoCaptureDelegate {
         // Request a background task to ensure image processing can finish even if the app goes to the background or the screen locks
         var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
         if Thread.isMainThread {
-            backgroundTaskID = UIApplication.shared.beginBackgroundTask(withName: "com.day1-labs.yoyo.photo.process") {
+            backgroundTaskID = UIApplication.shared.beginBackgroundTask(withName: "com.anyan.yoyo.photo.process") {
                 UIApplication.shared.endBackgroundTask(backgroundTaskID)
             }
         } else {
             DispatchQueue.main.sync {
-                backgroundTaskID = UIApplication.shared.beginBackgroundTask(withName: "com.day1-labs.yoyo.photo.process") {
+                backgroundTaskID = UIApplication.shared.beginBackgroundTask(withName: "com.anyan.yoyo.photo.process") {
                     UIApplication.shared.endBackgroundTask(backgroundTaskID)
                 }
             }
@@ -281,7 +281,7 @@ private extension PhotoProcessor {
 
                 guard let rawFilter else {
                     debugLog("❌ [PhotoProcessor] processRAWInBackground: Failed to create CIRAWFilter")
-                    throw NSError(domain: "com.day1-labs.yoyo", code: -1)
+                    throw NSError(domain: "com.anyan.yoyo", code: -1)
                 }
 
                 // [NEW] Configure RAW filter before getting outputImage

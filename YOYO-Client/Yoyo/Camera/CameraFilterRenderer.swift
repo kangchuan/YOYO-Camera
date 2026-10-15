@@ -28,7 +28,7 @@ final class CameraFilterRenderer {
                 .cacheIntermediates: true, // Avoid temporary volatile textures
             ])
             commandQueue = device.makeCommandQueue()
-            commandQueue?.label = "com.day1-labs.yoyo.camera.filter.render"
+            commandQueue?.label = "com.anyan.yoyo.camera.filter.render"
         } else {
             ciContext = CIContext(options: [
                 .workingColorSpace: workingColorSpace,

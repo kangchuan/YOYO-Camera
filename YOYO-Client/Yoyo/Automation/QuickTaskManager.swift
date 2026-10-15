@@ -8,9 +8,24 @@ final class QuickTaskManager: ObservableObject {
     /// Rule ID list for quick tasks
     @Published var quickTaskRuleIds: [String] = []
 
-    private let userDefaultsKey = "com.day1-labs.yoyo.quicktask.ruleIds"
+    private let userDefaultsKey = "com.anyan.yoyo.quicktask.ruleIds"
+
+    /// A-17: pre-rename key, migrated once so existing quick tasks survive.
+    private static let legacyUserDefaultsKey = "com.day1-labs.yoyo.quicktask.ruleIds"
+
+    private static func migrateLegacyDefaultsKey() {
+        let defaults = UserDefaults.standard
+        guard defaults.data(forKey: legacyUserDefaultsKey) != nil,
+              defaults.data(forKey: "com.anyan.yoyo.quicktask.ruleIds") == nil
+        else { return }
+        defaults.set(defaults.data(forKey: legacyUserDefaultsKey),
+                     forKey: "com.anyan.yoyo.quicktask.ruleIds")
+        defaults.removeObject(forKey: legacyUserDefaultsKey)
+        debugLog("🔀 已把快捷任务从旧 key 迁移到 com.anyan.yoyo.quicktask.ruleIds")
+    }
 
     private init() {
+        Self.migrateLegacyDefaultsKey()
         loadQuickTasks()
     }
 

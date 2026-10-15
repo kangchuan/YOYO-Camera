@@ -17,6 +17,51 @@ private enum SettingsDesign {
 // MARK: - Icon color definition
 private let settingsIconColor = Color.white.opacity(0.15)
 
+// MARK: - Support links
+//
+// A-17: these were Day 1 Labs' own assets — a support mailbox, their X
+// account, their Xiaohongshu, and their App Store listing (rating it would
+// have rated *their* app). Shipping them inside this product would send our
+// users to someone else's inbox, so every one of them is empty by default
+// and the "支持" group hides itself until this product has real addresses.
+//
+// Fill these in when they exist; nothing else needs to change.
+private enum SupportLinks {
+    /// e.g. "support@yourdomain.com" — empty hides the row.
+    static let contactEmail = ""
+    /// The numeric App Store id of *this* app. Empty hides the row; the old
+    /// upstream value would have sent users to a different app entirely.
+    static let appStoreID = ""
+    /// Full Xiaohongshu profile URL (Chinese users only).
+    static let xiaohongshuURL = ""
+    /// X / Twitter handle, without the "@".
+    static let xAccount = ""
+
+    static var contactURL: URL? {
+        contactEmail.isEmpty ? nil : URL(string: "mailto:\(contactEmail)")
+    }
+
+    static var rateURL: URL? {
+        appStoreID.isEmpty
+            ? nil
+            : URL(string: "itms-apps://itunes.apple.com/app/id\(appStoreID)?action=write-review")
+    }
+
+    static var xURL: URL? {
+        xAccount.isEmpty ? nil : URL(string: "https://x.com/\(xAccount)")
+    }
+
+    static var resolvedXiaohongshuURL: URL? {
+        xiaohongshuURL.isEmpty ? nil : URL(string: xiaohongshuURL)
+    }
+}
+
+private struct SupportLink {
+    let icon: String
+    let title: String
+    let url: URL
+}
+
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var settingsState: CameraSettingsState
@@ -28,6 +73,28 @@ struct SettingsView: View {
     @State private var showEditNameAlert = false
     @State private var editingName = ""
     @State private var showDebugPaywall = false
+
+    /// The support rows that actually have somewhere to send the user.
+    /// A-17: all four upstream (Day 1 Labs) links were removed, so today
+    /// this is empty and the whole group is hidden. Rows appear as soon as
+    /// `SupportLinks` gains a real address.
+    private var supportLinks: [SupportLink] {
+        var links: [SupportLink] = []
+        if let url = SupportLinks.contactURL {
+            links.append(SupportLink(icon: "envelope", title: String.settingsContactUs.localized, url: url))
+        }
+        if let url = SupportLinks.rateURL {
+            links.append(SupportLink(icon: "star", title: String.settingsRateApp.localized, url: url))
+        }
+        if languageManager.currentLanguage.isChinese,
+           let url = SupportLinks.resolvedXiaohongshuURL {
+            links.append(SupportLink(icon: "text.book.closed", title: String.settingsFollowXiaohongshu.localized, url: url))
+        }
+        if let url = SupportLinks.xURL {
+            links.append(SupportLink(icon: "xmark", title: String.settingsFollowX.localized, url: url))
+        }
+        return links
+    }
 
     var body: some View {
         NavigationStack {
@@ -98,18 +165,22 @@ struct SettingsView: View {
                         }
 
                         // MARK: - support
-                        SettingsSection(title: String.settingsGroupSupport.localized) {
-                            SettingsLinkRow(icon: "envelope", iconColor: settingsIconColor, title: String.settingsContactUs.localized, url: URL(string: "mailto:support@day1-labs.com"))
-                            SettingsDivider()
-                            SettingsLinkRow(icon: "star", iconColor: settingsIconColor, title: String.settingsRateApp.localized, url: URL(string: "itms-apps://itunes.apple.com/app/id6756349089?action=write-review"))
-
-                            if languageManager.currentLanguage.isChinese {
-                                SettingsDivider()
-                                SettingsLinkRow(icon: "text.book.closed", iconColor: settingsIconColor, title: String.settingsFollowXiaohongshu.localized, url: URL(string: "https://xhslink.com/m/29XTg1ceCch"))
+                        // A-17: these used to point at the upstream team's
+                        // assets — support@day1-labs.com, Day 1 Labs' X
+                        // account, their Xiaohongshu, and their App Store
+                        // listing (rating `id6756349089` would have rated
+                        // *their* app). None of them belong to this product,
+                        // so the rows are now driven by `supportLinks` and the
+                        // whole group is hidden until real addresses exist.
+                        if !supportLinks.isEmpty {
+                            SettingsSection(title: String.settingsGroupSupport.localized) {
+                                ForEach(Array(supportLinks.enumerated()), id: \.offset) { index, link in
+                                    if index > 0 {
+                                        SettingsDivider()
+                                    }
+                                    SettingsLinkRow(icon: link.icon, iconColor: settingsIconColor, title: link.title, url: link.url)
+                                }
                             }
-
-                            SettingsDivider()
-                            SettingsLinkRow(icon: "xmark", iconColor: settingsIconColor, title: String.settingsFollowX.localized, url: URL(string: "https://x.com/day1_labs"))
                         }
 
                         // MARK: - about
