@@ -46,6 +46,30 @@
 				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
 			</array>
 		</dict>
+		<!-- A-18：AI 功能（AI 构图 / AI 暗房）会把用户选中的那张图发到我们自己的
+		     服务端，再由服务端转发给 Gemini 做处理。这是一次「收集 + 传输」，
+		     之前没有声明，与实际行为不一致。
+
+		     Linked = true：请求带 Bearer JWT，服务端能把这次调用对应到账号。
+		     Tracking = false：不用于追踪、不跨 App 共享给广告商。
+		     Purpose = AppFunctionality：只用于用户主动触发的 AI 编辑。
+
+		     照片里的 GPS 为什么不用一并声明为「已关联」：客户端在
+		     AIDarkroomService.processImage 里先缩到最长边 1024px，再用
+		     UIImage.jpegData(0.8) 重新编码，这一步不写 EXIF，因此坐标不会被带
+		     出门；PreciseLocation 保持 Linked=false 是准确的。 -->
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypePhotosorVideos</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
 	</array>
 	<key>NSPrivacyAccessedAPITypes</key>
 	<array>
