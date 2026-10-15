@@ -1007,3 +1007,20 @@
 "state_toast_video_mode" = "视频模式";
 "state_toast_mic_on" = "麦克风已打开";
 "state_toast_mic_muted" = "麦克风已静音";
+
+// MARK: - Audit 2026-10-15 wave 2
+// UX-01：AI 构图按钮上"需要 Pro"的角标。
+"camera_ai_pro_required" = "需要 Pro";
+// UX-04：前置告知积分消耗 + 不足时提示。
+"ai_darkroom_cost_hint" = "消耗 %d 积分";
+"ai_darkroom_insufficient_credits_hint" = "积分不足";
+"ai_darkroom_insufficient_credits_message" = "本次操作需要的积分不足，请充值后再试。";
+// UX-03：失败反馈 + 重试。
+"ai_darkroom_failure_title" = "AI 编辑失败";
+"ai_darkroom_retry" = "重试";
+"ai_darkroom_failure_no_charge" = "本次未扣费。";
+// UX-03/04：AI 构图成功提示与单卡片失败状态。
+"ai_inspiration_success_message" = "灵感已生成，消耗 %d 积分，剩余 %d。";
+"ai_inspiration_card_failure_title" = "生成失败";
+"ai_inspiration_card_failure_no_charge" = "本次未扣费。";
+"ai_inspiration_card_retry" = "重试";

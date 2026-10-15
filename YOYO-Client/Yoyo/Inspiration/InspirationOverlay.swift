@@ -275,7 +275,7 @@ struct InspirationOverlay: View {
     private func contentTabView(height: CGFloat) -> some View {
         TabView(selection: $currentIndex) {
             ForEach(inspirationManager.inspirations.indices, id: \.self) { index in
-                inspirationCard(inspiration: inspirationManager.inspirations[index])
+                inspirationCard(inspiration: inspirationManager.inspirations[index], index: index)
                     .tag(index)
             }
         }
@@ -284,7 +284,7 @@ struct InspirationOverlay: View {
         .indexViewStyle(.page(backgroundDisplayMode: .interactive))
     }
 
-    private func inspirationCard(inspiration: AIInspiration) -> some View {
+    private func inspirationCard(inspiration: AIInspiration, index: Int) -> some View {
         VStack(spacing: 8) {
             // Image
             if let image = inspiration.image {
@@ -302,13 +302,41 @@ struct InspirationOverlay: View {
                         }
                     }
             } else {
-                // Placeholder / Loading
+                // Placeholder / Loading / Failed (UX-03)
                 ZStack {
                     RoundedRectangle(cornerRadius: 8)
                         .fill(Color.white.opacity(0.1))
 
                     if inspiration.imageGenPrompt.isEmpty {
                         EmptyView()
+                    } else if inspirationManager.failedIndices.contains(index) {
+                        // UX-03 failure state: explain what went wrong and
+                        // offer a one-tap retry. Make it explicit that
+                        // nothing was charged.
+                        VStack(spacing: 6) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .font(.title3)
+                                .foregroundColor(.orange)
+                            Text(String.aiInspirationCardFailureTitle.localized)
+                                .font(.caption2)
+                                .foregroundColor(.white)
+                            Text(String.aiInspirationCardFailureNoCharge.localized)
+                                .font(.caption2)
+                                .foregroundColor(.white.opacity(0.6))
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 4)
+                            Button {
+                                inspirationManager.retryGenerateImage(for: index)
+                            } label: {
+                                Label(String.aiInspirationCardRetry.localized, systemImage: "arrow.clockwise")
+                                    .font(.caption2)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 4)
+                                    .background(Color.white.opacity(0.15))
+                                    .clipShape(Capsule())
+                                    .foregroundColor(.white)
+                            }
+                        }
                     } else {
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle(tint: .white))
@@ -318,8 +346,10 @@ struct InspirationOverlay: View {
                 .frame(maxHeight: viewState.isInspirationMaximized ? .infinity : 150)
                 .layoutPriority(1)
                 .onTapGesture {
-                    withAnimation(.spring()) {
-                        viewState.isInspirationMaximized.toggle()
+                    if !inspirationManager.failedIndices.contains(index) {
+                        withAnimation(.spring()) {
+                            viewState.isInspirationMaximized.toggle()
+                        }
                     }
                 }
             }

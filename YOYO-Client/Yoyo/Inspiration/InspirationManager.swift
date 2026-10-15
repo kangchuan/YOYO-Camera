@@ -12,8 +12,17 @@ final class InspirationManager: ObservableObject {
     @Published private(set) var isLoading: Bool = false
     @Published private(set) var errorMessage: String?
     @Published private(set) var credits: Int = 0
+    /// Per-card failure state. `inspirationCard` checks this and renders
+    /// an error state + retry button when the index is in the set. The
+    /// previous code only logged to `debugLog` and left the card stuck on
+    /// a spinner placeholder forever.
+    @Published private(set) var failedIndices: Set<Int> = []
     @Published var showLoginSheet: Bool = false
     @Published var showPaywall: Bool = false
+
+    /// Last successful `requestAIInspirations` result; drives the success
+    /// toast on the camera screen. Cleared on every fresh request.
+    @Published private(set) var lastSuccessMessage: String?
 
     private var loadingIndices: Set<Int> = []
     private var originalImage: UIImage? // Store for lazy loading
@@ -49,8 +58,9 @@ final class InspirationManager: ObservableObject {
 
         guard !isLoading else { return }
 
-        // Check for credits (Pro users also have limits now)
-        if credits < 1 {
+        // UX-04: pre-click credit gate, driven by the shared `CreditCost`
+        // constant instead of a magic `1` literal.
+        if !CreditCost.hasEnoughCredits(current: credits, cost: CreditCost.aiInspiration) {
             errorMessage = String.aiInspirationErrorInsufficientCredits.localized
             return
         }
@@ -63,6 +73,8 @@ final class InspirationManager: ObservableObject {
         originalImage = image // Keep reference
         isLoading = true
         errorMessage = nil
+        failedIndices = []
+        lastSuccessMessage = nil
 
         do {
             let (results, remainingCredits) = try await AIInspirationService.shared.fetchInspirations(from: image)
@@ -73,6 +85,10 @@ final class InspirationManager: ObservableObject {
 
             // Update global credits
             AuthService.shared.updateCredits(remainingCredits)
+
+            // UX-03: surface success. The cost is communicated in the
+            // localised message so the user sees what was charged.
+            lastSuccessMessage = String.aiInspirationSuccessMessage.localized(CreditCost.aiInspiration, remainingCredits)
 
             // 💡 Instantly trigger the generation of all inspiration maps in parallel
             for index in results.indices {
@@ -93,6 +109,12 @@ final class InspirationManager: ObservableObject {
         }
 
         isLoading = false
+    }
+
+    /// Clear the success banner; called by the view once the toast has been
+    /// picked up so the next request can refresh it.
+    func clearSuccessMessage() {
+        lastSuccessMessage = nil
     }
 
     func clearInspirations() {
@@ -131,13 +153,33 @@ final class InspirationManager: ObservableObject {
 
                     // Update in history as well
                     updateHistoryItem(updatedInspiration)
+
+                    // Clear any previous failure marker for this card.
+                    self.failedIndices.remove(index)
                 }
             }
         } catch {
+            // UX-03: stop leaving the card in a permanent spinner. Mark
+            // the card as failed and show a "no charge" toast so the user
+            // is not left wondering whether anything happened.
             debugLog("Failed to generate lazy image: \(error)")
             await MainActor.run {
                 self.loadingIndices.remove(index)
+                self.failedIndices.insert(index)
+                self.lastSuccessMessage = nil
             }
+        }
+    }
+
+    /// UX-03 retry hook. Called by the per-card retry button in
+    /// `InspirationOverlay`. Re-arms the slot and fires the same request.
+    func retryGenerateImage(for index: Int) {
+        guard index >= 0, index < inspirations.count else { return }
+        failedIndices.remove(index)
+        loadingIndices.remove(index)
+        inspirations[index].image = nil
+        Task { [weak self] in
+            await self?.generateImage(for: index)
         }
     }
 

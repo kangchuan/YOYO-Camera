@@ -16,6 +16,17 @@ struct AIDarkroomPanelView: View {
     @EnvironmentObject var permissionManager: PermissionManager
     @ObservedObject private var authService = AuthService.shared
 
+    /// Surfaced failure state. Set to a non-nil value to show the alert;
+    /// the alert's "Retry" re-runs the same operation, "OK" dismisses.
+    @State private var errorMessage: String?
+
+    /// Cached so "Retry" can re-run the same operation without forcing
+    /// the user to tap the same feature tile again.
+    @State private var lastFailedOperation: AIDarkroomOperation?
+
+    /// Operation in flight for the loading overlay / double-tap guard.
+    @State private var pendingOperation: AIDarkroomOperation?
+
     var body: some View {
         VStack(spacing: 16) {
             // Header
@@ -38,6 +49,19 @@ struct AIDarkroomPanelView: View {
                 .background(Color.white.opacity(0.1))
                 .cornerRadius(12)
 
+                // Per-feature cost badge: "消耗 N 积分" (UX-04)
+                HStack(spacing: 2) {
+                    Image(systemName: "sparkles")
+                        .font(.caption2)
+                    Text(String.aiDarkroomCostHint.localized(CreditCost.aiDarkroom))
+                        .font(.caption2)
+                }
+                .foregroundColor(.white.opacity(0.75))
+                .padding(.horizontal, 6)
+                .padding(.vertical, 4)
+                .background(Color.white.opacity(0.08))
+                .cornerRadius(8)
+
                 Spacer()
 
                 Button(action: {
@@ -52,6 +76,20 @@ struct AIDarkroomPanelView: View {
                 }
             }
             .padding(.horizontal, 4)
+
+            // Insufficient credits banner (UX-04): shown in the panel itself
+            // so the user sees *why* every feature is disabled.
+            if !CreditCost.hasEnoughCredits(current: authService.currentUser?.credits, cost: CreditCost.aiDarkroom) {
+                HStack(spacing: 6) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.caption2)
+                    Text(String.aiDarkroomInsufficientCreditsHint.localized)
+                        .font(.caption2)
+                }
+                .foregroundColor(.orange)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 4)
+            }
 
             // Features List
             ScrollView(.vertical, showsIndicators: false) {
@@ -72,12 +110,49 @@ struct AIDarkroomPanelView: View {
         }
         .padding(16)
         .glassCardStyle(cornerRadius: 24)
+        // UX-03: surface failures to the user with a retry affordance.
+        .alert(
+            String.aiDarkroomFailureTitle.localized,
+            isPresented: Binding(
+                get: { errorMessage != nil },
+                set: { if !$0 { errorMessage = nil } }
+            ),
+            presenting: errorMessage
+        ) { _ in
+            Button(String.aiDarkroomRetry.localized) {
+                if let op = lastFailedOperation {
+                    errorMessage = nil
+                    lastFailedOperation = nil
+                    attempt(operation: op)
+                }
+            }
+            Button(String.commonOk.localized, role: .cancel) {
+                errorMessage = nil
+                lastFailedOperation = nil
+            }
+        } message: { msg in
+            Text(msg)
+        }
     }
 
     private func aiFeatureButton(icon: String, title: String, operation: AIDarkroomOperation) -> some View {
-        Button(action: {
+        let hasCredits = CreditCost.hasEnoughCredits(current: authService.currentUser?.credits, cost: CreditCost.aiDarkroom)
+        return Button(action: {
             performHaptic()
-            AuthManager.shared.checkProAccess {
+            // UX-04: gate the click *before* showing the Pro/login flow so
+            // a non-Pro user without credits sees a clear "not enough"
+            // rather than getting bounced through the paywall.
+            if !hasCredits {
+                if AuthService.shared.currentUser?.subscriptionStatus != 1 {
+                    // Not Pro: hand off to the unified auth flow, which
+                    // will route to the paywall.
+                    AuthManager.shared.checkProAccess { }
+                } else {
+                    errorMessage = String.aiDarkroomInsufficientCreditsMessage.localized
+                }
+                return
+            }
+            AuthManager.shared.checkProAccess { [self] in
                 performAIOperation(operation)
             }
         }) {
@@ -86,17 +161,30 @@ struct AIDarkroomPanelView: View {
                     .font(.system(size: 24))
                     .foregroundColor(.white)
                     .frame(width: 56, height: 56)
-                    .background(Color.white.opacity(0.1))
+                    .background(Color.white.opacity(hasCredits ? 0.1 : 0.05))
                     .clipShape(Circle())
+                    .overlay(
+                        Circle()
+                            .stroke(hasCredits ? Color.clear : Color.white.opacity(0.15), lineWidth: 1)
+                    )
 
                 Text(title)
                     .font(.system(size: 11))
-                    .foregroundColor(.white.opacity(0.9))
+                    .foregroundColor(.white.opacity(hasCredits ? 0.9 : 0.45))
                     .multilineTextAlignment(.center)
                     .lineLimit(2, reservesSpace: true)
             }
             .frame(width: 76)
+            .opacity(hasCredits ? 1.0 : 0.55)
         }
+        .disabled(!hasCredits || pendingOperation == operation)
+    }
+
+    /// Entry point that records the operation, then runs the heavy work.
+    private func attempt(operation: AIDarkroomOperation) {
+        lastFailedOperation = nil
+        pendingOperation = operation
+        performAIOperation(operation)
     }
 
     private func performAIOperation(_ operation: AIDarkroomOperation) {
@@ -145,6 +233,7 @@ struct AIDarkroomPanelView: View {
 
                 await MainActor.run {
                     isProcessingAI = false
+                    pendingOperation = nil
                     performHaptic(style: .medium)
 
                     // Create a new `PhotoAsset` and insert it into the database.
@@ -186,9 +275,15 @@ struct AIDarkroomPanelView: View {
                     }
                 }
             } catch {
+                // UX-03: surface the failure with a retry entry point and
+                // make it explicit that the user was *not* charged.
+                let failureMessage = String.aiDarkroomFailureNoCharge.localized + "\n" + (String(describing: error))
                 await MainActor.run {
                     isProcessingAI = false
-                    debugLog("AI Processing failed: \(error)")
+                    pendingOperation = nil
+                    lastFailedOperation = operation
+                    errorMessage = failureMessage
+                    debugLog("AI Processing failed (will surface to user): \(error)")
                 }
             }
         }

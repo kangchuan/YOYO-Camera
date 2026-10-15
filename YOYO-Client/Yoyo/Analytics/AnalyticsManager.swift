@@ -110,7 +110,12 @@ final class AnalyticsManager {
         }
         set {
             UserDefaults.standard.set(newValue, forKey: analyticsEnabledKey)
-            Analytics.setAnalyticsCollectionEnabled(newValue)
+            // Guarded: when the bundled plist is the Day-1 stub,
+            // `FirebaseApp.configure()` never ran, so `Analytics.*` would
+            // crash with "Firebase app not configured". Skip the call.
+            if FirebaseBootstrap.shouldInitializeFirebase() {
+                Analytics.setAnalyticsCollectionEnabled(newValue)
+            }
             #if DEBUG
                 debugLog("[Analytics] Analytics collection \(newValue ? "enabled" : "disabled")")
             #endif
@@ -124,7 +129,9 @@ final class AnalyticsManager {
         // 强行改成启用（本项目正是因此「关不掉埋点」）。
         // 现在该 plist 为 false，所以默认不采集；将来换成自己的 Firebase 项目后，
         // 新 plist 天然是 true，无需改这里就能自动恢复采集。
-        if UserDefaults.standard.object(forKey: analyticsEnabledKey) != nil {
+        if UserDefaults.standard.object(forKey: analyticsEnabledKey) != nil,
+           FirebaseBootstrap.shouldInitializeFirebase()
+        {
             Analytics.setAnalyticsCollectionEnabled(isAnalyticsEnabled)
         }
     }
@@ -138,6 +145,16 @@ final class AnalyticsManager {
             return
         }
 
+        // Guarded: skip the SDK call entirely if Firebase was never
+        // configured (Day-1 plist or missing plist). This keeps the rest
+        // of the app oblivious to the bootstrap state.
+        guard FirebaseBootstrap.shouldInitializeFirebase() else {
+            #if DEBUG
+                debugLog("[Analytics] Skipping event (Firebase not initialised): \(event.name)")
+            #endif
+            return
+        }
+
         #if DEBUG
             debugLog("[Analytics] Logging event: \(event.name), parameters: \(event.parameters ?? [:])")
         #endif
@@ -147,12 +164,14 @@ final class AnalyticsManager {
     /// Set user property
     func setUserProperty(_ value: String?, forName name: String) {
         guard isAnalyticsEnabled else { return }
+        guard FirebaseBootstrap.shouldInitializeFirebase() else { return }
         Analytics.setUserProperty(value, forName: name)
     }
 
     /// Set user ID
     func setUserID(_ userID: String?) {
         guard isAnalyticsEnabled else { return }
+        guard FirebaseBootstrap.shouldInitializeFirebase() else { return }
         Analytics.setUserID(userID)
     }
 }

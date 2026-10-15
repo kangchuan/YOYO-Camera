@@ -1,4 +1,3 @@
-import FirebaseCore
 import SwiftData
 import SwiftUI
 import UIKit

@@ -97,9 +97,35 @@ struct CameraPreviewContainerView: View {
                 handleCaptureStateChange(newState)
             }
         }
+        // UX-02: when InspirationManager demands sign-in, present the
+        // unified auth sheet (replaces the prior behaviour of pushing the
+        // full SettingsView, which made the trigger feel like a side door).
         .sheet(isPresented: $inspirationManager.showLoginSheet) {
-            SettingsView()
+            UnifiedAuthSheet()
                 .environmentObject(settingsState)
+        }
+        // UX-01: present the paywall when InspirationManager says the user
+        // tapped AI Composition without Pro. Bind to the manager's flag so
+        // the manager is the single source of truth.
+        .fullScreenCover(isPresented: $inspirationManager.showPaywall) {
+            PaywallView()
+        }
+        // UX-03: surface AI success/failure to the camera screen via the
+        // existing `CameraViewState.showToast` channel. We watch both
+        // `lastSuccessMessage` (set on a successful fetchInspirations) and
+        // `failedIndices` (per-card failure) so failures on individual
+        // cards become visible too.
+        .onChange(of: inspirationManager.lastSuccessMessage) { _, message in
+            guard let message else { return }
+            viewState.showInfo(message, customIcon: "sparkles")
+            inspirationManager.clearSuccessMessage()
+        }
+        .onChange(of: inspirationManager.failedIndices) { _, failed in
+            guard !failed.isEmpty else { return }
+            viewState.showWarning(
+                String.aiInspirationCardFailureNoCharge.localized,
+                customIcon: "exclamationmark.triangle"
+            )
         }
     }
 

@@ -40,25 +40,73 @@ final class AuthService: ObservableObject {
     private let tokenCacheKey = "cachedToken"
     private let pendingUserInfoKeyPrefix = "pendingUserInfo_"
 
+    // MARK: - Profile fetch (TTL + backoff)
+
+    /// How stale `currentUser` is allowed to be before we re-fetch on foreground.
+    /// Five minutes is enough to absorb a quick "lock / unlock" cycle without
+    /// hammering the server.
+    private static let profileTTL: TimeInterval = 300
+
+    /// Failure backoff: cap at 30 minutes so a single bad request does not
+    /// lock the UI out of profile refresh forever.
+    private static let profileBackoffBase: TimeInterval = 5
+    private static let profileBackoffCap: TimeInterval = 30 * 60
+
+    private var lastProfileFetchAt: Date?
+    private var lastProfileFailureAt: Date?
+    private var consecutiveProfileFailures: Int = 0
+    private let keychain: KeychainStoring = KeychainStore.instance
+
     private struct PendingUserInfo: Codable {
         let fullName: String?
         let email: String?
     }
 
     private init() {
+        // One-shot migration: the JWT was previously stored in plain
+        // `UserDefaults`. Move it to the keychain on first launch and clear
+        // the legacy slot so we never persist the same secret twice.
+        keychain.migrateFromLegacyDefaults(key: tokenCacheKey, defaults: .standard)
         loadCachedUser()
     }
 
     // MARK: - Public Methods
 
+    /// Re-fetch the user profile from the server.
+    ///
+    /// TTL: skips the round trip if we already fetched within `profileTTL`.
+    /// Backoff: on consecutive failures, the next call has to wait at least
+    /// `5s * 2^n` (capped at 30 minutes) before trying again. Both are
+    /// reset by a successful response.
+    ///
+    /// Note: callers in `YoyoApp` still invoke this on `.active`, so this is
+    /// the single source of truth for "should we hit `/api/user` again?".
+    /// No parallel state was added elsewhere.
     func fetchUserProfile() async {
-        guard let token = authToken else { return }
+        guard authToken != nil else { return }
+
+        // Backoff gate: don't hammer the server after recent failures.
+        if let lastFailure = lastProfileFailureAt,
+           let nextAllowed = nextBackoffDate(from: lastFailure),
+           Date() < nextAllowed
+        {
+            debugLog("⏳ Skipping fetchUserProfile (backoff until \(nextAllowed))")
+            return
+        }
+
+        // TTL gate: avoid redundant fetches within the freshness window.
+        if let lastSuccess = lastProfileFetchAt,
+           Date().timeIntervalSince(lastSuccess) < Self.profileTTL
+        {
+            debugLog("⏳ Skipping fetchUserProfile (TTL fresh)")
+            return
+        }
 
         guard let url = URL(string: "\(baseURL)/api/user") else { return }
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue("Bearer \(authToken ?? "")", forHTTPHeaderField: "Authorization")
 
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
@@ -67,12 +115,13 @@ final class AuthService: ObservableObject {
 
             if httpResponse.statusCode == 401 {
                 debugLog("⚠️ Token expired or invalid, signing out...")
-                signOut()
+                await MainActor.run { [weak self] in self?.signOut() }
                 return
             }
 
             guard httpResponse.statusCode == 200 else {
                 debugLog("❌ Fetch user profile failed: \(httpResponse.statusCode)")
+                await MainActor.run { [weak self] in self?.recordProfileFailure() }
                 return
             }
 
@@ -85,11 +134,40 @@ final class AuthService: ObservableObject {
             await MainActor.run {
                 self.currentUser = user
                 self.cacheUser(user)
+                self.recordProfileSuccess()
                 debugLog("✅ User profile updated: \(user.fullName ?? "Unknown")")
             }
         } catch {
             debugLog("❌ Fetch user profile error: \(error)")
+            await MainActor.run { [weak self] in self?.recordProfileFailure() }
         }
+    }
+
+    /// Public hook used by debug tooling and tests to reset the TTL/backoff
+    /// state without affecting the cached user. Normal callers should not
+    /// need this — a successful `fetchUserProfile` already clears it.
+    func resetProfileFetchState() {
+        lastProfileFetchAt = nil
+        lastProfileFailureAt = nil
+        consecutiveProfileFailures = 0
+    }
+
+    private func recordProfileSuccess() {
+        lastProfileFetchAt = Date()
+        lastProfileFailureAt = nil
+        consecutiveProfileFailures = 0
+    }
+
+    private func recordProfileFailure() {
+        lastProfileFailureAt = Date()
+        consecutiveProfileFailures += 1
+    }
+
+    private func nextBackoffDate(from failure: Date) -> Date? {
+        guard consecutiveProfileFailures > 0 else { return nil }
+        let exponent = min(consecutiveProfileFailures - 1, 6) // cap 2^6 = 64x
+        let interval = min(Self.profileBackoffBase * pow(2.0, Double(exponent)), Self.profileBackoffCap)
+        return failure.addingTimeInterval(interval)
     }
 
     func syncSubscription(originalTransactionId: String) async throws {
@@ -412,7 +490,9 @@ final class AuthService: ObservableObject {
     }
 
     private func cacheToken(_ token: String) {
-        UserDefaults.standard.set(token, forKey: tokenCacheKey)
+        // JWT secret: persist via Keychain (`kSecClassGenericPassword`)
+        // rather than `UserDefaults` so it never lands in a plain plist.
+        keychain.writeString(token, forKey: tokenCacheKey)
     }
 
     private func loadCachedUser() {
@@ -421,14 +501,22 @@ final class AuthService: ObservableObject {
         {
             currentUser = user
         }
-        if let token = UserDefaults.standard.string(forKey: tokenCacheKey) {
+        // Token comes from the keychain. If migration did not run yet
+        // (e.g. user wipes UserDefaults first), we fall back to the legacy
+        // slot once — but the next write will move it across.
+        if let token = keychain.readString(forKey: tokenCacheKey) {
             authToken = token
+        } else if let legacy = UserDefaults.standard.string(forKey: tokenCacheKey) {
+            authToken = legacy
+            cacheToken(legacy) // promote to keychain
+            UserDefaults.standard.removeObject(forKey: tokenCacheKey)
         }
     }
 
     private func clearCachedUser() {
         UserDefaults.standard.removeObject(forKey: userCacheKey)
         UserDefaults.standard.removeObject(forKey: tokenCacheKey)
+        keychain.delete(forKey: tokenCacheKey)
     }
 
     private func cachePendingUserInfo(userIdentifier: String, fullName: String?, email: String?) {

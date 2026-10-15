@@ -6,7 +6,11 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         _: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
-        FirebaseApp.configure()
+        // Guarded by `FirebaseBootstrap` so the SDK never initialises
+        // against the Day-1 stub project (`yoyo-camera`). When the team
+        // ships a new `GoogleService-Info.plist` with a real project ID,
+        // this same call site will start configuring without code changes.
+        FirebaseBootstrap.configureIfEligible()
 
         // Enable developer mode by default in DEBUG builds
         #if DEBUG

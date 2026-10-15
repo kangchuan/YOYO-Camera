@@ -1004,3 +1004,20 @@
 "state_toast_video_mode" = "Video mode";
 "state_toast_mic_on" = "Microphone On";
 "state_toast_mic_muted" = "Microphone Muted";
+
+// MARK: - Audit 2026-10-15 wave 2
+// UX-01: Pro-required badge on the AI Composition button.
+"camera_ai_pro_required" = "Pro required";
+// UX-04: pre-click credit cost + insufficient-credits messages.
+"ai_darkroom_cost_hint" = "Cost %d credit";
+"ai_darkroom_insufficient_credits_hint" = "Not enough credits";
+"ai_darkroom_insufficient_credits_message" = "You don't have enough credits for this edit. Top up to continue.";
+// UX-03: failure surfacing + retry.
+"ai_darkroom_failure_title" = "AI edit failed";
+"ai_darkroom_retry" = "Retry";
+"ai_darkroom_failure_no_charge" = "This attempt failed and was not charged.";
+// UX-03/04: success message for AI Inspiration and per-card failure UI.
+"ai_inspiration_success_message" = "Inspiration generated. Used %d credit, %d remaining.";
+"ai_inspiration_card_failure_title" = "Image failed";
+"ai_inspiration_card_failure_no_charge" = "This card was not charged.";
+"ai_inspiration_card_retry" = "Retry";

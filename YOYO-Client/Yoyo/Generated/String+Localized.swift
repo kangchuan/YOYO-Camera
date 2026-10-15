@@ -1023,4 +1023,21 @@ extension String {
     static let stateToastVideoMode = "state_toast_video_mode"
     static let stateToastMicOn = "state_toast_mic_on"
     static let stateToastMicMuted = "state_toast_mic_muted"
+
+    // MARK: - Audit 2026-10-15 wave 2
+    // UX-01: Pro-required badge on the AI Composition button.
+    static let cameraAiProRequired = "camera_ai_pro_required"
+    // UX-04: pre-click credit cost + insufficient-credits messages.
+    static let aiDarkroomCostHint = "ai_darkroom_cost_hint"
+    static let aiDarkroomInsufficientCreditsHint = "ai_darkroom_insufficient_credits_hint"
+    static let aiDarkroomInsufficientCreditsMessage = "ai_darkroom_insufficient_credits_message"
+    // UX-03: failure surfacing + retry.
+    static let aiDarkroomFailureTitle = "ai_darkroom_failure_title"
+    static let aiDarkroomRetry = "ai_darkroom_retry"
+    static let aiDarkroomFailureNoCharge = "ai_darkroom_failure_no_charge"
+    // UX-03/04: success message for AI Inspiration and per-card failure UI.
+    static let aiInspirationSuccessMessage = "ai_inspiration_success_message"
+    static let aiInspirationCardFailureTitle = "ai_inspiration_card_failure_title"
+    static let aiInspirationCardFailureNoCharge = "ai_inspiration_card_failure_no_charge"
+    static let aiInspirationCardRetry = "ai_inspiration_card_retry"
 }
