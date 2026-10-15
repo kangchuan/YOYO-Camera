@@ -10,6 +10,18 @@ final class FilmComputeEngine {
     private let ciContext: CIContext
     private let linearColorSpace: CGColorSpace
 
+    // A-12: scratch textures are recycled between passes instead of being
+    // reallocated thirteen times per pass, every frame. See
+    // ScratchTexturePool.swift — including why removing the
+    // `waitUntilCompleted()` below would make that pool unsafe.
+    private let scratchPool = ScratchTexturePool()
+
+    /// Diagnostics for tests: how many textures have ever been created, and how
+    /// many are currently parked in the pool.
+    var scratchDiagnostics: (created: Int, pooled: Int) {
+        (scratchPool.createdTextures, scratchPool.pooledTextures)
+    }
+
     // Compute Pipelines
     private let blurHPipeline: MTLComputePipelineState?
     private let blurVPipeline: MTLComputePipelineState?
@@ -25,8 +37,20 @@ final class FilmComputeEngine {
 
     private init?() {
         guard let device = MTLCreateSystemDefaultDevice(),
-              let queue = device.makeCommandQueue(),
-              let library = device.makeDefaultLibrary() else { return nil }
+              let queue = device.makeCommandQueue() else { return nil }
+
+        // `makeDefaultLibrary()` returns the main bundle's metallib, which is
+        // what the app itself wants. It can come back empty in other hosts —
+        // notably a unit-test host — so fall back to loading `default.metallib`
+        // straight from the bundle. Same library either way, just found by an
+        // explicit path instead of by convention.
+        var library = device.makeDefaultLibrary()
+        if library?.makeFunction(name: "gaussianBlurHorizontal") == nil,
+           let url = Bundle.main.url(forResource: "default", withExtension: "metallib"),
+           let explicit = try? device.makeLibrary(URL: url) {
+            library = explicit
+        }
+        guard let library else { return nil }
 
         self.device = device
         commandQueue = queue
@@ -61,14 +85,18 @@ final class FilmComputeEngine {
         let extent = input.extent
         guard extent.width > 0, extent.height > 0 else { return nil }
 
-        guard let inputTex = makeTexture(from: input),
+        // One borrow scope per pass: every texture acquired through `scratch`
+        // goes back to the pool when this function returns, on every path.
+        let scratch = ScratchFrame(pool: scratchPool, device: device, ciContext: ciContext, colorSpace: linearColorSpace)
+
+        guard let inputTex = scratch.texture(from: input),
               let cmd = commandQueue.makeCommandBuffer() else { return nil }
 
         let w = Int(extent.width), h = Int(extent.height)
         let baseRadius: Float = 8.0 + spread * 20.0
 
         // 1. Highlight extraction
-        guard let extracted = makeTexture(w, h),
+        guard let extracted = scratch.texture(width: w, height: h),
               let extractPipeline = bloomExtractPipeline else { return nil }
 
         encode(cmd, extractPipeline, [inputTex, extracted]) { enc in
@@ -77,10 +105,10 @@ final class FilmComputeEngine {
         }
 
         // 2. Downsampling Pyramid
-        guard let half = makeTexture(w / 2, h / 2),
-              let quarter = makeTexture(w / 4, h / 4),
-              let eighth = makeTexture(w / 8, h / 8),
-              let sixteenth = makeTexture(w / 16, h / 16) else { return nil }
+        guard let half = scratch.texture(width: w / 2, height: h / 2),
+              let quarter = scratch.texture(width: w / 4, height: h / 4),
+              let eighth = scratch.texture(width: w / 8, height: h / 8),
+              let sixteenth = scratch.texture(width: w / 16, height: h / 16) else { return nil }
 
         encodeDownsample(cmd, extracted, half)
         encodeDownsample(cmd, half, quarter)
@@ -88,21 +116,21 @@ final class FilmComputeEngine {
         encodeDownsample(cmd, eighth, sixteenth)
 
         // 3. Blurred layers
-        guard let blur0 = makeTexture(w / 2, h / 2),
-              let blur1 = makeTexture(w / 4, h / 4),
-              let blur2 = makeTexture(w / 8, h / 8),
-              let blur3 = makeTexture(w / 16, h / 16) else { return nil }
+        guard let blur0 = scratch.texture(width: w / 2, height: h / 2),
+              let blur1 = scratch.texture(width: w / 4, height: h / 4),
+              let blur2 = scratch.texture(width: w / 8, height: h / 8),
+              let blur3 = scratch.texture(width: w / 16, height: h / 16) else { return nil }
 
-        encodeBlur(cmd, half, blur0, baseRadius * 0.15 / 2)
-        encodeBlur(cmd, quarter, blur1, baseRadius * 0.125 / 4)
-        encodeBlur(cmd, eighth, blur2, baseRadius * 0.0875 / 8)
-        encodeBlur(cmd, sixteenth, blur3, baseRadius * 0.0625 / 16)
+        encodeBlur(cmd, half, blur0, baseRadius * 0.15 / 2, scratch: scratch)
+        encodeBlur(cmd, quarter, blur1, baseRadius * 0.125 / 4, scratch: scratch)
+        encodeBlur(cmd, eighth, blur2, baseRadius * 0.0875 / 8, scratch: scratch)
+        encodeBlur(cmd, sixteenth, blur3, baseRadius * 0.0625 / 16, scratch: scratch)
 
         // 4. Direct upsampling to native resolution (Bicubic interpolation)
-        guard let up0 = makeTexture(w, h),
-              let up1 = makeTexture(w, h),
-              let up2 = makeTexture(w, h),
-              let up3 = makeTexture(w, h) else { return nil }
+        guard let up0 = scratch.texture(width: w, height: h),
+              let up1 = scratch.texture(width: w, height: h),
+              let up2 = scratch.texture(width: w, height: h),
+              let up3 = scratch.texture(width: w, height: h) else { return nil }
 
         encodeUpsampleBicubic(cmd, blur0, up0, scaleX: 2.0, scaleY: 2.0)
         encodeUpsampleBicubic(cmd, blur1, up1, scaleX: 4.0, scaleY: 4.0)
@@ -140,7 +168,11 @@ final class FilmComputeEngine {
         let extent = input.extent
         guard extent.width > 0, extent.height > 0 else { return nil }
 
-        guard let inputTex = makeTexture(from: input),
+        // One borrow scope per pass: every texture acquired through `scratch`
+        // goes back to the pool when this function returns, on every path.
+        let scratch = ScratchFrame(pool: scratchPool, device: device, ciContext: ciContext, colorSpace: linearColorSpace)
+
+        guard let inputTex = scratch.texture(from: input),
               let cmd = commandQueue.makeCommandBuffer() else { return nil }
 
         let w = Int(extent.width), h = Int(extent.height)
@@ -150,7 +182,7 @@ final class FilmComputeEngine {
         let rf = 0.7 + 0.45 * intensity // Enhanced scattering radius increases with intensity
 
         // 1. Halation extraction (with custom color)
-        guard let extracted = makeTexture(w, h),
+        guard let extracted = scratch.texture(width: w, height: h),
               let extractPipeline = halationExtractPipeline else { return nil }
 
         encode(cmd, extractPipeline, [inputTex, extracted]) { enc in
@@ -168,10 +200,10 @@ final class FilmComputeEngine {
         }
 
         // 2. Four-layer scattering (downsampling)
-        guard let half = makeTexture(w / 2, h / 2),
-              let quarter = makeTexture(w / 4, h / 4),
-              let eighth = makeTexture(w / 8, h / 8),
-              let sixteenth = makeTexture(w / 16, h / 16) else { return nil }
+        guard let half = scratch.texture(width: w / 2, height: h / 2),
+              let quarter = scratch.texture(width: w / 4, height: h / 4),
+              let eighth = scratch.texture(width: w / 8, height: h / 8),
+              let sixteenth = scratch.texture(width: w / 16, height: h / 16) else { return nil }
 
         encodeDownsample(cmd, extracted, half)
         encodeDownsample(cmd, half, quarter)
@@ -179,21 +211,21 @@ final class FilmComputeEngine {
         encodeDownsample(cmd, eighth, sixteenth)
 
         // 3. Blurred layers
-        guard let l0 = makeTexture(w / 2, h / 2),
-              let l1 = makeTexture(w / 4, h / 4),
-              let l2 = makeTexture(w / 8, h / 8),
-              let l3 = makeTexture(w / 16, h / 16) else { return nil }
+        guard let l0 = scratch.texture(width: w / 2, height: h / 2),
+              let l1 = scratch.texture(width: w / 4, height: h / 4),
+              let l2 = scratch.texture(width: w / 8, height: h / 8),
+              let l3 = scratch.texture(width: w / 16, height: h / 16) else { return nil }
 
-        encodeBlur(cmd, half, l0, baseRadius * 0.32 * sf * rf / 2)
-        encodeBlur(cmd, quarter, l1, min(baseRadius * 1.9 * sf * rf, 56) / 4)
-        encodeBlur(cmd, eighth, l2, min(baseRadius * 6.5 * sf * rf, 160) / 8)
-        encodeBlur(cmd, sixteenth, l3, min(baseRadius * 16 * sf * rf, 360) / 16)
+        encodeBlur(cmd, half, l0, baseRadius * 0.32 * sf * rf / 2, scratch: scratch)
+        encodeBlur(cmd, quarter, l1, min(baseRadius * 1.9 * sf * rf, 56) / 4, scratch: scratch)
+        encodeBlur(cmd, eighth, l2, min(baseRadius * 6.5 * sf * rf, 160) / 8, scratch: scratch)
+        encodeBlur(cmd, sixteenth, l3, min(baseRadius * 16 * sf * rf, 360) / 16, scratch: scratch)
 
         // 4. Direct upsampling to native resolution (Bicubic interpolation)
-        guard let l0Full = makeTexture(w, h),
-              let l1Full = makeTexture(w, h),
-              let l2Full = makeTexture(w, h),
-              let l3Full = makeTexture(w, h) else { return nil }
+        guard let l0Full = scratch.texture(width: w, height: h),
+              let l1Full = scratch.texture(width: w, height: h),
+              let l2Full = scratch.texture(width: w, height: h),
+              let l3Full = scratch.texture(width: w, height: h) else { return nil }
 
         encodeUpsampleBicubic(cmd, l0, l0Full, scaleX: 2.0, scaleY: 2.0)
         encodeUpsampleBicubic(cmd, l1, l1Full, scaleX: 4.0, scaleY: 4.0)
@@ -266,9 +298,12 @@ final class FilmComputeEngine {
         }
     }
 
-    private func encodeBlur(_ cmd: MTLCommandBuffer, _ input: MTLTexture, _ output: MTLTexture, _ radius: Float) {
+    private func encodeBlur(_ cmd: MTLCommandBuffer, _ input: MTLTexture, _ output: MTLTexture, _ radius: Float, scratch: ScratchFrame) {
+        // The horizontal pass needs somewhere to put its intermediate result.
+        // That used to be a fourth fresh allocation per blur level — eight per
+        // pass — so it borrows from the same pool as everything else.
         guard let hP = blurHPipeline, let vP = blurVPipeline,
-              let temp = makeTexture(input.width, input.height) else { return }
+              let temp = scratch.texture(width: input.width, height: input.height) else { return }
 
         var r = radius
         encode(cmd, hP, [input, temp]) { $0.setBytes(&r, length: 4, index: 0) }
