@@ -31,47 +31,61 @@ struct CameraControlView: View {
                 managers: managers
             )
             .overlay(alignment: .bottom) {
-                // Drawer handle — centred below the two control rows.
-                // UX-12: the visible handle is still 44×16, but the *hit
-                // area* is now 44pt tall (the whole Capsule frame), and a
-                // small "参数" label sits 4pt below the handle to make
-                // the affordance discoverable.
-                VStack(spacing: 4) {
-                    Button {
-                        triggerLightImpact()
-                        var transaction = Transaction(animation: .none)
-                        transaction.disablesAnimations = true
-                        withTransaction(transaction) {
-                            isDrawerExpanded = true
-                        }
-                    } label: {
-                        ZStack {
-                            Capsule()
-                                .fill(.regularMaterial)
-                                .environment(\.colorScheme, .dark)
-                                .frame(width: 44, height: 16)
+                // Drawer handle — centred below the two control rows, plus a
+                // small label so the affordance is discoverable (UX-12: users
+                // never found the professional-parameter drawer because the
+                // handle was a bare 44×16 pill with no text).
+                //
+                // The label sits *beside* the handle, not under it: the bottom
+                // control band is a fixed 210pt and the mode pill already owns
+                // the strip directly below the handle, so a stacked layout
+                // overlaps the pill. Horizontally there is free space on both
+                // sides of the centred handle.
+                HStack(spacing: 6) {
+                    ZStack {
+                        Capsule()
+                            .fill(.regularMaterial)
+                            .environment(\.colorScheme, .dark)
+                            .frame(width: 44, height: 16)
 
-                            Capsule()
-                                .fill(Color.white.opacity(0.7))
-                                .frame(width: 20, height: 1.5)
-                        }
-                        // Expand the tappable area without changing the
-                        // visual. 44pt is the iOS-recommended minimum for
-                        // hit targets; we add the extra space evenly above
-                        // and below the visible handle.
-                        .frame(width: 44, height: 44)
-                        .contentShape(Rectangle())
+                        Capsule()
+                            .fill(Color.white.opacity(0.7))
+                            .frame(width: 20, height: 1.5)
                     }
-                    .buttonStyle(.plain)
+                    .frame(width: 44, height: 16)
+                    .contentShape(Rectangle())
+                    // UX-12: grow the tap target to the iOS-recommended
+                    // 44pt. Done as an *overlay* on purpose: an overlay
+                    // overflows the 16pt visual without entering the
+                    // layout, whereas a taller `.frame` here would push the
+                    // block up into the mode-pill row.
+                    .overlay {
+                        Color.clear
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
+                            .onTapGesture { expandDrawer() }
+                    }
+                    .accessibilityElement(children: .ignore)
                     .accessibilityLabel(Text(String.cameraDrawerHandleLabel.localized))
+                    .accessibilityAddTraits(.isButton)
+                    .accessibilityAction { expandDrawer() }
 
                     Text(String.cameraDrawerHandleLabel.localized)
                         .font(.system(size: 11, weight: .regular))
                         .foregroundColor(.white.opacity(0.55))
-                        .accessibilityHidden(true)
+                        .fixedSize()
                 }
             }
             .frame(height: CameraLayoutConfig.bottomControlHeight)
+        }
+    }
+
+    private func expandDrawer() {
+        triggerLightImpact()
+        var transaction = Transaction(animation: .none)
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            isDrawerExpanded = true
         }
     }
 }
