@@ -1,15 +1,15 @@
 -- Users table for Apple Sign In
+-- Fix A-20: credits DEFAULT 0 (与 src/credits.ts:DEFAULT_FREE_CREDITS 对齐).
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     apple_user_id TEXT UNIQUE NOT NULL,
     email TEXT,
     full_name TEXT,
-    credits INTEGER DEFAULT 3,
+    credits INTEGER DEFAULT 0,
     subscription_status INTEGER DEFAULT 0, -- 0: free, 1: pro
     subscription_end_date TEXT, -- ISO8601 format
     original_transaction_id TEXT, -- Prevents subscription sharing across accounts
     last_transaction_id TEXT, -- To track monthly credit reset
-    last_credit_reset_date TEXT DEFAULT (datetime('now')),
     created_at TEXT DEFAULT (datetime('now')),
     updated_at TEXT DEFAULT (datetime('now')),
     deleted_at TEXT
@@ -29,3 +29,13 @@ CREATE TABLE IF NOT EXISTS shared_automation_rules (
 );
 
 CREATE INDEX IF NOT EXISTS idx_shared_rules_code ON shared_automation_rules(code);
+
+-- Rate limit table (A-21).
+-- Composite primary key so (user_id, bucket) is unique.
+CREATE TABLE IF NOT EXISTS rate_limits (
+    user_id INTEGER NOT NULL,
+    bucket TEXT NOT NULL,
+    window_start INTEGER NOT NULL,
+    count INTEGER NOT NULL,
+    PRIMARY KEY (user_id, bucket)
+);

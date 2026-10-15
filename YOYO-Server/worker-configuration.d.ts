@@ -12,6 +12,13 @@ declare namespace Cloudflare {
         APP_STORE_ISSUER_ID: string;
         APP_STORE_BUNDLE_ID: string;
         APP_STORE_PRIVATE_KEY: string;
+        // A-01: optional trust anchor override (CSV of SHA-256 fingerprints).
+        APPLE_ROOT_CA_SHA256?: string;
+        // A-16: optional AI Gateway account/name overrides.
+        AI_GATEWAY_ACCOUNT_ID?: string;
+        AI_GATEWAY_NAME?: string;
+        // A-21: CORS allow origin. Empty / unset = "*".
+        CORS_ALLOW_ORIGIN?: string;
 	}
 }
 interface Env extends Cloudflare.Env {}

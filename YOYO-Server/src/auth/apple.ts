@@ -1,3 +1,19 @@
+/**
+ * Apple Sign In identity token 校验（A-06）。
+ *
+ * 之前只校验了 `iss` / `exp` / `sub` 和 JWS 签名，**没有**校验 `aud`：
+ * 任何合法的 Apple identityToken 都能登进来。攻击者抓一个 iOS 端的 token，
+ * 把它塞到 `/api/auth/apple` 就能用别人 Apple id 登进来 —— 而且 `sub` 一致，
+ * 看起来就像受害者。
+ *
+ * 修复：调用方必须传入 `expectedAudience`，与 Apple 颁发的 `aud` 字段比较，
+ * 不一致直接返回 false。`aud` 在 iOS 端是 App 的 bundle id，所以传
+ * `env.APP_STORE_BUNDLE_ID`（与 iOS App 实际一致）。
+ *
+ * 保留项：JWKS 缓存、签名校验、`iss=https://appleid.apple.com`、`exp`、`sub`。
+ * 改动只在最末加 `aud` 比对；既有行为不回退。
+ */
+
 interface AppleJWK {
   kty: string;
   kid: string;
@@ -120,9 +136,18 @@ async function importPublicKey(jwk: AppleJWK): Promise<CryptoKey> {
   );
 }
 
+/**
+ * 校验 Apple identityToken。
+ *
+ * @param identityToken Apple 颁发的 identityToken
+ * @param expectedSubject 期望的 `sub`（即 Apple user identifier）
+ * @param expectedAudience 期望的 `aud`（即本 App 的 bundle id）—— **A-06 必须传**
+ * @returns 全部校验通过返回 true；任意一步失败返回 false
+ */
 export async function verifyAppleIdentityToken(
   identityToken: string,
-  expectedSubject: string
+  expectedSubject: string,
+  expectedAudience: string
 ): Promise<boolean> {
   try {
     const { header, payload } = decodeJWT(identityToken);
@@ -171,6 +196,13 @@ export async function verifyAppleIdentityToken(
     // Check subject matches userIdentifier
     if (payload.sub !== expectedSubject) {
       console.error("Subject mismatch");
+      return false;
+    }
+
+    // A-06: Check audience. Apple 把 iOS 端 App bundle id 放在 aud 字段；
+    // 不一致说明这个 token 是另一个 app 颁的，绝不能登进来。
+    if (typeof payload.aud !== "string" || payload.aud !== expectedAudience) {
+      console.error("Audience mismatch", { expected: expectedAudience, got: payload.aud });
       return false;
     }
 

@@ -13,11 +13,28 @@ export enum AIDarkroomOperation {
   FIX_CLOSED_EYES = "fix_closed_eyes"
 }
 
+/** Cloudflare AI Gateway 配置（A-16：硬编码 → 环境变量）。
+ *
+ * 历史：原来代码里硬编码了 accountId，现在改成从 env 读；保留原值作为兜底
+ * 默认值（DEFAULT_GATEWAY_ACCOUNT_ID/DEFAULT_GATEWAY_NAME），保证不显式
+ * 配 env 的旧部署不会立刻炸。如果重新部署到不同的 Gateway，只需要改 env
+ * 不用动代码。 */
+const DEFAULT_GATEWAY_ACCOUNT_ID = "8a7a6290a9e2e925dd0ccc3b42d865c0";
+const DEFAULT_GATEWAY_NAME = "yoyo";
+
 // MARK: - AI Client Factory
 
-function createAIClient(apiKey: string): GoogleGenAI {
-  const accountId = "8a7a6290a9e2e925dd0ccc3b42d865c0";
-  const gatewayName = "yoyo";
+/**
+ * 给 Cloudflare AI Gateway 配 Google GenAI 客户端。
+ *
+ * @param apiKey Gemini API key（从 env.GEMINI_API_KEY 拿）
+ * @param env    Worker env（用于读 gateway account / name）
+ *              显式接 env 进来而非像之前一样函数闭包读 module-level 常量，
+ *              这样测试里可以注入假 env。
+ */
+function createAIClient(apiKey: string, env?: Env): GoogleGenAI {
+  const accountId = env?.AI_GATEWAY_ACCOUNT_ID || DEFAULT_GATEWAY_ACCOUNT_ID;
+  const gatewayName = env?.AI_GATEWAY_NAME || DEFAULT_GATEWAY_NAME;
 
   return new GoogleGenAI({
     apiKey: apiKey,
@@ -34,12 +51,13 @@ export async function processAIDarkroomRequest(
   mimeType: string,
   operation: string,
   options: any,
-  apiKey: string
+  apiKey: string,
+  env?: Env
 ): Promise<{ imageBase64: string; imageMimeType: string }> {
-  const ai = createAIClient(apiKey);
-  
+  const ai = createAIClient(apiKey, env);
+
   let systemPrompt = "";
-  
+
   switch (operation) {
     case AIDarkroomOperation.PORTRAIT_ENHANCE:
         systemPrompt = "You are a professional photo retoucher. Enhance this portrait with: 1. Smart lighting (brighten face but no overexposure). 2. Retain skin texture while removing blemishes. 3. Enhance eyes. 4. Make hair clearer. 5. Remove fatigue (dark circles) without changing facial structure. Return the enhanced image.";

@@ -1,6 +1,13 @@
 /**
  * For more details on how to configure Wrangler, refer to:
  * https://developers.cloudflare.com/workers/wrangler/configuration/
+ *
+ * 修复点（A-03 / A-16 / A-20 / A-21）：
+ * - APP_STORE_BUNDLE_ID 改为 `com.anyan.YoyoCamera`，与 iOS App 实际 bundle id 一致。
+ * - APP_STORE_PRIVATE_KEY 不进 vars（已在 Secrets 里）。
+ * - 新增 AI_GATEWAY_ACCOUNT_ID / AI_GATEWAY_NAME 占位说明（A-16）。
+ * - 新增 CORS_ALLOW_ORIGIN 占位说明（A-21）。
+ * - 新增 APPLE_ROOT_CA_SHA256 占位说明（A-01）。
  */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
@@ -14,7 +21,8 @@
     {
       "binding": "DB",
       "database_name": "yoyo-camera",
-      "database_id": "2df005fc-df4c-451b-8d66-3f7fa3f77c6a"
+      "database_id": "2df005fc-df4c-451b-8d66-3f7fa3f77c6a",
+      "migrations_dir": "migrations"
     }
   ],
 	/**
@@ -35,25 +43,43 @@
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
 	 */
 	"vars": {
-		// These three key values must be obtained from Integrations/In-App Purchase in App Store Connect
-		"APP_STORE_BUNDLE_ID": "com.day1-labs.yoyo",
+		// ---- App Store Server API ----
+		// Fix A-03: bundle id must match iOS app's actual bundle id.
+		"APP_STORE_BUNDLE_ID": "com.anyan.YoyoCamera",
 		"APP_STORE_ISSUER_ID": "cb0b7e1c-6484-4d17-8a1f-a11dd8715660",
-		"APP_STORE_KEY_ID": "W2Y9Z3684B"
+		"APP_STORE_KEY_ID": "W2Y9Z3684B",
+		// Fix A-01: override the pinned Apple Root CA - G3 fingerprint only if rotating trust anchors.
+		// Multiple comma-separated fingerprints allowed. Empty = fall back to Apple Root CA - G3 default.
+		"APPLE_ROOT_CA_SHA256": "",
+		// ---- AI Gateway (A-16) ----
+		// Optional overrides for Cloudflare AI Gateway routing. Empty = use fallback defaults
+		// baked into src/{ai_darkroom,inspiration}.ts so existing deployments don't break.
+		"AI_GATEWAY_ACCOUNT_ID": "",
+		"AI_GATEWAY_NAME": "",
+		// ---- CORS (A-21) ----
+		// Set to a specific origin (e.g. "https://app.example.com") to lock CORS down.
+		// Empty = "*" (kept for backwards compatibility with current iOS / dev setup).
+		"CORS_ALLOW_ORIGIN": ""
 	},
 	/**
 	 * Note: Use secrets to store sensitive data.
 	 * https://developers.cloudflare.com/workers/configuration/secrets/
+	 *
+	 * APP_STORE_PRIVATE_KEY  ← must be set via `wrangler secret put APP_STORE_PRIVATE_KEY`.
+	 * JWT_SECRET             ← must be set via `wrangler secret put JWT_SECRET`.
+	 * GEMINI_API_KEY         ← must be set via `wrangler secret put GEMINI_API_KEY`.
 	 */
 
 	/**
 	 * Static Assets
-	 * https://developers.cloudflare.com/workers/static-assets/binding/
+	 * Bindings allow your Worker to interact with resources on the Cloudflare Developer Platform, including
+	 * databases, object storage, AI inference, real-time communication and more.
+	 * https://developers.cloudflare.com/workers/runtime-apis/bindings/
 	 */
 	// "assets": { "directory": "./public/", "binding": "ASSETS" },
 
 	/**
-	 * Service Bindings (communicate between multiple Workers)
-	 * https://developers.cloudflare.com/workers/wrangler/configuration/#service-bindings
+	 * Service Bindings (communicate between other Workers)
 	 */
 	// "services": [{ "binding": "MY_SERVICE", "service": "my-service" }]
 }

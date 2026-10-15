@@ -15,11 +15,16 @@ export interface InspirationResult {
   inspirations: InspirationItem[];
 }
 
+/** Cloudflare AI Gateway 配置（A-16：硬编码 → 环境变量）。
+ *  保留原值作为默认值以免旧部署挂掉。 */
+const DEFAULT_GATEWAY_ACCOUNT_ID = "8a7a6290a9e2e925dd0ccc3b42d865c0";
+const DEFAULT_GATEWAY_NAME = "yoyo";
+
 // MARK: - AI Client Factory
 
-function createAIClient(apiKey: string): GoogleGenAI {
-  const accountId = "8a7a6290a9e2e925dd0ccc3b42d865c0";
-  const gatewayName = "yoyo";
+function createAIClient(apiKey: string, env?: Env): GoogleGenAI {
+  const accountId = env?.AI_GATEWAY_ACCOUNT_ID || DEFAULT_GATEWAY_ACCOUNT_ID;
+  const gatewayName = env?.AI_GATEWAY_NAME || DEFAULT_GATEWAY_NAME;
 
   return new GoogleGenAI({
     apiKey: apiKey,
@@ -35,9 +40,10 @@ export async function generateInspirations(
   base64Image: string,
   mimeType: string,
   language: string,
-  apiKey: string
+  apiKey: string,
+  env?: Env
 ): Promise<InspirationResult> {
-  const ai = createAIClient(apiKey);
+  const ai = createAIClient(apiKey, env);
 
   // Determine language instruction
   const languageInstruction =
@@ -132,10 +138,11 @@ export async function generateInspirationImage(
   base64Image: string,
   mimeType: string,
   imageGenPrompt: string,
-  apiKey: string
+  apiKey: string,
+  env?: Env
 ): Promise<{ imageBase64: string; imageMimeType: string }> {
-  const ai = createAIClient(apiKey);
-  
+  const ai = createAIClient(apiKey, env);
+
   try {
     const imageResponse = await ai.models.generateContent({
       model: "gemini-2.5-flash-image",
@@ -148,7 +155,7 @@ export async function generateInspirationImage(
             },
           },
           {
-            text: `STRICT INSTRUCTION: Keep the BACKGROUND, ENVIRONMENT, and LOCATION of this photo exactly the same. 
+            text: `STRICT INSTRUCTION: Keep the BACKGROUND, ENVIRONMENT, and LOCATION of this photo exactly the same.
 Modify ONLY the subject's pose and the camera angle as follows: ${imageGenPrompt}.
 The subject's identity and clothing should remain consistent.
 Result must look like a professional photography alternative shot of the same person in the same spot.`,
