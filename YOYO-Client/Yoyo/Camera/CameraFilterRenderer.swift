@@ -164,6 +164,23 @@ final class CameraFilterRenderer {
     }
 
     func applyFilter(to image: CIImage) -> CIImage {
-        FilterManager.shared.applyFilter(to: image, quality: .preview)
+        // UX-05: thermal tier 3. Under sustained thermal pressure we drop
+        // the whole colour-grading chain for the preview. Drawing the
+        // untouched frame still costs one blit, but it removes the
+        // multi-pass LUT / grain work, which is the dominant GPU cost.
+        //
+        // Read from `ProcessInfo` directly rather than through
+        // `CameraAutomationManager`: this runs on the render queue, and
+        // hopping to the main actor (let alone through an ObservableObject)
+        // once per frame is both a Swift 6 isolation violation and a
+        // pointless per-frame cost. `ProcessInfo` is thread-safe and cheap.
+        //
+        // Trade-off, deliberate: while the device is hot the viewfinder
+        // shows the un-graded frame even though the photo is still written
+        // with the user's look. The toast says so explicitly.
+        if ProcessInfo.processInfo.thermalState == .serious {
+            return image
+        }
+        return FilterManager.shared.applyFilter(to: image, quality: .preview)
     }
 }

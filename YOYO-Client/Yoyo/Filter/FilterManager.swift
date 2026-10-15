@@ -250,6 +250,14 @@ final class FilterManager: ObservableObject {
 
     private let configManager = FilterConfigManager.shared
 
+    // MARK: - UX-10: "long-press shutter = see original" bypass.
+    //
+    // When `previewBypass` is true, the preview layer skips the colour-grading
+    // and LUT step so the user can see the raw sensor output. We deliberately
+    // do not touch the user's persisted `selectedFilter` so the setting
+    // bounces back the moment the long-press ends.
+    @Published var previewBypass: Bool = false
+
     // MARK: - initialization
 
     private static func makeInitialPhotoEffectsSnapshot() -> FilmEmulationSnapshot {
@@ -692,6 +700,24 @@ final class FilterManager: ObservableObject {
     ///   - frameSeed: frame seed, used for time domain changes of video particles (nil = static picture)
     ///   - quality: processing quality (.Preview = quick Preview, .full = full quality)
     func applyFilter(to ciImage: CIImage, frameSeed: UInt32? = nil, quality: FilmEmulationQuality = .full) -> CIImage {
+        // UX-10: when the user is long-pressing the shutter to preview the
+        // unfiltered frame, skip the colour-grading step entirely. We still
+        // go through `FilmEmulation` (cineTone) so the result still looks
+        // like the camera, just without the user's chosen look.
+        //
+        // Scoped to `.preview` on purpose: the shutter can also be fired
+        // from the volume button *while* the finger is held down, and that
+        // capture goes through the `.full` pipeline. Without this guard it
+        // would silently be written to disk with no filter at all.
+        if previewBypass, quality == .preview {
+            return FilmEmulation.apply(
+                to: ciImage,
+                snapshot: currentSnapshots().effects,
+                enableCineTone: true,
+                frameSeed: frameSeed,
+                quality: quality
+            )
+        }
         let snapshots = currentSnapshots()
 
         // 1/2/3. Optical -> Color Grading -> Finishing

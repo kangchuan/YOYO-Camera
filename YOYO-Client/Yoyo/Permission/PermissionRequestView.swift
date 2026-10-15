@@ -36,7 +36,10 @@ struct PermissionAlertModifier: ViewModifier {
         guard let type = permissionManager.pendingPermissionAlert else {
             return ""
         }
-        return type.deniedMessage
+        // UX-18: the denial message alone left the user stranded ("go to
+        // Settings" — then what?). Pair it with the exact recovery path so
+        // the deep-link into system settings has a visible trail.
+        return type.deniedMessage + "\n\n" + type.recoverySteps
     }
 }
 

@@ -33,7 +33,14 @@ struct AutomationStatusView: View {
         .padding(.horizontal, 8)
         .padding(.vertical, 8)
         .contentShape(Rectangle())
+        // UX-07: dim the icon when automation is off so the user can still
+        // see and tap it (to re-enable via the management page) without
+        // thinking the feature is gone.
         .opacity(isAutomationEnabled ? 1.0 : 0.6)
+        // UX-22: a single tap no longer toggles automation in place — that
+        // was easy to do by accident. Tap opens the management sheet where
+        // the user can decide deliberately. The long-press shortcut is
+        // preserved for power users.
         .onTapGesture {
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
             showSettings = true
@@ -49,6 +56,12 @@ struct AutomationStatusView: View {
                 isOn: isAutomationEnabled
             )
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(String.cameraSettingsAutomation.localized))
+        .accessibilityValue(Text(isAutomationEnabled
+            ? String.automationStatusOn.localized
+            : String.automationStatusOff.localized))
+        .accessibilityHint(Text(String.automationStatusAccessibilityHint.localized))
     }
 
     /// Status icon view
@@ -59,12 +72,14 @@ struct AutomationStatusView: View {
             .foregroundColor(iconColor)
     }
 
-    /// Icon name
+    /// Icon name. UX-07 / UX-22: identical in both states. The off state is
+    /// carried by the 60% opacity applied to the whole control (i.e. the
+    /// "grey icon" the review asked for), plus the accessibility value and
+    /// the icon's role in the top bar. A slashed variant would need an
+    /// SF Symbol name that isn't guaranteed to exist — an unknown name
+    /// renders as a blank glyph, which is strictly worse than a dim one.
     private var iconName: String {
-        if !isAutomationEnabled {
-            return "square.stack.3d.up.slash.fill"
-        }
-        return "square.stack.3d.up.fill"
+        "crown.fill"
     }
 
     /// Icon color

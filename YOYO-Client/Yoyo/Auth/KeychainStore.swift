@@ -9,7 +9,8 @@ protocol KeychainStoring {
     func readString(forKey key: String) -> String?
     func writeString(_ value: String, forKey key: String)
     func delete(forKey key: String)
-    func migrateFromLegacyDefaults(key: String, defaults: UserDefaults)
+    @discardableResult
+    func migrateFromLegacyDefaults(key: String, defaults: UserDefaults) -> Bool
 }
 
 /// Concrete keychain wrapper using `kSecClassGenericPassword`.
@@ -36,7 +37,13 @@ final class KeychainStore: KeychainStoring {
     }
 
     func readString(forKey key: String) -> String? {
-        read(forKey: key) as? String
+        // `SecItemCopyMatching` hands back a `CFData` for `kSecReturnData`,
+        // never a `CFString`. Casting straight to `String` here would make
+        // every read return nil (i.e. a silent, permanent logout).
+        guard let data = read(forKey: key) as? Data else {
+            return nil
+        }
+        return String(data: data, encoding: .utf8)
     }
 
     func writeString(_ value: String, forKey key: String) {

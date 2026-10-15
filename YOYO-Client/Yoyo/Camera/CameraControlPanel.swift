@@ -237,6 +237,20 @@ private struct CameraControlPanelContent: View {
                 .frame(width: CameraControlPanelDesign.columnWidth)
             }
             .frame(maxWidth: .infinity)
+
+            // UX-09: a tiny dismiss hint so the user knows tapping outside
+            // (or tapping the 6-dot menu again) will close the panel. The
+            // 4+3 button layout is preserved — this is only a one-line
+            // caption row.
+            HStack(spacing: 4) {
+                Image(systemName: "hand.tap")
+                    .font(.system(size: 9, weight: .medium))
+                Text(String.cameraPanelDismissHint.localized)
+                    .font(.system(size: 10, weight: .regular))
+            }
+            .foregroundColor(.white.opacity(0.55))
+            .frame(maxWidth: .infinity)
+            .padding(.top, 2)
         }
         .padding(.horizontal, CameraControlPanelDesign.contentHorizontalPadding)
         .padding(.top, CameraControlPanelDesign.contentTopPadding)

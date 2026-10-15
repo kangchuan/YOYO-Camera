@@ -232,34 +232,36 @@ struct CameraView: View {
     @ViewBuilder
     private func topMenuBar(geometry: GeometryProxy) -> some View {
         HStack {
-            if cameraManagers.settingsState.automationEnabled {
-                AutomationStatusView(
-                    automationManager: cameraManagers.automationManager,
-                    settingsState: cameraManagers.settingsState,
-                    showHistory: $showAutomationHistory,
-                    showSettings: automationSettingsBinding
-                )
-                .overlay(alignment: .topLeading) {
-                    // Confirmation bubble shown below `AutomationStatusView`
-                    if let pending = cameraManagers.automationManager.pendingConfirmation {
-                        AutomationConfirmationBubble(
-                            pending: pending,
-                            onConfirm: { cameraManagers.automationManager.confirmPendingRules() },
-                            onDismiss: { cameraManagers.automationManager.dismissPendingRules() }
-                        )
-                        .offset(y: 40)
-                        .transition(
-                            .asymmetric(
-                                insertion: .scale(scale: 0.8, anchor: .topLeading).combined(with: .opacity),
-                                removal: .scale(scale: 0.8, anchor: .topLeading).combined(with: .opacity)
-                            ))
-                    }
+            // UX-07: always show `AutomationStatusView` so the user can find
+            // their way back to enabling automation. When automation is off
+            // the view itself renders a dimmed crown-slash icon at 0.6
+            // opacity (see `AutomationStatusView`).
+            AutomationStatusView(
+                automationManager: cameraManagers.automationManager,
+                settingsState: cameraManagers.settingsState,
+                showHistory: $showAutomationHistory,
+                showSettings: automationSettingsBinding
+            )
+            .overlay(alignment: .topLeading) {
+                // Confirmation bubble shown below `AutomationStatusView`
+                if let pending = cameraManagers.automationManager.pendingConfirmation {
+                    AutomationConfirmationBubble(
+                        pending: pending,
+                        onConfirm: { cameraManagers.automationManager.confirmPendingRules() },
+                        onDismiss: { cameraManagers.automationManager.dismissPendingRules() }
+                    )
+                    .offset(y: 40)
+                    .transition(
+                        .asymmetric(
+                            insertion: .scale(scale: 0.8, anchor: .topLeading).combined(with: .opacity),
+                            removal: .scale(scale: 0.8, anchor: .topLeading).combined(with: .opacity)
+                        ))
                 }
-                .animation(
-                    .spring(response: 0.3, dampingFraction: 0.7),
-                    value: cameraManagers.automationManager.pendingConfirmation?.id
-                )
             }
+            .animation(
+                .spring(response: 0.3, dampingFraction: 0.7),
+                value: cameraManagers.automationManager.pendingConfirmation?.id
+            )
 
             AudioStatusView(
                 audioManager: cameraManagers.audioManager,

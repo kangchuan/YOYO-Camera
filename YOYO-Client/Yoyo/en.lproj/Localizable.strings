@@ -1021,3 +1021,34 @@
 "ai_inspiration_card_failure_title" = "Image failed";
 "ai_inspiration_card_failure_no_charge" = "This card was not charged.";
 "ai_inspiration_card_retry" = "Retry";
+
+// MARK: - Audit 2026-10-15 wave 3
+// UX-08: one-line summary of what an automation rule is about to change.
+"automation_summary_filter" = "Filter → %@";
+"automation_summary_exposure" = "Exposure %@ EV";
+"automation_summary_zoom" = "Zoom %@";
+"automation_summary_iso" = "ISO %@";
+"automation_summary_flash_on" = "Flash on";
+"automation_summary_flash_off" = "Flash off";
+"automation_summary_flash_auto" = "Flash auto";
+// UX-05: thermal degradation notices.
+"automation_thermal_throttle_toast" = "Device is warm — the live look preview is simplified; photos are unaffected";
+"automation_thermal_pause_toast" = "Device too hot — automation paused until it cools";
+// UX-07: accessibility for the always-visible automation entry.
+"automation_status_on" = "On";
+"automation_status_off" = "Off";
+"automation_status_accessibility_hint" = "Opens automation rules and settings";
+// UX-09: discoverability hint for the control panel.
+"camera_panel_dismiss_hint" = "Tap outside to close";
+// UX-12: label under the manual-params drawer handle.
+"camera_drawer_handle_label" = "Manual";
+// UX-17: onboarding button reflects its real behaviour.
+"onboarding_allow_access" = "Allow Access";
+"onboarding_continue_button" = "Continue";
+"onboarding_progress" = "%1$d of %2$d permissions granted";
+// UX-18: step-by-step recovery after a permission denial. The companion
+// "Open Settings" button deep-links into this app's Settings page.
+"permission_recovery_camera" = "Recovery path: Settings → YOYO → turn on Camera.";
+"permission_recovery_microphone" = "Recovery path: Settings → YOYO → turn on Microphone.";
+"permission_recovery_photo_library" = "Recovery path: Settings → YOYO → Photos → All Photos.";
+"permission_recovery_location" = "Recovery path: Settings → YOYO → Location → While Using the App.";

@@ -48,6 +48,19 @@ enum PermissionType: String, CaseIterable {
         case .location: return String.permissionLocationDenied.localized
         }
     }
+
+    /// UX-18: concrete, step-by-step recovery instructions shown together
+    /// with the denial alert. The companion "Open Settings" button
+    /// deep-links into this app's own system-settings page, so the steps
+    /// deliberately describe what the user will see once they get there.
+    var recoverySteps: String {
+        switch self {
+        case .camera: return String.permissionRecoveryCamera.localized
+        case .microphone: return String.permissionRecoveryMicrophone.localized
+        case .photoLibrary: return String.permissionRecoveryPhotoLibrary.localized
+        case .location: return String.permissionRecoveryLocation.localized
+        }
+    }
 }
 
 // MARK: - Permission status enumeration

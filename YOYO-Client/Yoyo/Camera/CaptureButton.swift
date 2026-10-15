@@ -64,9 +64,54 @@ struct CaptureButton: View {
 
     var action: (() -> Void)?
 
+    /// UX-10: fired when the user starts a long-press on the shutter. The
+    /// parent (typically `BottomControlBar`) uses this to enable the
+    /// "preview original" bypass on `FilterManager`. Fired only on the
+    /// press-down side, not on release.
+    var onLongPressStarted: (() -> Void)?
+
+    /// UX-10: fired when the long-press ends (finger lifted, gesture
+    /// cancelled, or interrupted by a system alert). The parent uses
+    /// this to clear the bypass and restore the live filter preview.
+    var onLongPressEnded: (() -> Void)?
+
+    /// UX-10: how long the finger must stay down before the bypass kicks
+    /// in. Picked to be shorter than iOS's system "press-and-hold" camera
+    /// gesture so the feature feels native.
+    private let longPressDuration: Double = 0.35
+
+    /// UX-10: how long after a long-press ends we keep swallowing the
+    /// Button's release action. See `body`.
+    private let releaseSuppressionWindow: TimeInterval = 0.25
+
+    /// UX-10: reports whether the user is currently holding the shutter.
+    /// `LongPressGesture` ends at the *threshold*, not on release, so it is
+    /// sequenced into a zero-distance `DragGesture`, which ends when the
+    /// finger actually leaves the screen. (There is no
+    /// `LongPressGesture.onStarted`, so the press-down side is driven by
+    /// `updating` instead.)
+    @GestureState private var isPressing: Bool = false
+
+    /// UX-10: when the last long-press ended.
+    @State private var holdEndedAt: Date?
+
     var body: some View {
         Button(
             action: {
+                // A long press also ends with a finger lift, which the
+                // Button turns into a normal tap: holding the shutter to
+                // peek at the original would otherwise *also* take a photo.
+                //
+                // Swallowed by time window rather than by a boolean flag,
+                // because SwiftUI gives no ordering guarantee between the
+                // button action and the gesture-end update — with a flag,
+                // the wrong one running first costs us either an unwanted
+                // photo or a permanently dead shutter.
+                if let endedAt = holdEndedAt,
+                   Date().timeIntervalSince(endedAt) < releaseSuppressionWindow {
+                    holdEndedAt = nil
+                    return
+                }
                 action?()
             }) {
                 ZStack {
@@ -105,6 +150,34 @@ struct CaptureButton: View {
             .onReceive(NotificationCenter.default.publisher(for: .cameraCaptureStateChanged)) { notification in
                 if let newState = notification.userInfo?[CameraNotificationKeys.captureState] as? CaptureState {
                     captureState = newState
+                }
+            }
+            // UX-10: long-press = "see original". The tap keeps working
+            // through the Button's own action, so VoiceOver / keyboard /
+            // pointer activation still captures normally.
+            .simultaneousGesture(
+                LongPressGesture(minimumDuration: longPressDuration)
+                    .sequenced(before: DragGesture(minimumDistance: 0))
+                    .updating($isPressing) { value, state, _ in
+                        switch value {
+                        case .first:
+                            // Threshold not reached yet — still a tap.
+                            state = false
+                        case .second:
+                            // Threshold reached; the trailing drag ends on
+                            // release (or on cancel), at which point
+                            // SwiftUI resets the gesture state for us.
+                            state = true
+                        }
+                    }
+            )
+            .onChange(of: isPressing) { _, isNowPressing in
+                if isNowPressing {
+                    holdEndedAt = nil
+                    onLongPressStarted?()
+                } else {
+                    holdEndedAt = Date()
+                    onLongPressEnded?()
                 }
             }
     }

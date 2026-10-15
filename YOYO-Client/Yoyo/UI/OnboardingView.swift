@@ -168,29 +168,52 @@ struct OnboardingView: View {
 
     // MARK: - start button
     private var startButton: some View {
-        Button {
-            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
-            impactFeedback.impactOccurred()
+        let grantedCount = requiredPermissions.filter { permissionManager.status(for: $0).isGranted }.count
+        let total = requiredPermissions.count
 
+        let titleText: String = {
             if allPermissionsGranted {
-                completeOnboarding()
+                return String.onboardingComplete.localized
+            } else if grantedCount == 0 {
+                return String.onboardingAllowAccess.localized
             } else {
-                requestPendingPermissions()
+                return String.onboardingContinueButton.localized
             }
-        } label: {
-            Text(allPermissionsGranted
-                ? String.onboardingComplete.localized
-                : String.onboardingGetStarted.localized)
-                .font(.system(size: 17, weight: .semibold))
-                .foregroundColor(Color(white: 0.05))
-                .frame(maxWidth: .infinity)
-                .frame(height: 54)
-                .background {
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(Color.accentColor)
+        }()
+
+        let progressText = String.onboardingProgress.localized(grantedCount, total)
+
+        return VStack(spacing: 6) {
+            Button {
+                let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                impactFeedback.impactOccurred()
+
+                if allPermissionsGranted {
+                    completeOnboarding()
+                } else {
+                    requestPendingPermissions()
                 }
+            } label: {
+                Text(titleText)
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundColor(Color(white: 0.05))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 54)
+                    .background {
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(Color.accentColor)
+                    }
+            }
+            .buttonStyle(ScaleButtonStyle())
+
+            // UX-17: tiny progress hint below the button so the user
+            // knows how many permissions are still pending.
+            if !allPermissionsGranted {
+                Text(progressText)
+                    .font(.system(size: 11, weight: .regular))
+                    .foregroundColor(.white.opacity(0.55))
+            }
         }
-        .buttonStyle(ScaleButtonStyle())
         .opacity(isAnimating ? 1 : 0)
         .animation(.easeOut(duration: 0.5).delay(0.3), value: isAnimating)
     }

@@ -1024,3 +1024,33 @@
 "ai_inspiration_card_failure_title" = "生成失败";
 "ai_inspiration_card_failure_no_charge" = "本次未扣费。";
 "ai_inspiration_card_retry" = "重试";
+
+// MARK: - Audit 2026-10-15 wave 3
+// UX-08：自动化规则即将改动的单行摘要。
+"automation_summary_filter" = "滤镜切换为 %@";
+"automation_summary_exposure" = "曝光 %@ EV";
+"automation_summary_zoom" = "变焦 %@";
+"automation_summary_iso" = "ISO %@";
+"automation_summary_flash_on" = "闪光灯开";
+"automation_summary_flash_off" = "闪光灯关";
+"automation_summary_flash_auto" = "闪光灯自动";
+// UX-05：发热降级提示。
+"automation_thermal_throttle_toast" = "设备温度较高，已简化实时预览（成片仍保留滤镜）";
+"automation_thermal_pause_toast" = "设备过热，自动化已暂停，降温后自动恢复";
+// UX-07：常驻自动化入口的无障碍描述。
+"automation_status_on" = "已开启";
+"automation_status_off" = "已关闭";
+"automation_status_accessibility_hint" = "打开自动化规则管理";
+// UX-09：控制面板关闭方式提示。
+"camera_panel_dismiss_hint" = "点击空白处关闭";
+// UX-12：手动参数抽屉把手标签。
+"camera_drawer_handle_label" = "参数";
+// UX-17：Onboarding 按钮文案与实际行为一致，并显示授权进度。
+"onboarding_allow_access" = "允许访问";
+"onboarding_continue_button" = "继续";
+"onboarding_progress" = "已授权 %1$d / %2$d 项权限";
+// UX-18：权限被拒后的分步恢复路径。「打开设置」按钮直达本 App 的系统设置页。
+"permission_recovery_camera" = "恢复路径：设置 → YOYO → 打开「相机」开关。";
+"permission_recovery_microphone" = "恢复路径：设置 → YOYO → 打开「麦克风」开关。";
+"permission_recovery_photo_library" = "恢复路径：设置 → YOYO → 照片 → 选择「所有照片」。";
+"permission_recovery_location" = "恢复路径：设置 → YOYO → 位置 → 选择「使用 App 期间」。";

@@ -1,5 +1,9 @@
 import Foundation
 
+#if canImport(FirebaseCore)
+import FirebaseCore
+#endif
+
 /// Centralised guard for "should we boot the Firebase SDK at all?".
 ///
 /// Background
@@ -61,8 +65,14 @@ enum FirebaseBootstrap {
 
     /// Convenience wrapper for the call site. Centralised so we don't
     /// sprinkle `FirebaseApp.configure()` around the codebase.
+    ///
+    /// The Firebase types are guarded by `canImport` so targets that don't
+    /// link `FirebaseCore` (e.g. unit tests) can still ask
+    /// `shouldInitializeFirebase()` and merely get a no-op here.
     static func configureIfEligible() {
         guard shouldInitializeFirebase() else { return }
+        #if canImport(FirebaseCore)
         FirebaseApp.configure()
+        #endif
     }
 }

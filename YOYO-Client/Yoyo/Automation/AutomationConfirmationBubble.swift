@@ -1,3 +1,4 @@
+import AVFoundation
 import SwiftUI
 
 /// Pending rule information
@@ -13,6 +14,48 @@ struct PendingConfirmation: Identifiable {
 
     var ruleNames: String {
         rules.map(\.name).joined(separator: "、")
+    }
+
+    /// UX-08: a one-line human-readable description of what the rule is
+    /// about to change (filter / exposure / etc.) so the user can decide
+    /// whether to accept without opening the management page.
+    var changeSummary: String? {
+        var parts: [String] = []
+
+        if let filterName = settings.filter?.name, !filterName.isEmpty {
+            parts.append(String.automationSummaryFilter.localized(filterName))
+        }
+        if let bias = settings.exposureBias {
+            let ev = String(format: "%+.1f", bias)
+            parts.append(String.automationSummaryExposure.localized(ev))
+        }
+        if let zoom = settings.zoom {
+            parts.append(String.automationSummaryZoom.localized(String(format: "%.1fx", zoom)))
+        }
+        if let flash = settings.flashMode {
+            parts.append(flashLabel(flash))
+        }
+        if let iso = settings.iso {
+            parts.append(String.automationSummaryIso.localized(iso))
+        }
+
+        // If the plan came with explicit toast messages, surface the first
+        // one too — that is usually the most user-friendly description of
+        // what the rule wants to do.
+        if let firstToast = toasts.first {
+            parts.append(firstToast.message)
+        }
+
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
+    }
+
+    private func flashLabel(_ mode: AVCaptureDevice.FlashMode) -> String {
+        switch mode {
+        case .on: return String.automationSummaryFlashOn.localized
+        case .off: return String.automationSummaryFlashOff.localized
+        case .auto: return String.automationSummaryFlashAuto.localized
+        @unknown default: return ""
+        }
     }
 }
 
@@ -41,6 +84,17 @@ struct AutomationConfirmationBubble: View {
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(.white)
                     .lineLimit(1)
+
+                // UX-08: a one-line summary of what is about to change so the
+                // user can decide whether to accept without having to open
+                // the management page.
+                if let summary = pending.changeSummary {
+                    Text(summary)
+                        .font(.system(size: 10))
+                        .foregroundColor(.white.opacity(0.7))
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+                }
             }
 
             // action buttons

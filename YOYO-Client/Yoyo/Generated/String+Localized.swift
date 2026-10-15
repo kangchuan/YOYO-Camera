@@ -1040,4 +1040,35 @@ extension String {
     static let aiInspirationCardFailureTitle = "ai_inspiration_card_failure_title"
     static let aiInspirationCardFailureNoCharge = "ai_inspiration_card_failure_no_charge"
     static let aiInspirationCardRetry = "ai_inspiration_card_retry"
+
+    // MARK: - Audit 2026-10-15 wave 3
+    // UX-08: one-line summary of what an automation rule is about to change.
+    static let automationSummaryFilter = "automation_summary_filter"
+    static let automationSummaryExposure = "automation_summary_exposure"
+    static let automationSummaryZoom = "automation_summary_zoom"
+    static let automationSummaryIso = "automation_summary_iso"
+    static let automationSummaryFlashOn = "automation_summary_flash_on"
+    static let automationSummaryFlashOff = "automation_summary_flash_off"
+    static let automationSummaryFlashAuto = "automation_summary_flash_auto"
+    // UX-05: thermal degradation notices.
+    static let automationThermalThrottleToast = "automation_thermal_throttle_toast"
+    static let automationThermalPauseToast = "automation_thermal_pause_toast"
+    // UX-07: accessibility for the always-visible automation entry.
+    static let automationStatusOn = "automation_status_on"
+    static let automationStatusOff = "automation_status_off"
+    static let automationStatusAccessibilityHint = "automation_status_accessibility_hint"
+    // UX-09: discoverability hint for the control panel.
+    static let cameraPanelDismissHint = "camera_panel_dismiss_hint"
+    // UX-12: label under the manual-params drawer handle.
+    static let cameraDrawerHandleLabel = "camera_drawer_handle_label"
+    // UX-17: onboarding button reflects its real behaviour.
+    static let onboardingAllowAccess = "onboarding_allow_access"
+    static let onboardingContinueButton = "onboarding_continue_button"
+    static let onboardingProgress = "onboarding_progress"
+    // UX-18: step-by-step recovery after a permission denial. The companion
+    // "Open Settings" button deep-links into this app's Settings page.
+    static let permissionRecoveryCamera = "permission_recovery_camera"
+    static let permissionRecoveryMicrophone = "permission_recovery_microphone"
+    static let permissionRecoveryPhotoLibrary = "permission_recovery_photo_library"
+    static let permissionRecoveryLocation = "permission_recovery_location"
 }

@@ -30,7 +30,17 @@ struct BottomControlBar: View {
             // Shutter — always centred on screen
             CaptureButton(
                 settingsState: settingsState,
-                action: { managers.captureService.triggerShutterAction() }
+                action: { managers.captureService.triggerShutterAction() },
+                onLongPressStarted: {
+                    // UX-10: long-press the shutter to peek at the raw
+                    // sensor output. We disable the colour-grading layer
+                    // here and restore it on release.
+                    triggerLightImpact()
+                    FilterManager.shared.previewBypass = true
+                },
+                onLongPressEnded: {
+                    FilterManager.shared.previewBypass = false
+                }
             )
             .frame(maxWidth: .infinity, alignment: .center)
             .zIndex(1)

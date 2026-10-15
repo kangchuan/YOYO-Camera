@@ -131,6 +131,7 @@ final class CameraAutomationManager: ObservableObject {
 
     private init() {
         observeEnabledRules()
+        observeThermalState()
     }
 
     /// Start or stop the analysis loop as soon as the set of enabled rules changes,
@@ -155,6 +156,77 @@ final class CameraAutomationManager: ObservableObject {
             .store(in: &cancellables)
     }
 
+    // MARK: - Thermal management (UX-05)
+    //
+    // Thermal source: `ProcessInfo.processInfo.thermalState` — system-reported
+    // device thermal pressure. We do NOT fake or infer from CPU usage; this is
+    // the only signal iOS exposes that matches Apple's "device is hot" semantics.
+    //
+    // Degradation policy:
+    //   .nominal / .fair   — normal cadence, full feature set.
+    //   .serious           — analyse only every 30s; disable the realtime
+    //                        filter preview to free GPU; warn the user once.
+    //   .critical          — pause the automation loop entirely until the
+    //                        device cools down to at least .serious.
+    private static let thermalIntervalSeconds: TimeInterval = 30.0
+    private var lastObservedThermalState: ProcessInfo.ThermalState = .nominal
+
+    private func observeThermalState() {
+        // Seed with the current state so the comparison in the sink is
+        // meaningful on the first event.
+        lastObservedThermalState = ProcessInfo.processInfo.thermalState
+
+        NotificationCenter.default
+            .publisher(for: ProcessInfo.thermalStateDidChangeNotification)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.handleThermalStateChange(ProcessInfo.processInfo.thermalState)
+            }
+            .store(in: &cancellables)
+    }
+
+    private func handleThermalStateChange(_ newState: ProcessInfo.ThermalState) {
+        let previous = lastObservedThermalState
+        lastObservedThermalState = newState
+        guard newState != previous else { return }
+        debugLog("🌡️ [Automation] thermal \(previous) → \(newState)")
+
+        switch newState {
+        case .nominal, .fair:
+            // Recovered: kick the loop so the next rule can run promptly.
+            if hasEnabledRules, cameraSettings.automationEnabled, cameraSettings.isCaptureSessionActive {
+                if realTimeAnalysisTask == nil {
+                    startRealTimeAnalysis()
+                }
+            }
+        case .serious:
+            // First cross into serious — surface a one-time warning so the
+            // user knows why automation has slowed down.
+            CameraViewState.shared.showWarning(
+                String.automationThermalThrottleToast.localized,
+                customIcon: "thermometer.high"
+            )
+            // Restart the loop with the throttled interval.
+            if realTimeAnalysisTask != nil {
+                stopRealTimeAnalysis()
+            }
+            if hasEnabledRules, cameraSettings.automationEnabled, cameraSettings.isCaptureSessionActive {
+                startRealTimeAnalysis()
+            }
+        case .critical:
+            // Critical: pull the loop entirely. The next `nominal` event
+            // (or the enabled-rules publisher) will restart it.
+            stopRealTimeAnalysis()
+            CameraViewState.shared.showWarning(
+                String.automationThermalPauseToast.localized,
+                customIcon: "thermometer.high"
+            )
+        @unknown default:
+            break
+        }
+    }
+
     // MARK: - Main feature methods
 
     /// Start real-time analysis
@@ -175,15 +247,22 @@ final class CameraAutomationManager: ObservableObject {
 
         realTimeAnalysisTask = Task { @MainActor in
             while !Task.isCancelled, cameraSettings.automationEnabled, cameraSettings.isCaptureSessionActive, hasEnabledRules {
+                // Bail out early if the device is critical — we still want
+                // the loop to react quickly to the next thermal change.
+                if ProcessInfo.processInfo.thermalState == .critical {
+                    debugLog("🌡️ [Automation] skipping analysis tick (thermal = .critical)")
+                    try? await Task.sleep(nanoseconds: UInt64(idleAnalysisInterval * 1_000_000_000))
+                    continue
+                }
+
                 // get the latest preview frame from SampleBufferProvider
                 if let sampleBuffer = getCurrentSampleBuffer() {
                     await analyzeAndApply(from: sampleBuffer)
                 }
 
-                // control analysis frequency, avoid excessive resource usage
-                let interval = automationEngine.analysisRequirements.needsAnyAnalysis
-                    ? realTimeAnalysisInterval
-                    : idleAnalysisInterval
+                // control analysis frequency, avoid excessive resource usage.
+                // Thermal throttling (UX-05) wins over the per-rule cadence.
+                let interval = currentAnalysisInterval()
                 try? await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
             }
 
@@ -195,6 +274,17 @@ final class CameraAutomationManager: ObservableObject {
                 self.realTimeAnalysisTask = nil
             }
         }
+    }
+
+    /// The interval to wait between analysis ticks. Combines rule-driven
+    /// realtime/idle cadence with the thermal throttle (UX-05).
+    private func currentAnalysisInterval() -> TimeInterval {
+        if ProcessInfo.processInfo.thermalState == .serious {
+            return Self.thermalIntervalSeconds
+        }
+        return automationEngine.analysisRequirements.needsAnyAnalysis
+            ? realTimeAnalysisInterval
+            : idleAnalysisInterval
     }
 
     /// Check whether any rule requires location information
