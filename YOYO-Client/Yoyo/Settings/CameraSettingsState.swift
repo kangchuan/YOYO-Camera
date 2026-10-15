@@ -203,7 +203,12 @@ final class CameraSettingsState: ObservableObject {
     }
 
     // MARK: - initialization
-    private init() {
+    /// A-11: internal rather than private so tests can build an isolated
+    /// instance and exercise the injected-capability path (see
+    /// `LocationPermissionToggleTests`). Production code must keep using
+    /// `.shared` — a second live instance would be a second `@AppStorage`
+    /// view of the same world.
+    init() {
         // Load the initial value from AppStorage into the Published property.
         if let mode = CameraCaptureMode(rawValue: captureModeRaw) {
             _currentCaptureMode = Published(initialValue: mode)
