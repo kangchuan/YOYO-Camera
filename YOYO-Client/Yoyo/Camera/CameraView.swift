@@ -561,7 +561,7 @@ private struct CameraStateObserver: ViewModifier {
             }
             .onChange(of: cameraManagers.settingsState.isCaptureSessionActive) { old, new in
                 if new, !old {
-                    if cameraManagers.automationManager.automationEngine.rules.contains(where: \.isEnabled) {
+                    if cameraManagers.automationManager.ruleStore.rules.contains(where: \.isEnabled) {
                         cameraManagers.automationManager.activateAutomation()
                     }
                 } else if !new, old {

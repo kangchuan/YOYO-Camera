@@ -5,7 +5,7 @@ import UIKit
 
 struct AutomationRuleEditorView: View {
     @State var rule: AutomationRule
-    var engine: AutomationEngine
+    var engine: any AutomationRuleStoring
     var isNew: Bool = false
     @Environment(\.dismiss) private var dismiss
 
@@ -209,7 +209,7 @@ struct AutomationRuleEditorView: View {
                         }
 
                         if isNew {
-                            engine.addRule(rule)
+                            engine.addRule(rule, after: nil)
                             AnalyticsManager.shared.log(.automationRuleAction(action: "create"))
                         } else {
                             engine.updateRule(rule)

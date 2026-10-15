@@ -8,7 +8,7 @@ struct AutomationStatusView: View {
     @Binding var showSettings: Bool
 
     private var enabledRules: [AutomationRule] {
-        automationManager.automationEngine.rules.filter(\.isEnabled)
+        automationManager.ruleStore.rules.filter(\.isEnabled)
     }
 
     private var enabledCount: Int {

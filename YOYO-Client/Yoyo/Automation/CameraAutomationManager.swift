@@ -80,6 +80,11 @@ protocol SampleBufferProvider: AnyObject {
 final class CameraAutomationManager: ObservableObject {
     static let shared = CameraAutomationManager()
 
+    // A-08: see AutomationProtocols.swift. `automationEngine` is declared as a
+    // concrete `let` on purpose — a get-only property satisfies the protocol's
+    // `{ get }` requirement without exposing a setter nobody should have.
+    // MARK: - capability conformance
+
     @Published var isAnalyzing = false
     @Published var currentAnalysis: SceneAnalysis?
     @Published var suggestedSettings: CameraSettings?
@@ -87,6 +92,14 @@ final class CameraAutomationManager: ObservableObject {
     @Published var analysisProgress: Float = 0.0
     @Published var analysisHistory: [AnalysisHistoryItem] = []
     @Published var executionHistory: [AutomationExecutionHistory] = []
+
+    /// A-08: part of the `AutomationControlling` contract. Clearing goes
+    /// through a method so the protocol never has to hand out a settable
+    /// array — a consumer could otherwise mutate the history without going
+    /// through the manager at all.
+    func clearExecutionHistory() {
+        executionHistory.removeAll()
+    }
     @Published var pendingConfirmation: PendingConfirmation? // rule pending confirmation
 
     /// rule execution time records(used for cooldown checks)
@@ -1073,4 +1086,13 @@ final class CameraAutomationManager: ObservableObject {
             }
         }
     }
+}
+
+// MARK: - capability conformance (A-08)
+// The orchestration half of the automation seam; the rule-storage half is
+// AutomationEngine's. See AutomationProtocols.swift.
+extension CameraAutomationManager: AutomationControlling {
+    /// Typed shim for the protocol: `automationEngine` stays concrete for the
+    /// rest of this class, consumers see the protocol.
+    var ruleStore: any AutomationRuleStoring { automationEngine }
 }

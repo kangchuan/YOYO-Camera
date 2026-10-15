@@ -66,7 +66,7 @@ struct CameraControlPanel: View {
     @ObservedObject var settingsState: CameraSettingsState
     let viewState: CameraViewState
     let sessionManager: CameraSessionManager
-    let automationManager: CameraAutomationManager?
+    let automationManager: (any AutomationControlling)?
     @EnvironmentObject var permissionManager: PermissionManager
     let orientationManager: OrientationManager
 

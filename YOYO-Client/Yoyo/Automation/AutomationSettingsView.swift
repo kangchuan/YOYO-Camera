@@ -112,7 +112,7 @@ struct AutomationSettingsView: View {
                 NavigationStack {
                     AutomationRuleEditorView(
                         rule: AutomationRule(name: "", conditions: [], actions: []),
-                        engine: automationManager.automationEngine,
+                        engine: automationManager.ruleStore,
                         isNew: true
                     )
                 }
@@ -150,7 +150,7 @@ struct AutomationSettingsView: View {
         .onAppear {
             // If selectedTab has not been initialized yet, choose the default tab based on whether rules are empty
             if selectedTab == -1 {
-                selectedTab = automationManager.automationEngine.rules.isEmpty ? 0 : 1
+                selectedTab = automationManager.ruleStore.rules.isEmpty ? 0 : 1
             }
         }
     }
@@ -167,7 +167,7 @@ struct AutomationSettingsView: View {
             do {
                 let rule = try await AutomationShareService.shared.getSharedRule(code: code)
                 AnalyticsManager.shared.log(.automationRuleAction(action: "import_success"))
-                automationManager.automationEngine.addRule(rule)
+                automationManager.ruleStore.addRule(rule, after: nil)
                 selectedTab = 1 // switch to"Mine"tab
                 showingImportCodeAlert = false
                 importCode = ""
@@ -180,7 +180,7 @@ struct AutomationSettingsView: View {
 
     var mineView: some View {
         VStack(spacing: kCardSpacing) {
-            if automationManager.automationEngine.rules.isEmpty {
+            if automationManager.ruleStore.rules.isEmpty {
                 VStack {
                     Spacer()
                     VStack(spacing: 16) {
@@ -197,8 +197,8 @@ struct AutomationSettingsView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                ForEach(automationManager.automationEngine.rules) { rule in
-                    NavigationLink(destination: AutomationRuleEditorView(rule: rule, engine: automationManager.automationEngine)) {
+                ForEach(automationManager.ruleStore.rules) { rule in
+                    NavigationLink(destination: AutomationRuleEditorView(rule: rule, engine: automationManager.ruleStore)) {
                         AutomationRuleCard(
                             rule: rule,
                             automationManager: automationManager,
@@ -217,7 +217,7 @@ struct AutomationSettingsView: View {
             ForEach(RecommendedAutomationTask.recommendations) { task in
                 NavigationLink(destination: RecommendedTaskDetailView(
                     task: task,
-                    engine: automationManager.automationEngine,
+                    engine: automationManager.ruleStore,
                     onTaskAdded: {
                         selectedTab = 1
                     }

@@ -729,6 +729,11 @@ struct AnalysisRequirements: Equatable {
 
 // MARK: - Automation engine
 
+// A-08: the rule-storage half of the automation seam. See
+// AutomationProtocols.swift for why this is separate from the manager.
+extension AutomationEngine: AutomationRuleStoring {}
+
+
 final class AutomationEngine: ObservableObject {
     @Published var rules: [AutomationRule] = []
     @Published var activeRules: [AutomationRule] = []

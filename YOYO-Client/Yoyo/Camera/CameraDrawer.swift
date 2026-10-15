@@ -185,7 +185,7 @@ struct CameraDrawer: View {
 
     private var quickTaskRules: [AutomationRule] {
         quickTaskManager.quickTaskRuleIds.compactMap { ruleId in
-            automationManager.automationEngine.rules.first { $0.id == ruleId }
+            automationManager.ruleStore.rules.first { $0.id == ruleId }
         }
     }
 
@@ -205,7 +205,7 @@ struct CameraDrawer: View {
 
 private struct QuickTaskItem: View {
     let rule: AutomationRule
-    let automationManager: CameraAutomationManager
+    let automationManager: any AutomationControlling
     let onRemove: () -> Void
     let viewState: CameraViewState
 

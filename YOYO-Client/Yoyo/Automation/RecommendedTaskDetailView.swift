@@ -4,7 +4,7 @@ import SwiftUI
 
 struct RecommendedTaskDetailView: View {
     let task: RecommendedAutomationTask
-    let engine: AutomationEngine
+    let engine: any AutomationRuleStoring
     let onTaskAdded: () -> Void
     @Environment(\.dismiss) private var dismiss
 
@@ -72,7 +72,7 @@ struct RecommendedTaskDetailView: View {
                         // use this task
                         let rule = task.toAutomationRule()
                         AnalyticsManager.shared.log(.automationRuleAction(action: "use_recommendation"))
-                        engine.addRule(rule)
+                        engine.addRule(rule, after: nil)
                         UIImpactFeedbackGenerator(style: .light).impactOccurred()
                         onTaskAdded()
                         dismiss()

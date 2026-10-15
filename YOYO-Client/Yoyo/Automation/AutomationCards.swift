@@ -96,7 +96,7 @@ struct RecommendedAutomationRuleCard: View {
 /// Rule card (with toggle)
 struct AutomationRuleCard: View {
     let rule: AutomationRule
-    let automationManager: CameraAutomationManager
+    let automationManager: any AutomationControlling
     let cardColor: Color
     let accentColor: Color
 
@@ -109,7 +109,7 @@ struct AutomationRuleCard: View {
     @State private var isSharing = false
     @State private var shareError: String?
 
-    init(rule: AutomationRule, automationManager: CameraAutomationManager, cardColor: Color, accentColor: Color) {
+    init(rule: AutomationRule, automationManager: any AutomationControlling, cardColor: Color, accentColor: Color) {
         self.rule = rule
         self.automationManager = automationManager
         self.cardColor = cardColor
@@ -148,7 +148,7 @@ struct AutomationRuleCard: View {
                                     requireConfirmation = newValue
                                     var updatedRule = rule
                                     updatedRule.requireConfirmation = newValue
-                                    automationManager.automationEngine.updateRule(updatedRule)
+                                    automationManager.ruleStore.updateRule(updatedRule)
                                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
                                 }
                             )) {
@@ -194,17 +194,17 @@ struct AutomationRuleCard: View {
                             Button {
                                 var clonedRule = rule
                                 clonedRule.id = AutomationRule.generateUniqueShortID()
-                                let existingNames = automationManager.automationEngine.rules.map(\.name)
+                                let existingNames = automationManager.ruleStore.rules.map(\.name)
                                 clonedRule.name = NamingUtils.generateUniqueName(for: rule.name, among: existingNames)
                                 clonedRule.shareCode = nil // Reset share code for clone
-                                automationManager.automationEngine.addRule(clonedRule, after: rule.id)
+                                automationManager.ruleStore.addRule(clonedRule, after: rule.id)
                                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
                             } label: {
                                 Label(String.automationCloneTask.localized, systemImage: "doc.on.doc")
                             }
 
                             Button(role: .destructive) {
-                                automationManager.automationEngine.deleteRule(rule.id)
+                                automationManager.ruleStore.deleteRule(rule.id)
                                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
                             } label: {
                                 Label(String.automationDeleteTask.localized, systemImage: "trash")
@@ -310,7 +310,7 @@ struct AutomationRuleCard: View {
                         .onChange(of: isEnabled) { _, newValue in
                             var updatedRule = rule
                             updatedRule.isEnabled = newValue
-                            automationManager.automationEngine.updateRule(updatedRule)
+                            automationManager.ruleStore.updateRule(updatedRule)
                             UIImpactFeedbackGenerator(style: .light).impactOccurred()
                         }
                 }
@@ -358,7 +358,7 @@ struct AutomationRuleCard: View {
                 // persist and save
                 var updatedRule = rule
                 updatedRule.shareCode = code
-                automationManager.automationEngine.updateRule(updatedRule)
+                automationManager.ruleStore.updateRule(updatedRule)
 
                 withAnimation {
                     showingShareSheet = true
@@ -449,14 +449,14 @@ struct AutomationRuleCard: View {
 
     VStack(spacing: 16) {
         AutomationRuleCard(
-            rule: automationManager.automationEngine.rules[0],
+            rule: automationManager.ruleStore.rules[0],
             automationManager: automationManager,
             cardColor: Color(red: 40 / 255, green: 40 / 255, blue: 40 / 255),
             accentColor: .cyan
         )
 
         AutomationRuleCard(
-            rule: automationManager.automationEngine.rules[1],
+            rule: automationManager.ruleStore.rules[1],
             automationManager: automationManager,
             cardColor: Color(red: 40 / 255, green: 40 / 255, blue: 40 / 255),
             accentColor: .green

@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Optimized AI Automation history overlay
 struct AutomationHistoryOverlay: View {
-    let automationManager: CameraAutomationManager
+    let automationManager: any AutomationControlling
     @Binding var isPresented: Bool
 
     var body: some View {
@@ -23,7 +23,7 @@ struct AutomationHistoryOverlay: View {
                     executionHistory: automationManager.executionHistory,
                     isPresented: $isPresented,
                     onClearHistory: {
-                        automationManager.executionHistory.removeAll()
+                        automationManager.clearExecutionHistory()
                     }
                 )
                 .transition(.move(edge: .bottom).combined(with: .opacity))
