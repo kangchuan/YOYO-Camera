@@ -80,6 +80,10 @@ struct CameraControlPanel: View {
                 .frame(width: 44, height: 44)
                 .contentShape(Rectangle())
         }
+        // UX-11: the glyph itself is `accessibilityHidden`, so without a
+        // label here VoiceOver announces this 44pt button as nothing at all.
+        .accessibilityLabel(Text(String.cameraPanelMenu.localized))
+        .accessibilityHint(Text(String.cameraPanelMenuHint.localized))
         // The 44pt hit area sits flush against the right screen edge so the
         // glyph center lands 22pt from the edge (iOS camera convention). The
         // row itself carries 16pt horizontal padding — this cancels it for
@@ -246,7 +250,9 @@ private struct CameraControlPanelContent: View {
                 Image(systemName: "hand.tap")
                     .font(.system(size: 9, weight: .medium))
                 Text(String.cameraPanelDismissHint.localized)
-                    .font(.system(size: 10, weight: .regular))
+                    // UX-11: scales with the reader's text size (capped by the
+                    // panel below), instead of being pinned at 10pt.
+                    .font(.caption2)
             }
             .foregroundColor(.white.opacity(0.55))
             .frame(maxWidth: .infinity)
@@ -255,6 +261,9 @@ private struct CameraControlPanelContent: View {
         .padding(.horizontal, CameraControlPanelDesign.contentHorizontalPadding)
         .padding(.top, CameraControlPanelDesign.contentTopPadding)
         .padding(.bottom, CameraControlPanelDesign.contentBottomPadding)
+        // UX-11: the 4+3 grid has a fixed column pitch, so cap the type size
+        // here — below the cap the labels scale with the reader's setting.
+        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         .frame(maxWidth: .infinity)
         .background {
             RoundedRectangle(cornerRadius: CameraControlPanelDesign.cornerRadius, style: .continuous)
@@ -400,8 +409,12 @@ private struct PanelButtonShell<Center: View>: View {
                     .clipShape(Circle())
 
                 Text(label)
-                    .font(.system(size: CameraControlPanelDesign.labelSize,
-                                  weight: isActive ? .medium : .regular))
+                    // UX-11: a semantic font so the label actually follows the
+                    // reader's text size (`.system(size:)` does not scale).
+                    // The panel's 4+3 grid has a fixed button pitch, so the
+                    // surrounding panel caps the size at xxxLarge.
+                    .font(.subheadline)
+                    .fontWeight(isActive ? .medium : .regular)
                     .foregroundColor(.white.opacity(isActive ? 1 : 0.85))
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)

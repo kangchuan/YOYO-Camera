@@ -21,6 +21,13 @@ struct BottomControlBar: View {
             lowerRow
         }
         .frame(maxWidth: .infinity)
+        // UX-11: the bottom bar lives in a fixed 210pt band with hard-coded
+        // control heights, so an unbounded Dynamic Type size would push the
+        // rows out of the band (labels clipped, rows overlapping). Cap it at
+        // xxxLarge — large-text users still get real scaling, and the layout
+        // stays intact. Everything that is *not* inside this band (sheets,
+        // settings, gallery) keeps scaling all the way.
+        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
     }
 
     // MARK: - Row 1: filter · shutter · AI composition

@@ -96,9 +96,26 @@ struct AICompositionButton: View {
             .overlay(stateBadge, alignment: .topTrailing)
             .rotationEffect(.degrees(rotation))
             .contentShape(Circle())
+            // UX-11: the sparkles glyph is decoration; the button's name is
+            // already announced below, so letting VoiceOver read both would
+            // produce "sparkles, AI Composition".
+            .accessibilityElement(children: .ignore)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(Text(String.cameraAiComposition.localized))
+        .accessibilityValue(stateBadgeValue)
+    }
+
+    /// The badge is an overlay on top of the button's own label, so it has to
+    /// be announced as the button's *value* rather than as a second element.
+    private var stateBadgeValue: String {
+        if isLoggedIn, !isPro {
+            return String.cameraAiProRequired.localized
+        }
+        if isLoggedIn, isPro, !hasCredits {
+            return String.aiDarkroomInsufficientCreditsHint.localized
+        }
+        return ""
     }
 }
 
@@ -151,7 +168,10 @@ struct CaptureModePill: View {
     ) -> some View {
         Button(action: action) {
             Text(title)
-                .font(.system(size: CameraControlDesign.modePillFontSize, weight: .medium))
+                // UX-11: semantic font so the mode labels follow the reader's
+                // text size (the bar caps it at xxxLarge — see BottomControlBar).
+                .font(.subheadline)
+                .fontWeight(.medium)
                 .foregroundColor(isSelected ? Color.black.opacity(0.85) : Color.white.opacity(0.9))
                 .lineLimit(1)
                 .padding(.horizontal, CameraControlDesign.modePillSegmentHPadding)
@@ -165,6 +185,12 @@ struct CaptureModePill: View {
                 .contentShape(Capsule())
         }
         .buttonStyle(.plain)
+        // UX-11: announce which segment is active — a capsule of two pills
+        // reads as one anonymous element otherwise.
+        .accessibilityLabel(Text(title))
+        .accessibilityHint(Text(String.cameraModeSegmentHint.localized))
+        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
+        .accessibilityValue(isSelected ? String.cameraModeSelected.localized : "")
     }
 
     private func select(_ mode: CameraCaptureMode) {

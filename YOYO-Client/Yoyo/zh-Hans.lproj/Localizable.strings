@@ -1188,3 +1188,16 @@
 "film_param_channel_b_high_subtitle" = "蓝/高";
 "film_param_channel_b_high_desc" = "Blue channel or High frequency component";
 "film_param_channel_b_high_desc_zh" = "蓝色通道或高频分量";
+
+// MARK: - Audit 2026-10-15 wave 4
+// UX-11：相机界面里纯图标控件的朗读名称。没有这些，旁白对 SF Symbol 读不出任何内容。
+"camera_panel_menu" = "控制面板";
+"camera_panel_menu_hint" = "闪光灯、定时器、实况、宽高比等";
+"camera_shutter_photo" = "拍照";
+"camera_shutter_video" = "开始录制";
+"camera_shutter_stop_video" = "停止录制";
+"camera_shutter_hint" = "长按可预览无滤镜画面";
+"camera_mode_segment_hint" = "在视频与照片之间切换";
+"camera_mode_selected" = "已选择";
+"camera_album_hint" = "打开相册";
+"camera_original_filter" = "原相机";

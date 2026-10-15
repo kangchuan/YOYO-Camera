@@ -180,5 +180,22 @@ struct CaptureButton: View {
                     onLongPressEnded?()
                 }
             }
+            // UX-11: the shutter is a bare circle — VoiceOver had nothing to
+            // announce. The label follows the mode *and* the capture state, so
+            // "Start recording" flips to "Stop recording" while rolling.
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text(shutterAccessibilityLabel))
+            .accessibilityHint(Text(String.cameraShutterHint.localized))
+    }
+
+    private var shutterAccessibilityLabel: String {
+        switch settingsState.currentCaptureMode {
+        case .movie:
+            return captureState.isCapturing
+                ? String.cameraShutterStopVideo.localized
+                : String.cameraShutterVideo.localized
+        case .photo, .livePhoto:
+            return String.cameraShutterPhoto.localized
+        }
     }
 }

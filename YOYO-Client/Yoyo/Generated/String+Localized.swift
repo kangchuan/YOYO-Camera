@@ -1205,4 +1205,18 @@ extension String {
     static let filmParamChannelBHighSubtitle = "film_param_channel_b_high_subtitle"
     static let filmParamChannelBHighDesc = "film_param_channel_b_high_desc"
     static let filmParamChannelBHighDescZh = "film_param_channel_b_high_desc_zh"
+
+    // MARK: - Audit 2026-10-15 wave 4
+    // UX-11: spoken names for the icon-only controls in the camera UI. Without
+    // these VoiceOver reads nothing at all for a bare SF Symbol.
+    static let cameraPanelMenu = "camera_panel_menu"
+    static let cameraPanelMenuHint = "camera_panel_menu_hint"
+    static let cameraShutterPhoto = "camera_shutter_photo"
+    static let cameraShutterVideo = "camera_shutter_video"
+    static let cameraShutterStopVideo = "camera_shutter_stop_video"
+    static let cameraShutterHint = "camera_shutter_hint"
+    static let cameraModeSegmentHint = "camera_mode_segment_hint"
+    static let cameraModeSelected = "camera_mode_selected"
+    static let cameraAlbumHint = "camera_album_hint"
+    static let cameraOriginalFilter = "camera_original_filter"
 }

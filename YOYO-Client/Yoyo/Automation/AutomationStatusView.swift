@@ -26,7 +26,10 @@ struct AutomationStatusView: View {
 
             if enabledCount > 0 {
                 Text("\(enabledCount)")
-                    .font(.system(size: 10, weight: .medium))
+                    // UX-11: was pinned at 10pt; semantic so it follows the
+                    // reader's text size (top bar caps at xxxLarge).
+                    .font(.caption)
+                    .fontWeight(.medium)
                     .foregroundColor(textColor)
             }
         }

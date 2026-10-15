@@ -291,6 +291,10 @@ struct CameraView: View {
         .padding(.bottom, 8)
         .frame(maxWidth: .infinity)
         .frame(height: CameraLayoutConfig.topMenuHeight, alignment: .bottom)
+        // UX-11: same reasoning as the bottom bar — this row sits in a fixed
+        // 96pt band under the Dynamic Island, so cap the type size rather than
+        // let it push the row out of the band.
+        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         .position(
             x: geometry.size.width / 2,
             y: CameraLayoutConfig.topMenuHeight / 2

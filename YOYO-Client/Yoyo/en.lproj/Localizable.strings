@@ -1186,3 +1186,17 @@
 "film_param_channel_b_high_subtitle" = "B / High";
 "film_param_channel_b_high_desc" = "Blue channel or High frequency component";
 "film_param_channel_b_high_desc_zh" = "蓝色通道或高频分量";
+
+// MARK: - Audit 2026-10-15 wave 4
+// UX-11: spoken names for the icon-only controls in the camera UI. Without
+// these VoiceOver reads nothing at all for a bare SF Symbol.
+"camera_panel_menu" = "Control panel";
+"camera_panel_menu_hint" = "Flash, timer, Live Photo, aspect ratio and more";
+"camera_shutter_photo" = "Take photo";
+"camera_shutter_video" = "Start recording";
+"camera_shutter_stop_video" = "Stop recording";
+"camera_shutter_hint" = "Long-press to preview the unfiltered frame";
+"camera_mode_segment_hint" = "Switch between video and photo";
+"camera_mode_selected" = "Selected";
+"camera_album_hint" = "Open the gallery";
+"camera_original_filter" = "Original";
