@@ -165,7 +165,7 @@
 
 // MARK: - Permissions
 "camera_permission_title" = "Camera Permission";
-"camera_permission_message" = "Please allow 出片相机 to access the camera in Settings.";
+"camera_permission_message" = "Please allow Snapout to access the camera in Settings.";
 
 // MARK: - Permission Management
 "permission_camera_title" = "Camera";
@@ -299,7 +299,7 @@
 "settings_delete_account" = "Delete Account";
 "settings_delete_account_confirm_title" = "Delete Account?";
 "settings_delete_account_confirm_message" = "All data associated with this account (including shared tasks) will be permanently deleted. This action cannot be undone.";
-"settings_about_yoyo" = "About 出片相机";
+"settings_about_yoyo" = "About Snapout";
 "settings_contact_us" = "Contact Us";
 "settings_rate_app" = "Rate Us";
 "settings_system_permissions" = "System Permissions";
@@ -869,7 +869,7 @@
 "save_error_missing_dependencies" = "Save service is missing required dependencies";
 "save_error_failed" = "Save failed: %@";
 
-"album_error_creation_failed" = "Failed to create 出片相机 album";
+"album_error_creation_failed" = "Failed to create Snapout album";
 "album_error_photo_save_failed" = "Failed to save photo to album";
 "album_error_photo_delete_failed" = "Failed to delete photo from album";
 "album_error_permission_denied" = "Photo library permission denied";
@@ -897,7 +897,7 @@
 
 // MARK: - Privacy & Analytics
 "settings_privacy_analytics" = "Analytics & Improvement";
-"settings_privacy_analytics_description" = "Help improve 出片相机 by sharing anonymous usage data. This includes feature usage, app stability, and performance metrics. No photos or personal information are ever collected.";
+"settings_privacy_analytics_description" = "Help improve Snapout by sharing anonymous usage data. This includes feature usage, app stability, and performance metrics. No photos or personal information are ever collected.";
 "settings_privacy_data_collection" = "Share Analytics Data";
 
 // MARK: - Feature Tutorial
@@ -954,7 +954,7 @@
 "frame_title" = "Frame";
 
 // MARK: - Paywall
-"paywall_title" = "出片相机 Pro";
+"paywall_title" = "Snapout Pro";
 "paywall_subtitle" = "Unlock All AI Features";
 "paywall_feature_unlock_ai_inspiration" = "Unlock AI Inspiration";
 "paywall_feature_ai_retouch" = "Unlock AI Retouch";
@@ -1052,3 +1052,9 @@
 "permission_recovery_microphone" = "Recovery path: Settings → YOYO → turn on Microphone.";
 "permission_recovery_photo_library" = "Recovery path: Settings → YOYO → Photos → All Photos.";
 "permission_recovery_location" = "Recovery path: Settings → YOYO → Location → While Using the App.";
+
+// MARK: - Audit 2026-10-15 wave 4
+// UX-06/UX-25: 用户可见品牌名的唯一来源。英文环境 Snapout，中文保持出片相机。
+// 用于系统相册名、相框水印、EXIF 与文件命名。
+"brand_name" = "Snapout";
+"frame_watermark_credit" = "© Snapout";

@@ -171,7 +171,11 @@ final class CameraSettingsState: ObservableObject {
         }
     }
 
-    @AppStorage("fileNamingPrefix") var fileNamingPrefix: String = "出片相机" {
+    /// UX-06: the default file-name prefix is the user-visible brand, so it has
+    /// to follow the display language ("出片相机_0001" / "Snapout_0001").
+    /// Only used when the user has never changed it — an existing stored
+    /// value always wins, so nobody's existing filenames change.
+    @AppStorage("fileNamingPrefix") var fileNamingPrefix: String = String.brandName.localized {
         didSet {
             objectWillChange.send()
         }

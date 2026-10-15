@@ -11,7 +11,14 @@ import UniformTypeIdentifiers
 final class PhotoAlbumManager: NSObject, PHPhotoLibraryChangeObserver {
     static let shared = PhotoAlbumManager()
 
-    private let albumName = "出片相机"
+    /// UX-06/UX-25: the album name is the one user-facing string that leaves
+    /// the app and lands in the system Photos app, so it has to follow the
+    /// display language — "出片相机" for Chinese, "Snapout" for English.
+    ///
+    /// Consequence worth knowing: this name is effectively irreversible for
+    /// existing installs. A user who switches to English will get a *new*
+    /// `Snapout` album while their existing `出片相机` album stays behind.
+    private var albumName: String { String.brandName.localized }
     private var yoyoAlbum: PHAssetCollection?
     private let jpegQuality: CGFloat = 0.75
     private let heicQuality: CGFloat = 0.75

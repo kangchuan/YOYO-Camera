@@ -1071,4 +1071,10 @@ extension String {
     static let permissionRecoveryMicrophone = "permission_recovery_microphone"
     static let permissionRecoveryPhotoLibrary = "permission_recovery_photo_library"
     static let permissionRecoveryLocation = "permission_recovery_location"
+
+    // MARK: - Audit 2026-10-15 wave 4
+    // UX-06/UX-25: 用户可见品牌名的唯一来源。英文环境 Snapout，中文保持出片相机。
+    // 用于系统相册名、相框水印、EXIF 与文件命名。
+    static let brandName = "brand_name"
+    static let frameWatermarkCredit = "frame_watermark_credit"
 }

@@ -1054,3 +1054,9 @@
 "permission_recovery_microphone" = "恢复路径：设置 → YOYO → 打开「麦克风」开关。";
 "permission_recovery_photo_library" = "恢复路径：设置 → YOYO → 照片 → 选择「所有照片」。";
 "permission_recovery_location" = "恢复路径：设置 → YOYO → 位置 → 选择「使用 App 期间」。";
+
+// MARK: - Audit 2026-10-15 wave 4
+// UX-06/UX-25: 用户可见品牌名的唯一来源。英文环境 Snapout，中文保持出片相机。
+// 用于系统相册名、相框水印、EXIF 与文件命名。
+"brand_name" = "出片相机";
+"frame_watermark_credit" = "© 出片相机";
