@@ -31,50 +31,40 @@ struct CameraControlView: View {
                 managers: managers
             )
             .overlay(alignment: .bottom) {
-                // Drawer handle — centred below the two control rows, plus a
-                // small label so the affordance is discoverable (UX-12: users
-                // never found the professional-parameter drawer because the
-                // handle was a bare 44×16 pill with no text).
+                // Drawer handle — centred below the two control rows.
                 //
-                // The label sits *beside* the handle, not under it: the bottom
-                // control band is a fixed 210pt and the mode pill already owns
-                // the strip directly below the handle, so a stacked layout
-                // overlaps the pill. Horizontally there is free space on both
-                // sides of the centred handle.
-                HStack(spacing: 6) {
-                    ZStack {
-                        Capsule()
-                            .fill(.regularMaterial)
-                            .environment(\.colorScheme, .dark)
-                            .frame(width: 44, height: 16)
+                // Icon only, no visible label: the bottom control band is a
+                // fixed 210pt owned by the mode pill, and a text label either
+                // collides with the pill (stacked) or breaks the centred
+                // handle symmetry (beside it). The affordance stays
+                // discoverable through the 44pt tap target and through
+                // VoiceOver, which reads "参数" from the accessibility label.
+                ZStack {
+                    Capsule()
+                        .fill(.regularMaterial)
+                        .environment(\.colorScheme, .dark)
+                        .frame(width: 44, height: 16)
 
-                        Capsule()
-                            .fill(Color.white.opacity(0.7))
-                            .frame(width: 20, height: 1.5)
-                    }
-                    .frame(width: 44, height: 16)
-                    .contentShape(Rectangle())
-                    // UX-12: grow the tap target to the iOS-recommended
-                    // 44pt. Done as an *overlay* on purpose: an overlay
-                    // overflows the 16pt visual without entering the
-                    // layout, whereas a taller `.frame` here would push the
-                    // block up into the mode-pill row.
-                    .overlay {
-                        Color.clear
-                            .frame(width: 44, height: 44)
-                            .contentShape(Rectangle())
-                            .onTapGesture { expandDrawer() }
-                    }
-                    .accessibilityElement(children: .ignore)
-                    .accessibilityLabel(Text(String.cameraDrawerHandleLabel.localized))
-                    .accessibilityAddTraits(.isButton)
-                    .accessibilityAction { expandDrawer() }
-
-                    Text(String.cameraDrawerHandleLabel.localized)
-                        .font(.system(size: 11, weight: .regular))
-                        .foregroundColor(.white.opacity(0.55))
-                        .fixedSize()
+                    Capsule()
+                        .fill(Color.white.opacity(0.7))
+                        .frame(width: 20, height: 1.5)
                 }
+                .frame(width: 44, height: 16)
+                .contentShape(Rectangle())
+                // UX-12: grow the tap target to the iOS-recommended 44pt.
+                // Done as an *overlay* on purpose: an overlay overflows the
+                // 16pt visual without entering the layout, whereas a taller
+                // `.frame` here would push the handle up into the pill row.
+                .overlay {
+                    Color.clear
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                        .onTapGesture { expandDrawer() }
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text(String.cameraDrawerHandleLabel.localized))
+                .accessibilityAddTraits(.isButton)
+                .accessibilityAction { expandDrawer() }
             }
             .frame(height: CameraLayoutConfig.bottomControlHeight)
         }
