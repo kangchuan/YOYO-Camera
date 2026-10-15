@@ -791,6 +791,53 @@ final class PhotoAlbumManager: NSObject, PHPhotoLibraryChangeObserver {
         return gpsDict
     }
 
+    /// Among `identifiers`, the ones the user no longer has in the photo library —
+    /// the photos deleted outside the app, which sit in "Recently Deleted" for 30
+    /// days.
+    ///
+    /// Deleting a photo from the system Photos app takes it out of the camera roll
+    /// but keeps it answering `PHAsset` fetches, so an existence check reports "yes"
+    /// for a photo the user has already thrown away. Whether the asset is still a
+    /// member of the camera roll is what tells the two apart on the spot.
+    ///
+    /// The obvious-looking alternative does not exist: Apple exposes no
+    /// `PHAssetCollectionSubtype` for "Recently Deleted", so the only way to find
+    /// that album would be matching its localised title — which breaks with the
+    /// system language, and with any future rename.
+    ///
+    /// Returns `nil` when the library cannot be read far enough to answer (no photo
+    /// permission, or a library that has not finished loading), meaning "unknown".
+    /// Callers must fall back to their previous behaviour and never read `nil` as
+    /// "nothing was deleted".
+    func identifiersRemovedFromLibrary(among identifiers: [String]) async -> Set<String>? {
+        guard !identifiers.isEmpty else { return [] }
+
+        return await Task.detached(priority: .userInitiated) {
+            let cameraRoll = PHAssetCollection.fetchAssetCollections(
+                with: .smartAlbum,
+                subtype: .smartAlbumUserLibrary,
+                options: nil
+            ).firstObject
+            guard let cameraRoll else { return nil }
+
+            let assets = PHAsset.fetchAssets(in: cameraRoll, options: nil)
+            // An empty camera roll means the library has not loaded yet (or cannot be
+            // read at all) rather than "the user owns no photos", so nothing is
+            // judged in that case.
+            guard assets.count > 0 else { return nil }
+
+            let wanted = Set(identifiers)
+            var stillInLibrary = Set<String>()
+            assets.enumerateObjects { asset, _, _ in
+                if wanted.contains(asset.localIdentifier) {
+                    stillInLibrary.insert(asset.localIdentifier)
+                }
+            }
+
+            return wanted.subtracting(stillInLibrary)
+        }.value
+    }
+
     func existingAssetIdentifiers(for identifiers: [String]) async -> AssetIdentifierCheckResult {
         guard !identifiers.isEmpty else {
             return AssetIdentifierCheckResult(existing: [], isReliable: true)

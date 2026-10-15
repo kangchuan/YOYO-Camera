@@ -426,8 +426,15 @@ struct CameraView: View {
         let shown = await MainActor.run { latestPhoto }
         await MainActor.run { latestPhotoRefreshTask = nil }
         if let shown {
+            // "Still fetchable" is not "the user still has it": a photo deleted from
+            // the system Photos app keeps that answer true for 30 days. Both
+            // questions have to be asked before the thumbnail is kept or cleared.
             let stillExists = await PhotoLoader.shared.assetExistsAsync(shown.assetIdentifier)
-            if !stillExists {
+            let removedFromLibrary = await PhotoAlbumManager.shared.identifiersRemovedFromLibrary(
+                among: [shown.assetIdentifier]
+            )
+            let deletedOutsideApp = removedFromLibrary?.contains(shown.assetIdentifier) ?? false
+            if !stillExists || deletedOutsideApp {
                 await MainActor.run { latestPhoto = nil }
             }
         }
@@ -447,10 +454,18 @@ struct CameraView: View {
             return (try? modelContext.fetch(descriptor)) ?? []
         }
 
-        // Photos keeps answering existence checks for an asset the app deleted, as
-        // long as it sits in "Recently Deleted" — which is exactly how the removed
-        // photo stayed on the thumbnail. What the app deleted wins over that.
-        let usableCandidates = candidates.filter { !isDeletedThisSession($0) }
+        // A photo deleted from the system Photos app leaves the camera roll but keeps
+        // answering existence checks while it sits in "Recently Deleted" — which is
+        // exactly how the removed photo stayed on the thumbnail. What the app deleted
+        // itself wins, and so does what the camera roll reports.
+        let removedFromLibrary = await PhotoAlbumManager.shared.identifiersRemovedFromLibrary(
+            among: candidates.map(\.assetIdentifier)
+        )
+        let usableCandidates = candidates.filter { candidate in
+            guard !isDeletedThisSession(candidate) else { return false }
+            guard let removedFromLibrary else { return true }
+            return !isExcluded(candidate, by: removedFromLibrary)
+        }
         guard let firstCandidate = usableCandidates.first else { return nil }
 
         // Validate the latest photo first
@@ -468,13 +483,19 @@ struct CameraView: View {
         return usableCandidates.first { existing.existing.contains($0.assetIdentifier) }
     }
 
-    /// Whether the app deleted this photo — or its paired original — during this
-    /// session. Deleted assets remain visible to `PHAsset` fetches while they sit in
-    /// "Recently Deleted", so an existence check is not enough on its own.
-    private func isDeletedThisSession(_ photo: PhotoAsset) -> Bool {
-        if recentlyDeletedAssetIdentifiers.contains(photo.assetIdentifier) { return true }
+    /// Whether either identifier the app tracks for this photo — the asset itself
+    /// and the original of a Live Photo — appears in `identifiers`.
+    private func isExcluded(_ photo: PhotoAsset, by identifiers: Set<String>) -> Bool {
+        if identifiers.contains(photo.assetIdentifier) { return true }
         guard let originalIdentifier = photo.originalAssetIdentifier else { return false }
-        return recentlyDeletedAssetIdentifiers.contains(originalIdentifier)
+        return identifiers.contains(originalIdentifier)
+    }
+
+    /// Whether the app deleted this photo during this session. Deleted assets remain
+    /// visible to `PHAsset` fetches while they sit in "Recently Deleted", so an
+    /// existence check is not enough on its own.
+    private func isDeletedThisSession(_ photo: PhotoAsset) -> Bool {
+        isExcluded(photo, by: recentlyDeletedAssetIdentifiers)
     }
 
     private func handleCoordinatorAvailability(_ isReady: Bool) {
