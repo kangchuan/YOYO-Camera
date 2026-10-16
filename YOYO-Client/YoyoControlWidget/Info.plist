@@ -9,7 +9,7 @@
 		<key>NSExtensionAttributes</key>
 		<dict>
 			<key>WKAppBundleIdentifier</key>
-			<string>com.anyan.yoyo</string>
+			<string>com.anyan.YoyoCamera</string>
 			<key>WKWidgetKind</key>
 			<string>com.anyan.yoyo.control-widget</string>
 		</dict>
