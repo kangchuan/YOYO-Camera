@@ -1,0 +1,4 @@
+/* Keep the extension's own metadata in English, matching the host app's
+   Yoyo/en.lproj/InfoPlist.strings. zh-Hans has no InfoPlist.strings here, so it
+   falls back to INFOPLIST_KEY_CFBundleDisplayName in project.pbxproj. */
+"CFBundleDisplayName" = "Snapout";
