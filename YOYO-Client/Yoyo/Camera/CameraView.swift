@@ -281,7 +281,6 @@ struct CameraView: View {
                 settingsState: cameraManagers.settingsState,
                 viewState: cameraManagers.viewState,
                 sessionManager: cameraManagers.sessionManager,
-                automationManager: cameraManagers.automationManager,
                 orientationManager: cameraManagers.orientationManager
             )
         }

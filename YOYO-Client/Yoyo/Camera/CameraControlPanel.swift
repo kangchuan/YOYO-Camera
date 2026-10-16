@@ -66,7 +66,6 @@ struct CameraControlPanel: View {
     @ObservedObject var settingsState: CameraSettingsState
     let viewState: CameraViewState
     let sessionManager: CameraSessionManager
-    let automationManager: (any AutomationControlling)?
     @EnvironmentObject var permissionManager: PermissionManager
     let orientationManager: OrientationManager
 
@@ -630,7 +629,6 @@ private struct TimerCycleButton: View {
                     settingsState: settingsState,
                     viewState: viewState,
                     sessionManager: sessionManager,
-                    automationManager: nil,
                     orientationManager: orientationManager
                 )
                 .environmentObject(permissionManager)

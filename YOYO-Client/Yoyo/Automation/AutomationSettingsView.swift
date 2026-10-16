@@ -123,7 +123,7 @@ struct AutomationSettingsView: View {
                         executionHistory: automationManager.executionHistory,
                         isPresented: $showingHistory,
                         onClearHistory: {
-                            automationManager.executionHistory.removeAll()
+                            automationManager.clearExecutionHistory()
                         }
                     )
                 }

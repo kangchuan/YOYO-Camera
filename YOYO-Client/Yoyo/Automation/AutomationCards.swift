@@ -430,6 +430,16 @@ struct AutomationRuleCard: View {
 
 // MARK: - Previews
 
+/// A fresh install has no saved rules, and indexing `rules[0]`/`rules[1]`
+/// directly would trap inside Xcode previews — exactly when a developer is
+/// most likely to be looking at this screen. Fall back to a throwaway rule
+/// instead of crashing the canvas.
+private func previewRule(at index: Int, in rules: [AutomationRule]) -> AutomationRule {
+    rules.indices.contains(index)
+        ? rules[index]
+        : AutomationRule(name: "Preview rule", conditions: [], actions: [])
+}
+
 #Preview("任务卡片") {
     VStack(spacing: 16) {
         RecommendedAutomationRuleCard(
@@ -446,17 +456,18 @@ struct AutomationRuleCard: View {
     .background(Color.black)
 
     let automationManager = CameraAutomationManager.shared
+    let previewRules = automationManager.ruleStore.rules
 
     VStack(spacing: 16) {
         AutomationRuleCard(
-            rule: automationManager.ruleStore.rules[0],
+            rule: previewRule(at: 0, in: previewRules),
             automationManager: automationManager,
             cardColor: Color(red: 40 / 255, green: 40 / 255, blue: 40 / 255),
             accentColor: .cyan
         )
 
         AutomationRuleCard(
-            rule: automationManager.ruleStore.rules[1],
+            rule: previewRule(at: 1, in: previewRules),
             automationManager: automationManager,
             cardColor: Color(red: 40 / 255, green: 40 / 255, blue: 40 / 255),
             accentColor: .green
