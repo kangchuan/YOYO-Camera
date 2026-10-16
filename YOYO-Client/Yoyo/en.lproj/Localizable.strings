@@ -1200,3 +1200,7 @@
 "camera_mode_selected" = "Selected";
 "camera_album_hint" = "Open the gallery";
 "camera_original_filter" = "Original";
+
+// MARK: - App Intents (keys shared with the control widget extension)
+"yoyo_camera" = "Snapout";
+"yoyo_camera_description" = "Quick launch Snapout for photo capture";

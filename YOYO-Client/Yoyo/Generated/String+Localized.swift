@@ -1219,4 +1219,8 @@ extension String {
     static let cameraModeSelected = "camera_mode_selected"
     static let cameraAlbumHint = "camera_album_hint"
     static let cameraOriginalFilter = "camera_original_filter"
+
+    // MARK: - App Intents (keys shared with the control widget extension)
+    static let yoyoCamera = "yoyo_camera"
+    static let yoyoCameraDescription = "yoyo_camera_description"
 }

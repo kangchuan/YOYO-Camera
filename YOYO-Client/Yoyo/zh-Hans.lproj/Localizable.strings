@@ -1201,3 +1201,7 @@
 "camera_mode_selected" = "已选择";
 "camera_album_hint" = "打开相册";
 "camera_original_filter" = "原相机";
+
+// MARK: - App Intents（与小组件共用同一组 key）
+"yoyo_camera" = "出片相机";
+"yoyo_camera_description" = "启动出片相机进行拍摄";
