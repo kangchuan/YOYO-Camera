@@ -146,8 +146,16 @@ final class FilmComputeEngine {
             enc.setBytes(&p, length: 8, index: 0)
         }
 
-        cmd.commit()
-        cmd.waitUntilCompleted()
+        // The scratch textures must stay alive until the GPU is finished with
+        // them — that is the whole premise the pool relies on. ARC is allowed
+        // to release `scratch` right after its last use, which in an optimised
+        // build can happen *before* this point, putting those textures back in
+        // the pool while an uncommitted command buffer still references them.
+        // `withExtendedLifetime` makes the requirement explicit.
+        withExtendedLifetime(scratch) {
+            cmd.commit()
+            cmd.waitUntilCompleted()
+        }
 
         return CIImage(mtlTexture: result, options: [.colorSpace: linearColorSpace])?
             .transformed(by: CGAffineTransform(translationX: extent.origin.x, y: extent.origin.y))
@@ -241,8 +249,16 @@ final class FilmComputeEngine {
             enc.setBytes(&p, length: 8, index: 0)
         }
 
-        cmd.commit()
-        cmd.waitUntilCompleted()
+        // The scratch textures must stay alive until the GPU is finished with
+        // them — that is the whole premise the pool relies on. ARC is allowed
+        // to release `scratch` right after its last use, which in an optimised
+        // build can happen *before* this point, putting those textures back in
+        // the pool while an uncommitted command buffer still references them.
+        // `withExtendedLifetime` makes the requirement explicit.
+        withExtendedLifetime(scratch) {
+            cmd.commit()
+            cmd.waitUntilCompleted()
+        }
 
         return CIImage(mtlTexture: result, options: [.colorSpace: linearColorSpace])?
             .transformed(by: CGAffineTransform(translationX: extent.origin.x, y: extent.origin.y))
@@ -250,26 +266,12 @@ final class FilmComputeEngine {
 
     // MARK: - Private Helpers
 
-    private func makeTexture(_ w: Int, _ h: Int) -> MTLTexture? {
-        guard w > 0, h > 0 else { return nil }
-        let desc = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .rgba16Float, width: w, height: h, mipmapped: false)
-        desc.usage = [.shaderRead, .shaderWrite]
-        desc.storageMode = .private
-        return device.makeTexture(descriptor: desc)
-    }
-
     private func makeSharedTexture(_ w: Int, _ h: Int) -> MTLTexture? {
         guard w > 0, h > 0 else { return nil }
         let desc = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .rgba16Float, width: w, height: h, mipmapped: false)
         desc.usage = [.shaderRead, .shaderWrite]
         desc.storageMode = .shared
         return device.makeTexture(descriptor: desc)
-    }
-
-    private func makeTexture(from image: CIImage) -> MTLTexture? {
-        guard let tex = makeTexture(Int(image.extent.width), Int(image.extent.height)) else { return nil }
-        ciContext.render(image, to: tex, commandBuffer: nil, bounds: image.extent, colorSpace: linearColorSpace)
-        return tex
     }
 
     private func encode(_ cmd: MTLCommandBuffer, _ pipeline: MTLComputePipelineState, _ textures: [MTLTexture], setup: ((MTLComputeCommandEncoder) -> Void)? = nil) {
