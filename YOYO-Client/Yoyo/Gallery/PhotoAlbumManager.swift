@@ -87,7 +87,8 @@ final class PhotoAlbumManager: NSObject, PHPhotoLibraryChangeObserver {
         var originalFormat = format
 
         if isProRaw, let data = originalImageData {
-            // ProRAW: Save raw data directly            print("📸 [PhotoAlbum] Saving ProRAW original")
+            // ProRAW: Save raw data directly
+            debugLog("📸 [PhotoAlbum] Saving ProRAW original")
             originalFileURL = await generateRawImageFile(
                 data: data,
                 saveOptions: saveOptions,
