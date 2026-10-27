@@ -234,8 +234,8 @@ struct CameraView: View {
         HStack {
             // UX-07: always show `AutomationStatusView` so the user can find
             // their way back to enabling automation. When automation is off
-            // the view itself renders a dimmed crown-slash icon at 0.6
-            // opacity (see `AutomationStatusView`).
+            // the view itself renders the slashed stack icon at 0.6 opacity
+            // (see `AutomationStatusView`).
             AutomationStatusView(
                 automationManager: cameraManagers.automationManager,
                 settingsState: cameraManagers.settingsState,

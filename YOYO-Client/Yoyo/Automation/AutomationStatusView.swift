@@ -75,14 +75,25 @@ struct AutomationStatusView: View {
             .foregroundColor(iconColor)
     }
 
-    /// Icon name. UX-07 / UX-22: identical in both states. The off state is
-    /// carried by the 60% opacity applied to the whole control (i.e. the
-    /// "grey icon" the review asked for), plus the accessibility value and
-    /// the icon's role in the top bar. A slashed variant would need an
-    /// SF Symbol name that isn't guaranteed to exist — an unknown name
-    /// renders as a blank glyph, which is strictly worse than a dim one.
+    /// Icon name. UX-07: this is the badge from the original build —
+    /// `square.stack.3d.up` reads as "stacked rules", which is what the
+    /// feature does; the slashed variant carries the off state on top of the
+    /// 60% opacity the whole control already gets.
+    ///
+    /// An earlier pass of this fix replaced both with `crown.fill`. That was
+    /// wrong twice over: the crown means "Pro subscriber" everywhere else in
+    /// the app (SettingsView, PaywallView, the drawer's upgrade row), so it
+    /// advertised the automation trigger as a paywall entry, and it dropped
+    /// the only visual difference between on and off.
+    ///
+    /// Both names are verified present in the iOS 18.3 CoreGlyphs catalogue
+    /// (introduced in 2019, i.e. iOS 13). Check before swapping in something
+    /// unfamiliar: an unknown SF Symbol name does not fail the build, it
+    /// renders as an empty glyph.
     private var iconName: String {
-        "crown.fill"
+        isAutomationEnabled
+            ? "square.stack.3d.up.fill"
+            : "square.stack.3d.up.slash.fill"
     }
 
     /// Icon color
