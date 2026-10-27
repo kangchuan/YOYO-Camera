@@ -1232,4 +1232,8 @@ extension String {
     // MARK: - App Intents (keys shared with the control widget extension)
     static let yoyoCamera = "yoyo_camera"
     static let yoyoCameraDescription = "yoyo_camera_description"
+
+    // MARK: - Storage bootstrap (2026-10-27)
+    static let storageDegradedTitle = "storage_degraded_title"
+    static let storageDegradedMessage = "storage_degraded_message"
 }

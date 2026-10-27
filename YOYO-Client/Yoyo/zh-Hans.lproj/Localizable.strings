@@ -1213,3 +1213,7 @@
 // MARK: - App Intents（与小组件共用同一组 key）
 "yoyo_camera" = "出片相机";
 "yoyo_camera_description" = "启动出片相机进行拍摄";
+
+// MARK: - 存储启动降级（2026-10-27）
+"storage_degraded_title" = "相册索引无法打开";
+"storage_degraded_message" = "应用无法打开本地相册索引，本次运行不会保存索引。新拍的照片仍会正常存入系统相册，只是应用内不会记住它们。重启设备或清理存储空间后可能恢复。";

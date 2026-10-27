@@ -1212,3 +1212,7 @@
 // MARK: - App Intents (keys shared with the control widget extension)
 "yoyo_camera" = "Snapout";
 "yoyo_camera_description" = "Quick launch Snapout for photo capture";
+
+// MARK: - Storage bootstrap (2026-10-27)
+"storage_degraded_title" = "Photo Index Unavailable";
+"storage_degraded_message" = "The app could not open its photo index, so this session will not save one. Photos you shoot are still saved to the system photo library as usual — the app just will not remember them. Restarting the device or freeing up storage may fix this.";
