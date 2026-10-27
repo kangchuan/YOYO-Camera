@@ -36,9 +36,10 @@ struct AutomationStatusView: View {
         .padding(.horizontal, 8)
         .padding(.vertical, 8)
         .contentShape(Rectangle())
-        // UX-07: dim the icon when automation is off so the user can still
-        // see and tap it (to re-enable via the management page) without
-        // thinking the feature is gone.
+        // The off state is dimmed here rather than removed, so the view stays
+        // coherent on its own. The top bar no longer renders it while
+        // automation is off (see `CameraView.topMenuBar`), so this only covers
+        // the frame in which a long-press toggles automation off.
         .opacity(isAutomationEnabled ? 1.0 : 0.6)
         // UX-22: a single tap no longer toggles automation in place — that
         // was easy to do by accident. Tap opens the management sheet where

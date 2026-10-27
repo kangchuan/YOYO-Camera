@@ -232,36 +232,50 @@ struct CameraView: View {
     @ViewBuilder
     private func topMenuBar(geometry: GeometryProxy) -> some View {
         HStack {
-            // UX-07: always show `AutomationStatusView` so the user can find
-            // their way back to enabling automation. When automation is off
-            // the view itself renders the slashed stack icon at 0.6 opacity
-            // (see `AutomationStatusView`).
-            AutomationStatusView(
-                automationManager: cameraManagers.automationManager,
-                settingsState: cameraManagers.settingsState,
-                showHistory: $showAutomationHistory,
-                showSettings: automationSettingsBinding
-            )
-            .overlay(alignment: .topLeading) {
-                // Confirmation bubble shown below `AutomationStatusView`
-                if let pending = cameraManagers.automationManager.pendingConfirmation {
-                    AutomationConfirmationBubble(
-                        pending: pending,
-                        onConfirm: { cameraManagers.automationManager.confirmPendingRules() },
-                        onDismiss: { cameraManagers.automationManager.dismissPendingRules() }
-                    )
-                    .offset(y: 40)
-                    .transition(
-                        .asymmetric(
-                            insertion: .scale(scale: 0.8, anchor: .topLeading).combined(with: .opacity),
-                            removal: .scale(scale: 0.8, anchor: .topLeading).combined(with: .opacity)
-                        ))
+            // The automation badge is only meaningful while automation runs:
+            // a greyed-out icon in the shooting screen just reads as disabled
+            // chrome. Hiding it when off is the original build's behaviour,
+            // and the decision to keep it that way.
+            //
+            // UX-07 asked for the opposite (a permanent, dimmed entry) because
+            // hiding it used to be a dead end: nothing else on the camera
+            // screen led to `AutomationSettingsView`. That reason no longer
+            // holds on its own — automation off is recoverable from
+            // Settings → 任务大师 (turn it back on, the badge returns) and from
+            // the drawer's 快速任务 empty state. If either of those ever goes
+            // away, revisit this decision rather than silently re-hiding the
+            // only way in.
+            //
+            // `AutomationStatusView` still draws the off state; it is simply
+            // not reachable from here any more.
+            if cameraManagers.settingsState.automationEnabled {
+                AutomationStatusView(
+                    automationManager: cameraManagers.automationManager,
+                    settingsState: cameraManagers.settingsState,
+                    showHistory: $showAutomationHistory,
+                    showSettings: automationSettingsBinding
+                )
+                .overlay(alignment: .topLeading) {
+                    // Confirmation bubble shown below `AutomationStatusView`
+                    if let pending = cameraManagers.automationManager.pendingConfirmation {
+                        AutomationConfirmationBubble(
+                            pending: pending,
+                            onConfirm: { cameraManagers.automationManager.confirmPendingRules() },
+                            onDismiss: { cameraManagers.automationManager.dismissPendingRules() }
+                        )
+                        .offset(y: 40)
+                        .transition(
+                            .asymmetric(
+                                insertion: .scale(scale: 0.8, anchor: .topLeading).combined(with: .opacity),
+                                removal: .scale(scale: 0.8, anchor: .topLeading).combined(with: .opacity)
+                            ))
+                    }
                 }
+                .animation(
+                    .spring(response: 0.3, dampingFraction: 0.7),
+                    value: cameraManagers.automationManager.pendingConfirmation?.id
+                )
             }
-            .animation(
-                .spring(response: 0.3, dampingFraction: 0.7),
-                value: cameraManagers.automationManager.pendingConfirmation?.id
-            )
 
             AudioStatusView(
                 audioManager: cameraManagers.audioManager,
