@@ -25,7 +25,49 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         // DEBUG 构建下打印一次内置滤镜注册完整性自检（Release 下为空实现）
         FilterRegistryDiagnostics.logOnLaunch()
 
+        installQuickActions()
+
         return true
+    }
+
+    /// Install the home screen quick actions with localised titles.
+    ///
+    /// These three items used to be declared statically in `Info.plist`, with
+    /// `UIApplicationShortcutItemTitle` holding raw string keys
+    /// (`quick_action_video`, …). Info.plist shortcut titles are **not**
+    /// resolved through `Localizable.strings`, and an array element has no
+    /// distinct key for `InfoPlist.strings` to override, so the long-press
+    /// menu on the home screen icon displayed those keys verbatim to both
+    /// English and Chinese users. Building the items here is the only place a
+    /// localised title can come from.
+    ///
+    /// The suffix after the bundle identifier must stay in sync with the
+    /// switch in `ShortcutItemHandler.handleShortcutItem`, which strips the
+    /// bundle identifier and matches on `video` / `livephoto` / `photo`.
+    private func installQuickActions() {
+        let bundleIdentifier = Bundle.main.bundleIdentifier ?? ""
+
+        /// Same order the Info.plist declaration used, so the menu does not
+        /// reshuffle for anyone already used to it.
+        let actions: [(suffix: String, title: String, symbol: String)] = [
+            (".video", String.quickActionVideo.localized, "video"),
+            (".livephoto", String.quickActionLivephoto.localized, "livephoto"),
+            (".photo", String.quickActionPhoto.localized, "photo"),
+        ]
+
+        UIApplication.shared.shortcutItems = actions.map { action in
+            UIApplicationShortcutItem(
+                type: bundleIdentifier + action.suffix,
+                localizedTitle: action.title,
+                localizedSubtitle: nil,
+                icon: UIApplicationShortcutIcon(systemImageName: action.symbol),
+                userInfo: nil
+            )
+        }
+
+        // Read back rather than log `actions`: iOS keeps what it accepted, and
+        // only the read-back shows the resolved titles.
+        debugLog("⚡️ 主屏幕快捷菜单: \(UIApplication.shared.shortcutItems?.map(\.localizedTitle) ?? [])")
     }
 
     func application(

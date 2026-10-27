@@ -14,33 +14,11 @@
 			</array>
 		</dict>
 	</array>
-	<key>UIApplicationShortcutItems</key>
-	<array>
-		<dict>
-			<key>UIApplicationShortcutItemIconSymbolName</key>
-			<string>video</string>
-			<key>UIApplicationShortcutItemTitle</key>
-			<string>quick_action_video</string>
-			<key>UIApplicationShortcutItemType</key>
-			<string>$(PRODUCT_BUNDLE_IDENTIFIER).video</string>
-		</dict>
-		<dict>
-			<key>UIApplicationShortcutItemIconSymbolName</key>
-			<string>livephoto</string>
-			<key>UIApplicationShortcutItemTitle</key>
-			<string>quick_action_livephoto</string>
-			<key>UIApplicationShortcutItemType</key>
-			<string>$(PRODUCT_BUNDLE_IDENTIFIER).livephoto</string>
-		</dict>
-		<dict>
-			<key>UIApplicationShortcutItemIconSymbolName</key>
-			<string>photo</string>
-			<key>UIApplicationShortcutItemTitle</key>
-			<string>quick_action_photo</string>
-			<key>UIApplicationShortcutItemType</key>
-			<string>$(PRODUCT_BUNDLE_IDENTIFIER).photo</string>
-		</dict>
-	</array>
+	<!-- Home screen quick actions are installed in
+	     `AppDelegate.installQuickActions()` instead of being declared here.
+	     Info.plist shortcut titles are not looked up in Localizable.strings,
+	     so a static declaration can only ever carry one language (and did,
+	     in fact, ship the raw keys). -->
 	<!-- 临时封堵：接入自建 Firebase 前关闭 Crashlytics 崩溃上报。
 	     换用自己的 GoogleService-Info.plist 之后，请删除下面这个键以恢复崩溃收集。 -->
 	<key>firebase_crashlytics_collection_enabled</key>

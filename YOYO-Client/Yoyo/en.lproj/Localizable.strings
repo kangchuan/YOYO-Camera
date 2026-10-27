@@ -928,6 +928,14 @@
 "camera_drawer_parameters" = "Params";
 "camera_drawer_quick_tasks" = "Tasks";
 
+// MARK: - Home Screen Quick Actions
+// Titles for the long-press menu on the home screen icon. They live here
+// rather than in Info.plist because Info.plist shortcut titles are not
+// looked up in Localizable.strings — see `AppDelegate.installQuickActions`.
+"quick_action_photo" = "Take Photo";
+"quick_action_video" = "Record Video";
+"quick_action_livephoto" = "Live Photo";
+
 // MARK: - Quick Task Panel
 "quick_task_title" = "Quick Tasks";
 "quick_task_empty" = "No quick tasks";

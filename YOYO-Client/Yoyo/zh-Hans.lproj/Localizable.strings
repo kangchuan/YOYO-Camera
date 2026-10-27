@@ -931,6 +931,14 @@
 "camera_drawer_parameters" = "参数";
 "camera_drawer_quick_tasks" = "任务";
 
+// MARK: - Home Screen Quick Actions
+// 主屏幕图标长按菜单的标题。这些文案放在这里而不是 Info.plist，是因为
+// Info.plist 里的快捷项标题不会去 Localizable.strings 里查——见
+// `AppDelegate.installQuickActions`。
+"quick_action_photo" = "拍照";
+"quick_action_video" = "录制视频";
+"quick_action_livephoto" = "实况照片";
+
 // MARK: - Quick Task Panel
 "quick_task_title" = "快捷任务";
 "quick_task_empty" = "暂无快捷任务";

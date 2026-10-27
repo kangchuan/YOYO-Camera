@@ -948,6 +948,14 @@ extension String {
     static let cameraDrawerParameters = "camera_drawer_parameters"
     static let cameraDrawerQuickTasks = "camera_drawer_quick_tasks"
 
+    // MARK: - Home Screen Quick Actions
+    // Titles for the long-press menu on the home screen icon. They live here
+    // rather than in Info.plist because Info.plist shortcut titles are not
+    // looked up in Localizable.strings — see `AppDelegate.installQuickActions`.
+    static let quickActionPhoto = "quick_action_photo"
+    static let quickActionVideo = "quick_action_video"
+    static let quickActionLivephoto = "quick_action_livephoto"
+
     // MARK: - Quick Task Panel
     static let quickTaskTitle = "quick_task_title"
     static let quickTaskEmpty = "quick_task_empty"
