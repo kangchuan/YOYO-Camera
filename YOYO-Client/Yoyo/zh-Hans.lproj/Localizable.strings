@@ -103,7 +103,6 @@
 "filter_gallery_favorites" = "收藏";
 "filter_gallery_film_simulation" = "胶片";
 "filter_gallery_import" = "导入";
-"no_favorite_filters" = "暂无收藏滤镜";
 
 // Filter Import
 "filter_import_from_file" = "从文件导入";

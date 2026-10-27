@@ -78,7 +78,6 @@
 "filter_gallery_favorites" = "Favorites";
 "filter_gallery_film_simulation" = "Film";
 "filter_gallery_import" = "Import";
-"no_favorite_filters" = "No Favorites";
 
 // Filter Import
 "filter_import_from_file" = "Import from File";

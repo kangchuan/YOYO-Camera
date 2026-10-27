@@ -98,7 +98,6 @@ extension String {
     static let filterGalleryFavorites = "filter_gallery_favorites"
     static let filterGalleryFilmSimulation = "filter_gallery_film_simulation"
     static let filterGalleryImport = "filter_gallery_import"
-    static let noFavoriteFilters = "no_favorite_filters"
 
     // Filter Import
     static let filterImportFromFile = "filter_import_from_file"

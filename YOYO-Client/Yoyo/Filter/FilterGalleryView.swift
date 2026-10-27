@@ -17,6 +17,10 @@ struct FilterGalleryView: View {
     static let originalCameraAnchorName = "originalCameraAnchor"
 
     @ObservedObject var filterManager: FilterManager = .shared
+    /// Observed so the favorites group / anchor can appear the moment a custom
+    /// filter is favorited — `CustomFilterManager` is not part of `FilterManager`'s
+    /// object graph.
+    @ObservedObject private var customFilterManager = CustomFilterManager.shared
     @ObservedObject private var tutorialManager = TutorialManager.shared
     @Binding var isPresented: Bool
     var latestPhoto: PhotoAsset?
@@ -41,7 +45,25 @@ struct FilterGalleryView: View {
     @State private var showTutorial = false
 
     private var allAnchors: [String] {
-        [Self.favoriteAnchorName, Self.filmSimulationAnchorName, Self.customAnchorName]
+        var anchors: [String] = []
+        // The favorites group does not exist while nothing is favorited (see
+        // `FavoritesFilterGroup`), so its anchor has to disappear with it —
+        // otherwise tapping the 收藏 chip scrolls to nothing.
+        if hasFavorites { anchors.append(Self.favoriteAnchorName) }
+        anchors.append(Self.filmSimulationAnchorName)
+        anchors.append(Self.customAnchorName)
+        return anchors
+    }
+
+    /// Whether the favorites group has anything in it.
+    ///
+    /// The group used to render a "暂无收藏滤镜" placeholder card when empty.
+    /// That card held a slot in the strip without saying that long-press is how
+    /// you favorite something, so the empty state read as "this feature was
+    /// removed" — the reason for this change.
+    private var hasFavorites: Bool {
+        !filterManager.visibleFavoriteFilters.isEmpty
+            || customFilterManager.customFilters.contains { $0.isFavorite }
     }
 
     private var isSmallScreen: Bool {
@@ -686,6 +708,8 @@ struct FavoritesFilterGroup: View {
 
     var body: some View {
         Group {
+            // Nothing to show while there are no favorites: the group is hidden
+            // entirely rather than drawing an empty placeholder card.
             if hasContent {
                 ForEach(filters, id: \.id) { filter in
                     FilterCardWithFavorite(filterManager: filterManager, filter: filter, onFavoriteToggle: onFavoriteToggle)
@@ -696,8 +720,6 @@ struct FavoritesFilterGroup: View {
                         .id("custom:\(filter.id.uuidString)")
                 }
                 DividerLine()
-            } else {
-                EmptyFavoritePlaceholder()
             }
         }
         .id(id)
@@ -752,56 +774,6 @@ struct DividerLine: View {
             Spacer()
         }
         .padding(.horizontal, 2)
-    }
-}
-
-// MARK: - Empty collection placeholder component
-
-struct EmptyFavoritePlaceholder: View {
-    private var isSmallScreen: Bool {
-        UIScreen.main.bounds.width < 395
-    }
-
-    private var width: CGFloat { isSmallScreen ? 72 : 88 }
-    private var height: CGFloat { isSmallScreen ? 54 : 66 }
-
-    var body: some View {
-        VStack(spacing: 8) {
-            Image(systemName: "heart.slash")
-                .font(.system(size: 18, weight: .medium))
-                .foregroundStyle(
-                    .linearGradient(
-                        colors: [.white.opacity(0.4), .white.opacity(0.2)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-                .shadow(color: .white.opacity(0.1), radius: 0, x: 0, y: 1)
-                .shadow(color: .black.opacity(0.2), radius: 0, x: 0, y: -0.5)
-
-            Text(String.noFavoriteFilters.localized)
-                .font(.system(size: 9, weight: .semibold))
-                .foregroundStyle(.white.opacity(0.3))
-                .multilineTextAlignment(.center)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-                .shadow(color: .white.opacity(0.1), radius: 0, x: 0, y: 1)
-                .shadow(color: .black.opacity(0.2), radius: 0, x: 0, y: -0.5)
-        }
-        .frame(width: width, height: height)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(Color.white.opacity(0.05))
-                )
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(Color.white.opacity(0.1), lineWidth: 1)
-        )
-        .padding(.vertical, 3)
     }
 }
 

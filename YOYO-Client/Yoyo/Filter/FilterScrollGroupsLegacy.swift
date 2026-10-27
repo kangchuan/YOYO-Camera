@@ -29,7 +29,6 @@ struct FilterScrollGroupsLegacy: View {
     private enum PagerItem: Identifiable, Equatable {
         case favorite(FilterIdentifier, hasDivider: Bool)
         case customFavorite(CustomFilter, hasDivider: Bool)
-        case emptyFavorite
         case filmSimulation(FilterIdentifier, hasDivider: Bool)
         case filter(FilterIdentifier, hasDivider: Bool)
         case customFilter(CustomFilter)
@@ -40,7 +39,6 @@ struct FilterScrollGroupsLegacy: View {
             switch self {
             case let .favorite(f, _): return "fav-\(f.id)"
             case let .customFavorite(cf, _): return "fav-custom:\(cf.id.uuidString)"
-            case .emptyFavorite: return "empty-favorite"
             case let .filmSimulation(f, _): return "filmSim-\(f.id)"
             case let .filter(f, _): return f.id
             case let .customFilter(cf): return "custom:\(cf.id.uuidString)"
@@ -76,7 +74,8 @@ struct FilterScrollGroupsLegacy: View {
         // 「原相机」固定放在最左侧，一键回到无滤镜状态（默认项）
         items.append(.filter(.none, hasDivider: true))
 
-        // Favorites
+        // Favorites — omitted entirely while empty, so the strip never shows a
+        // placeholder card that says "暂无收藏滤镜" without saying how to add one.
         if !visibleFavorites.isEmpty || !favoritedCustomFilters.isEmpty {
             for (index, filter) in visibleFavorites.enumerated() {
                 let isLast = index == visibleFavorites.count - 1 && favoritedCustomFilters.isEmpty
@@ -86,8 +85,6 @@ struct FilterScrollGroupsLegacy: View {
                 let isLast = index == favoritedCustomFilters.count - 1
                 items.append(.customFavorite(filter, hasDivider: isLast))
             }
-        } else {
-            items.append(.emptyFavorite)
         }
 
         // Film Simulation
@@ -160,8 +157,6 @@ struct FilterScrollGroupsLegacy: View {
                     isDeleteMode: isDeleteMode,
                     onFavoriteToggle: onCustomFavoriteToggle
                 )
-            case .emptyFavorite:
-                EmptyFavoritePlaceholder()
             case .importCard:
                 ImportFilterCard(
                     showFileImporter: $showFileImporter,
@@ -221,7 +216,7 @@ struct FilterScrollGroupsLegacy: View {
 
         let searchID: String
         if target == FilterGalleryView.favoriteAnchorName {
-            searchID = items.first(where: { if case .favorite = $0 { return true }; if case .emptyFavorite = $0 { return true }; return false })?.id ?? ""
+            searchID = items.first(where: { if case .favorite = $0 { return true }; if case .customFavorite = $0 { return true }; return false })?.id ?? ""
         } else if target == String.filterGalleryFilmSimulation.localized {
             searchID = items.first(where: { if case .filmSimulation = $0 { return true }; return false })?.id ?? ""
         } else if target == FilterGalleryView.customAnchorName {
