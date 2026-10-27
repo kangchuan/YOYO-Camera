@@ -694,7 +694,6 @@
 // MARK: - Automation Time Pickers
 "automation_hour" = "小时";
 "automation_minute" = "分钟";
-"automation_month" = "月";
 "automation_day" = "日";
 
 // MARK: - Automation White Balance Options
@@ -1050,10 +1049,12 @@
 "onboarding_continue_button" = "继续";
 "onboarding_progress" = "已授权 %1$d / %2$d 项权限";
 // UX-18：权限被拒后的分步恢复路径。「打开设置」按钮直达本 App 的系统设置页。
-"permission_recovery_camera" = "恢复路径：设置 → YOYO → 打开「相机」开关。";
-"permission_recovery_microphone" = "恢复路径：设置 → YOYO → 打开「麦克风」开关。";
-"permission_recovery_photo_library" = "恢复路径：设置 → YOYO → 照片 → 选择「所有照片」。";
-"permission_recovery_location" = "恢复路径：设置 → YOYO → 位置 → 选择「使用 App 期间」。";
+// 系统设置里这一行显示的是 App 显示名，所以品牌用 %@ 传入（String.brandName），
+// 不再写死「YOYO」——App 早就叫「出片相机」了。
+"permission_recovery_camera" = "恢复路径：设置 → %@ → 打开「相机」开关。";
+"permission_recovery_microphone" = "恢复路径：设置 → %@ → 打开「麦克风」开关。";
+"permission_recovery_photo_library" = "恢复路径：设置 → %@ → 照片 → 选择「所有照片」。";
+"permission_recovery_location" = "恢复路径：设置 → %@ → 位置 → 选择「使用 App 期间」。";
 
 // MARK: - Audit 2026-10-15 wave 4
 // UX-06/UX-25: 用户可见品牌名的唯一来源。英文环境 Snapout，中文保持出片相机。

@@ -638,7 +638,6 @@
 // MARK: - Automation Time Pickers
 "automation_hour" = "Hour";
 "automation_minute" = "Minute";
-"automation_month" = "Month";
 "automation_day" = "Day";
 
 // MARK: - Automation White Balance Options
@@ -1048,10 +1047,12 @@
 "onboarding_progress" = "%1$d of %2$d permissions granted";
 // UX-18: step-by-step recovery after a permission denial. The companion
 // "Open Settings" button deep-links into this app's Settings page.
-"permission_recovery_camera" = "Recovery path: Settings → YOYO → turn on Camera.";
-"permission_recovery_microphone" = "Recovery path: Settings → YOYO → turn on Microphone.";
-"permission_recovery_photo_library" = "Recovery path: Settings → YOYO → Photos → All Photos.";
-"permission_recovery_location" = "Recovery path: Settings → YOYO → Location → While Using the App.";
+// The app's row in Settings is labelled with its display name, so the brand is
+// passed in as %@ (String.brandName) rather than baked into these strings.
+"permission_recovery_camera" = "Recovery path: Settings → %@ → turn on Camera.";
+"permission_recovery_microphone" = "Recovery path: Settings → %@ → turn on Microphone.";
+"permission_recovery_photo_library" = "Recovery path: Settings → %@ → Photos → All Photos.";
+"permission_recovery_location" = "Recovery path: Settings → %@ → Location → While Using the App.";
 
 // MARK: - Audit 2026-10-15 wave 4
 // UX-06/UX-25: 用户可见品牌名的唯一来源。英文环境 Snapout，中文保持出片相机。

@@ -54,11 +54,16 @@ enum PermissionType: String, CaseIterable {
     /// deep-links into this app's own system-settings page, so the steps
     /// deliberately describe what the user will see once they get there.
     var recoverySteps: String {
+        // The Settings row the user has to find is labelled with the app's own
+        // display name, which is localised (出片相机 / Snapout) and used to be
+        // hard-coded as "YOYO" in these four strings — pointing the user at a
+        // row that does not exist. Pass the brand in instead.
+        let brand = String.brandName.localized
         switch self {
-        case .camera: return String.permissionRecoveryCamera.localized
-        case .microphone: return String.permissionRecoveryMicrophone.localized
-        case .photoLibrary: return String.permissionRecoveryPhotoLibrary.localized
-        case .location: return String.permissionRecoveryLocation.localized
+        case .camera: return String.permissionRecoveryCamera.localized(brand)
+        case .microphone: return String.permissionRecoveryMicrophone.localized(brand)
+        case .photoLibrary: return String.permissionRecoveryPhotoLibrary.localized(brand)
+        case .location: return String.permissionRecoveryLocation.localized(brand)
         }
     }
 }

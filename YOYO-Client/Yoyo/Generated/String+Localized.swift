@@ -1067,6 +1067,8 @@ extension String {
     static let onboardingProgress = "onboarding_progress"
     // UX-18: step-by-step recovery after a permission denial. The companion
     // "Open Settings" button deep-links into this app's Settings page.
+    // The app's row in Settings is labelled with its display name, so the brand is
+    // passed in as %@ (String.brandName) rather than baked into these strings.
     static let permissionRecoveryCamera = "permission_recovery_camera"
     static let permissionRecoveryMicrophone = "permission_recovery_microphone"
     static let permissionRecoveryPhotoLibrary = "permission_recovery_photo_library"
