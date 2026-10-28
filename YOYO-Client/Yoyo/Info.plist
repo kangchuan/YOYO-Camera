@@ -23,6 +23,12 @@
 	     换用自己的 GoogleService-Info.plist 之后，请删除下面这个键以恢复崩溃收集。 -->
 	<key>firebase_crashlytics_collection_enabled</key>
 	<false/>
+	<!-- The app only uses HTTPS via NSURLSession plus Apple's own 
+	     Keychain/StoreKit crypto, so it is exempt from export compliance 
+	     (EAR 740.17(b)(1) / category 5 part 2 note 4). Declaring it here 
+	     stops App Store Connect from asking the same question on every upload. -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>

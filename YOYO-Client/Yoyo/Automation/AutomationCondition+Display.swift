@@ -168,9 +168,12 @@ extension AutomationCondition: AutomationDisplayRepresentable {
         case let .colorSaturationBelow(threshold): return "\(Int(threshold * 100))%"
         case let .colorBrightnessAbove(threshold): return "\(Int(threshold * 100))%"
         case let .colorBrightnessBelow(threshold): return "\(Int(threshold * 100))%"
-        case let .dominantColorCount(count): return "\(count) 种"
-        case let .dominantColorCountAbove(count): return "\(count) 种"
-        case let .dominantColorCountBelow(count): return "\(count) 种"
+        // Counts render as bare numbers here, like objectCount/highlightRatio above:
+        // the row's title already says "Dominant color count above", and a "%d 种"
+        // suffix would leak Chinese into every non-Chinese UI.
+        case let .dominantColorCount(count): return "\(count)"
+        case let .dominantColorCountAbove(count): return "\(count)"
+        case let .dominantColorCountBelow(count): return "\(count)"
         case .beforeCapture: return String.detailBeforeCaptureDesc.localized
         case .afterCapture: return String.detailAfterCaptureDesc.localized
         }
