@@ -510,7 +510,7 @@ extension String {
     static let summaryIsOverexposed = "summary_is_overexposed"
     static let summaryWeekdayIs = "summary_weekday_is"
     static let summaryWeekdayIn = "summary_weekday_in"
-    static let summaryDateIs = "summary_date_is"
+    // %1$@ month name (October), %2$@ short month (Oct), %3$@ ordinal (2nd), %4$@ weekday (Tuesday)
     static let summaryNthWeekdayOfMonth = "summary_nth_weekday_of_month"
     static let summaryMonthIn = "summary_month_in"
     static let summaryNearLocation = "summary_near_location"
@@ -781,6 +781,9 @@ extension String {
     static let automationTriggerConditions = "automation_trigger_conditions"
     static let automationExecutedActions = "automation_executed_actions"
     static let timeJustNow = "time_just_now"
+    static let time1MinuteAgo = "time_1_minute_ago"
+    static let time1HourAgo = "time_1_hour_ago"
+    static let time1DayAgo = "time_1_day_ago"
     static let timeMinutesAgo = "time_minutes_ago"
     static let timeHoursAgo = "time_hours_ago"
     static let timeDaysAgo = "time_days_ago"

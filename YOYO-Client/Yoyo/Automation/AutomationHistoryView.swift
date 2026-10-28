@@ -320,17 +320,7 @@ struct AutomationExecutionCard: View {
     // MARK: - relative time formatting
 
     private func relativeTimeString(from date: Date) -> String {
-        let now = Date()
-        let seconds = Int(now.timeIntervalSince(date))
-        if seconds < 60 {
-            return String.timeJustNow.localized
-        } else if seconds < 3600 {
-            return String.timeMinutesAgo.localized(seconds / 60)
-        } else if seconds < 86400 {
-            return String.timeHoursAgo.localized(seconds / 3600)
-        } else {
-            return String.timeDaysAgo.localized(seconds / 86400)
-        }
+        RelativeTimeFormatter.string(from: date)
     }
 }
 

@@ -66,6 +66,64 @@ enum AutomationFormatters {
         }
     }
 
+    // MARK: - Localised Date Text
+
+    /// Locale matching the app language setting (`String.localized` reads the same bundle).
+    private static var displayLocale: Locale {
+        LanguageManager.shared.locale
+    }
+
+    /// Fixed reference date used to render month names; 2000 is a leap year so Feb 29 works too.
+    private static func referenceDate(month: Int, day: Int) -> Date? {
+        var components = DateComponents()
+        components.year = 2000
+        components.month = month
+        components.day = day
+        return Calendar(identifier: .gregorian).date(from: components)
+    }
+
+    /// "October 27" / "10月27日" — month naming and word order come from the system, not a template.
+    static func monthDayText(month: Int, day: Int, locale: Locale? = nil) -> String {
+        guard let date = referenceDate(month: month, day: day) else { return "\(month)/\(day)" }
+        return date.formatted(.dateTime.month(.wide).day().locale(locale ?? displayLocale))
+    }
+
+    /// "Oct" / "10月" — compact month for phrases like "2nd week of October".
+    static func shortMonthText(_ month: Int, locale: Locale? = nil) -> String {
+        guard let date = referenceDate(month: month, day: 15) else { return "\(month)" }
+        return date.formatted(.dateTime.month(.abbreviated).locale(locale ?? displayLocale))
+    }
+
+    /// English `1st`/`2nd`/`3rd`, Chinese `第2`.
+    static func ordinalName(_ value: Int, locale: Locale? = nil) -> String {
+        let formatter = NumberFormatter()
+        formatter.locale = locale ?? displayLocale
+        formatter.numberStyle = .ordinal
+        return formatter.string(from: NSNumber(value: value)) ?? "\(value)"
+    }
+
+    /// Assembles the "nth weekday of month" phrase. The template decides the word order through
+    /// positional placeholders, so translators never have to shuffle arguments.
+    static func nthWeekdayText(
+        template: String,
+        monthName: String,
+        shortMonth: String,
+        ordinal: String,
+        weekday: String
+    ) -> String {
+        String(format: template, monthName, shortMonth, ordinal, weekday)
+    }
+
+    static func nthWeekdayText(month: Int, weekday: Int, nth: Int, locale: Locale? = nil) -> String {
+        nthWeekdayText(
+            template: String.summaryNthWeekdayOfMonth.localized,
+            monthName: monthName(month),
+            shortMonth: shortMonthText(month, locale: locale),
+            ordinal: ordinalName(nth, locale: locale),
+            weekday: weekdayName(weekday)
+        )
+    }
+
     // MARK: - Shared UI Constants
 
     /// Common shutter denominators (kept consistent with UI options)

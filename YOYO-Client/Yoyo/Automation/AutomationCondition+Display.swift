@@ -148,9 +148,9 @@ extension AutomationCondition: AutomationDisplayRepresentable {
             return String(format: "%02d:%02d", h, m)
         case let .weekdayIs(w): return AutomationFormatters.weekdayName(w)
         case let .weekdayIn(ws): return ws.map { AutomationFormatters.weekdayName($0) }.joined(separator: ", ")
-        case let .dateIs(m, d): return "\(m)月\(d)日"
+        case let .dateIs(m, d): return AutomationFormatters.monthDayText(month: m, day: d)
         case let .nthWeekdayOfMonth(m, w, n):
-            return String(format: String.summaryNthWeekdayOfMonth.localized, "\(m)", "\(n)", AutomationFormatters.weekdayName(w))
+            return AutomationFormatters.nthWeekdayText(month: m, weekday: w, nth: n)
         case let .monthIs(m): return AutomationFormatters.monthName(m)
         case let .monthIn(ms): return ms.map { AutomationFormatters.monthName($0) }.joined(separator: ", ")
         case let .nearLocation(lat, lon, r):
@@ -217,8 +217,8 @@ extension AutomationCondition: AutomationDisplayRepresentable {
             return String(format: "< %02d:%02d", h, m)
         case let .weekdayIs(w): return String.summaryWeekdayIs.localized(AutomationFormatters.weekdayName(w))
         case let .weekdayIn(ws): return String.summaryWeekdayIn.localized(ws.map { AutomationFormatters.weekdayName($0) }.joined(separator: ", "))
-        case let .dateIs(m, d): return String(format: String.summaryDateIs.localized, "\(m)", "\(d)")
-        case let .nthWeekdayOfMonth(m, w, n): return String(format: String.summaryNthWeekdayOfMonth.localized, "\(m)", "\(n)", AutomationFormatters.weekdayName(w))
+        case let .dateIs(m, d): return AutomationFormatters.monthDayText(month: m, day: d)
+        case let .nthWeekdayOfMonth(m, w, n): return AutomationFormatters.nthWeekdayText(month: m, weekday: w, nth: n)
         case let .monthIs(m): return AutomationFormatters.monthName(m)
         case let .monthIn(ms): return String.summaryMonthIn.localized(ms.map { AutomationFormatters.monthName($0) }.joined(separator: ", "))
         case let .nearLocation(lat, lon, r):

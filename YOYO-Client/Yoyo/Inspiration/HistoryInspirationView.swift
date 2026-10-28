@@ -152,19 +152,6 @@ struct HistoryInspirationCard: View {
     }
 
     private func relativeTimeString(from date: Date) -> String {
-        let now = Date()
-        let seconds = Int(now.timeIntervalSince(date))
-        if seconds < 60 {
-            return String.timeJustNow.localized
-        } else if seconds < 3600 {
-            return String.timeMinutesAgo.localized(seconds / 60)
-        } else if seconds < 86400 {
-            return String.timeHoursAgo.localized(seconds / 3600)
-        } else {
-            let formatter = DateFormatter()
-            formatter.dateStyle = .medium
-            formatter.timeStyle = .short
-            return formatter.string(from: date)
-        }
+        RelativeTimeFormatter.string(from: date, beyondDay: .absolute)
     }
 }

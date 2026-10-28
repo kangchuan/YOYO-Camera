@@ -490,8 +490,8 @@
 "summary_is_overexposed" = "过曝";
 "summary_weekday_is" = "星期%@";
 "summary_weekday_in" = "星期在[%@]";
-"summary_date_is" = "%@月%@日";
-"summary_nth_weekday_of_month" = "%@月第%@个%@";
+// %1$@ 月份全称(十月) %2$@ 数字月份(10月) %3$@ 序数(第2) %4$@ 星期(周二)
+"summary_nth_weekday_of_month" = "%2$@%3$@个%4$@";
 "summary_month_in" = "月份在[%@]";
 "summary_near_location" = "靠近(%.4f, %.4f) %dm";
 "summary_inside_region" = "区域内(%.4f, %.4f) %dm";
@@ -590,6 +590,9 @@
 "automation_trigger_conditions" = "触发条件";
 "automation_executed_actions" = "执行动作";
 "time_just_now" = "刚刚";
+"time_1_minute_ago" = "1分钟前";
+"time_1_hour_ago" = "1小时前";
+"time_1_day_ago" = "1天前";
 "time_minutes_ago" = "%d分钟前";
 "time_hours_ago" = "%d小时前";
 "time_days_ago" = "%d天前";

@@ -490,8 +490,8 @@
 "summary_is_overexposed" = "Overexposed";
 "summary_weekday_is" = "Weekday %@";
 "summary_weekday_in" = "Weekday in [%@]";
-"summary_date_is" = "%@ %@";
-"summary_nth_weekday_of_month" = "%@ Nth %@ Weekday %@";
+// %1$@ month name (October), %2$@ short month (Oct), %3$@ ordinal (2nd), %4$@ weekday (Tuesday)
+"summary_nth_weekday_of_month" = "%4$@, %3$@ week of %1$@";
 "summary_month_in" = "Month in [%@]";
 "summary_near_location" = "Near (%.4f, %.4f) %dm";
 "summary_inside_region" = "Inside (%.4f, %.4f) %dm";
@@ -761,6 +761,9 @@
 "automation_trigger_conditions" = "Trigger Conditions";
 "automation_executed_actions" = "Executed Actions";
 "time_just_now" = "Just now";
+"time_1_minute_ago" = "1 minute ago";
+"time_1_hour_ago" = "1 hour ago";
+"time_1_day_ago" = "1 day ago";
 "time_minutes_ago" = "%d minutes ago";
 "time_hours_ago" = "%d hours ago";
 "time_days_ago" = "%d days ago";
