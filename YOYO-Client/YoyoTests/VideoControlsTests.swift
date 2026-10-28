@@ -2,6 +2,7 @@ import AVFoundation
 import Testing
 @testable import Yoyo
 
+@MainActor
 struct VideoControlsTests {
     @Test func testCyclePlaybackRate() {
         var controls = VideoControls()

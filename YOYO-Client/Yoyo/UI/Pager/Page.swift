@@ -6,10 +6,13 @@ import SwiftUI
 /// Initialize with one of its convenience methods:
 /// - `firstPage()`
 /// - `withIndex(_:)`
+@MainActor
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
 public final class Page: ObservableObject {
-    // Needed for `iOS 13` or else it won't trigger an update
-    public var objectWillChange = PassthroughSubject<Void, Never>()
+    // Needed for `iOS 13` or else it won't trigger an update.
+    // `nonisolated` because `ObservableObject` requires it and it is never mutated — gestures on the
+    // main actor only call `send()`.
+    public nonisolated let objectWillChange = PassthroughSubject<Void, Never>()
     var _index: Int
 
     /// Current page index.

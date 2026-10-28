@@ -2,6 +2,7 @@ import SwiftUI
 
 // MARK: - Tutorial Manager
 
+@MainActor
 final class TutorialManager: ObservableObject {
     static let shared = TutorialManager()
 

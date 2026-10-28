@@ -4,6 +4,7 @@ import Photos
 import SwiftUI
 import UIKit
 
+@MainActor
 final class VideoControls: ObservableObject {
     @Published var isPlaying: Bool = true
     @Published var playbackRate: Float = 1.0
@@ -34,18 +35,17 @@ final class VideoControls: ObservableObject {
             let maxRate = await VideoPlaybackCapability.calculateMaxPlaybackRate(for: playerItem)
             let newRates = VideoPlaybackCapability.generatePlaybackRates(maxRate: maxRate)
 
-            await MainActor.run {
-                availableRates = newRates
+            availableRates = newRates
 
-                // Reset playback rate to 1.0 if current rate exceeds max
-                if playbackRate > maxRate {
-                    playbackRate = 1.0
-                }
+            // Reset playback rate to 1.0 if current rate exceeds max
+            if playbackRate > maxRate {
+                playbackRate = 1.0
             }
         }
     }
 }
 
+@MainActor
 final class LivePhotoControls: ObservableObject {
     @Published var isPlaying: Bool = true
     @Published var isLooping: Bool = false
