@@ -27,7 +27,7 @@
 
 | 类型 | `kind` | 渲染路径 | 需要 `.cube` 数据集 | 现有成员 |
 |---|---|---|---|---|
-| 胶片物理模拟 | `.filmSimulation` | `FilmComputeEngine` + Metal 着色器，颜色由 `FilmPreset` 算出 | ❌ 不需要 | FC / LC / GR |
+| 胶片物理模拟 | `.filmSimulation` | `FilmEmulation` 的 Metal 着色器（`FilmEmulation.metal` 里的 CIColorKernel/CIKernel），颜色由 `FilmPreset` 算出 | ❌ 不需要 | FC / LC / GR |
 | LUT 滤镜 | `.lut` | `Assets.xcassets/<名称>.dataset` 里的 `.cube` | ✅ 需要 | 其余 24 个 |
 
 > LUT 数据集的资源名**必须等于滤镜名**。`FilterIdentifier+Config.swift` 里 `imageName = name + "-bg"`、

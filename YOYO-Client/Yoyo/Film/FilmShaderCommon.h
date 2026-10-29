@@ -2,7 +2,7 @@
 // FilmShaderCommon.h - Shared definitions for film emulation Metal shaders
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Contains items shared by FilmEmulation.metal and FilmComputeKernels.metal:
+// Contains items shared by the film emulation shaders:
 // - Constant definitions
 // - Utility functions
 // - Physical model functions

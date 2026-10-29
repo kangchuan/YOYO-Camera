@@ -10,7 +10,7 @@ import Foundation
 
 /// 滤镜的渲染方式
 enum FilterProcessingKind: Equatable {
-    /// 胶片物理模拟：走 `FilmComputeEngine` + Metal 着色器，`chain` 为空（当前为 FC / LC / GR）
+    /// 胶片物理模拟：走 `FilmEmulation` 的 Metal 着色器（CIColorKernel/CIKernel），`chain` 为空（当前为 FC / LC / GR）
     case filmSimulation
     /// 颜色查找表：走 `Assets.xcassets/<滤镜名>.dataset` 内的 .cube 数据
     case lut

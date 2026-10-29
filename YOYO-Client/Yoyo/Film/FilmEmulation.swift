@@ -6,10 +6,6 @@ import CoreImage
 
 /// Unified Film simulation portal
 enum FilmEmulation {
-    // MARK: - Compute Shader Engine
-
-    private static let computeEngine = FilmComputeEngine.shared
-
     // MARK: - Metal Kernels
 
     private static let mainKernel: CIKernel? = FilmEffectUtils.loadGeneralKernel(name: "yoyoFilmEmulationMain")
@@ -364,15 +360,12 @@ enum FilmEmulation {
     ) -> CIImage {
         let extent = input.extent
 
-        // Prefer Compute Shader if available
-        if let engine = computeEngine,
-           engine.isAvailable,
-           let result = engine.generateBloomLayer(from: input, intensity: intensity, threshold: threshold, spread: spread)
-        {
-            return result.cropped(to: extent)
-        }
-
-        // Fallback: CIFilter path (Pyramid)
+        // Every .metal file in this target is compiled with -fcikernel, which is
+        // required for the yoyoFilm* CIKernel entry points below but hides the
+        // compute functions from MTLLibrary entirely. A Metal compute
+        // implementation used to be tried here first; its availability check
+        // could never pass, so it was removed. The pyramid below is the only
+        // bloom path.
         guard let extractKernel = bloomExtractKernel,
               let bright = extractKernel.apply(
                   extent: extent,
@@ -442,25 +435,8 @@ enum FilmEmulation {
             effectiveTintEdge = color * 0.8
         }
 
-        // Prefer using Compute Shader
-        if let engine = computeEngine,
-           engine.isAvailable,
-           let result = engine.generateHalationLayer(
-               from: input,
-               intensity: intensity,
-               threshold: threshold,
-               spread: spread,
-               warmth: warmth,
-               tintCore: effectiveTintCore,
-               tintMid: effectiveTintMid,
-               tintEdge: effectiveTintEdge,
-               strength: strength
-           )
-        {
-            return result.cropped(to: extent)
-        }
-
-        // Fallback: CIFilter path - use kernel with custom colors
+        // Same reasoning as generateBloomLayer: the scatter passes below are the
+        // only halation path, see the comment there.
         guard let extractKernel = halationExtractWithTintKernel,
               let extracted = extractKernel.apply(
                   extent: extent,
