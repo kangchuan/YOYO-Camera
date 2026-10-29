@@ -62,7 +62,9 @@ enum AutomationFormatters {
         case 10: return String.automationMonthOctober.localized
         case 11: return String.automationMonthNovember.localized
         case 12: return String.automationMonthDecember.localized
-        default: return "\(month)月"
+        // Unreachable for a valid 1...12 month; mirrors weekdayName above so an
+        // out-of-range value never leaks a "月" suffix into non-Chinese UI.
+        default: return "\(month)"
         }
     }
 
